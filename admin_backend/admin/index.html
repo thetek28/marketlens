@@ -888,14 +888,20 @@ document.getElementById('dash-activity').innerHTML='<div class="skeleton" style=
 document.getElementById('dash-status').innerHTML='<div class="skeleton" style="height:200px"></div>';
 
 api('/api/admin/dashboard').then(d=>{
-const s=d.stats||d;
+const s=d;
+const totalUsers=s.users?.total||0;
+const activeUsers=s.users?.active||0;
+const totalProducts=s.products?.total||0;
+const totalResearch=s.research?.total||0;
+const totalListings=s.listings?.total||0;
+const mrr=s.revenue?.mrr||0;
 const stats=[
-{label:'Total Users',value:s.total_users||0,icon:'👥',bg:'var(--accent-dim)',color:'var(--accent)'},
-{label:'Active Users',value:s.active_users||0,icon:'✅',bg:'rgba(34,197,94,.15)',color:'var(--green)'},
-{label:'Products',value:s.total_products||s.products||0,icon:'📦',bg:'rgba(59,130,246,.15)',color:'var(--blue)'},
-{label:'Research Jobs',value:s.total_research||s.research_jobs||0,icon:'🔬',bg:'rgba(168,85,247,.15)',color:'var(--purple)'},
-{label:'Listings',value:s.total_listings||s.listings||0,icon:'📋',bg:'rgba(245,158,11,.15)',color:'var(--yellow)'},
-{label:'MRR',value:'$'+(s.mrr||s.monthly_revenue||0).toLocaleString(),icon:'💰',bg:'rgba(34,197,94,.15)',color:'var(--green)'}
+{label:'Total Users',value:totalUsers,icon:'👥',bg:'var(--accent-dim)',color:'var(--accent)'},
+{label:'Active Users',value:activeUsers,icon:'✅',bg:'rgba(34,197,94,.15)',color:'var(--green)'},
+{label:'Products',value:totalProducts,icon:'📦',bg:'rgba(59,130,246,.15)',color:'var(--blue)'},
+{label:'Research Jobs',value:totalResearch,icon:'🔬',bg:'rgba(168,85,247,.15)',color:'var(--purple)'},
+{label:'Listings',value:totalListings,icon:'📋',bg:'rgba(245,158,11,.15)',color:'var(--yellow)'},
+{label:'MRR',value:'$'+mrr.toLocaleString(),icon:'💰',bg:'rgba(34,197,94,.15)',color:'var(--green)'}
 ];
 document.getElementById('dash-stats').innerHTML=stats.map(st=>`
 <div class="stat-card">
@@ -906,11 +912,14 @@ document.getElementById('dash-stats').innerHTML=stats.map(st=>`
 }).catch(()=>{document.getElementById('dash-stats').innerHTML='<div class="empty"><p>Failed to load dashboard</p></div>'});
 
 api('/api/admin/health').then(d=>{
+const cpuVal=typeof d.cpu==='object'?d.cpu.percent+'%':d.cpu||'N/A';
+const memVal=d.memory?(typeof d.memory==='object'?d.memory.percent+'%':d.memory):'N/A';
+const diskVal=d.disk?(typeof d.disk==='object'?d.disk.percent+'%':d.disk):'N/A';
 const items=[
 {name:'Database',val:d.db_status||d.database||'OK',ok:!(d.db_status==='error'||d.database==='error')},
-{name:'CPU',val:d.cpu||d.cpu_usage||'N/A',ok:true},
-{name:'Memory',val:d.memory||d.memory_usage||'N/A',ok:true},
-{name:'Disk',val:d.disk||d.disk_usage||'N/A',ok:true}
+{name:'CPU',val:cpuVal,ok:true},
+{name:'Memory',val:memVal,ok:true},
+{name:'Disk',val:diskVal,ok:true}
 ];
 document.getElementById('dash-health').innerHTML=items.map(i=>`
 <div class="health-item">
@@ -978,7 +987,19 @@ udCurrentTab='overview';
 document.querySelectorAll('#ud-tabs .tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
 document.querySelectorAll('[id^="ud-tab-"]').forEach((c,i)=>c.classList.toggle('active',i===0));
 
-api('/api/admin/users/'+id).then(d=>{
+api('/api/admin/users/'+id).then(raw=>{
+const d={};
+if(raw.user){Object.assign(d,raw.user)}
+if(raw.subscription){Object.assign(d,raw.subscription);d.tier=raw.subscription.tier;d.status=raw.user?.is_active?'active':'suspended'}
+if(raw.usage){d.usage=raw.usage;Object.assign(d,{ai_credits_used:raw.usage.used?.ai_credits||0,ai_credits_limit:raw.usage.limits?.ai_credits||0,research_used:raw.usage.used?.research||0,research_limit:raw.usage.limits?.research||0,tracking_used:raw.usage.used?.tracking||0,tracking_limit:raw.usage.limits?.tracking||0,listings_used:raw.usage.used?.listings||0,listings_limit:raw.usage.limits?.listings||0,listing_gen_used:raw.usage.used?.listings||0,listing_gen_limit:raw.usage.limits?.listings||0})}
+if(raw.stats){d.products_count=raw.stats.products||0;d.watchlist_count=raw.stats.watchlist||0;d.tracking_count=raw.stats.tracking||0;d.research_count=raw.stats.research||0;d.listing_count=raw.stats.listings||0}
+d.username=raw.user?.username||raw.username||'';
+d.email=raw.user?.email||raw.email||'';
+d.id=raw.user?.id||raw.id||id;
+d.created_at=raw.user?.created_at||raw.created_at;
+d.last_login=raw.user?.last_login;
+d.recent_actions=raw.recent_actions||[];
+d.recent_research=raw.recent_research||[];
 udData=d;
 document.getElementById('ud-name').textContent=d.username||'User';
 document.getElementById('ud-badge').className='badge badge-'+({free:'gray',starter:'blue',pro:'purple',enterprise:'yellow'}[d.tier]||'gray');
@@ -1147,7 +1168,7 @@ document.getElementById('products-tbody').innerHTML=prods.length?prods.map(p=>`
 <td style="font-family:monospace;font-size:12px">${p.asin||'-'}</td>
 <td>${trunc(p.name||p.title||'',35)}</td>
 <td>${trunc(p.category||'',20)}</td>
-<td class="tabular-nums">${p.price?'$'+p.price:'-'}</td>
+<td class="tabular-nums">${p.amazon_price||p.price?'$'+(p.amazon_price||p.price):'-'}</td>
 <td>${p.rating?'★ '+p.rating:'-'}</td>
 <td class="tabular-nums">${p.ai_score||p.score||'-'}</td>
 <td>${tlBadge(p.traffic_light||p.signal)}</td>
@@ -1170,11 +1191,11 @@ document.getElementById('research-tbody').innerHTML=jobs.length?jobs.map(j=>`
 <tr>
 <td>${j.username||j.user||'-'}</td>
 <td>${trunc(j.query||j.search_query||'',30)}</td>
-<td>${j.market||j.category||'-'}</td>
+<td>${j.marketplace||j.market||j.category||'-'}</td>
 <td><span class="${bCls(j.status)}">${j.status||'pending'}</span></td>
-<td class="tabular-nums">${j.results_count||j.results||0}</td>
-<td>${j.ai_used||j.ai_model||'-'}</td>
-<td class="tabular-nums">${j.credits_cost||j.credits||0}</td>
+<td class="tabular-nums">${j.result_count||j.results_count||j.results||0}</td>
+<td>${j.ai_analysis_used||j.ai_used||j.ai_model||'-'}</td>
+<td class="tabular-nums">${j.ai_credits_cost||j.credits_cost||j.credits||0}</td>
 <td>${fmtDT(j.created_at||j.created)}</td>
 </tr>`).join(''):'<tr><td colspan="8" class="empty">No research jobs found</td></tr>';
 pag(document.getElementById('research-pagination'),total,researchPage,P,'loadResearch');
@@ -1187,7 +1208,7 @@ function loadWatchlist(page){
 watchlistPage=page||watchlistPage;
 const params=new URLSearchParams({page:watchlistPage,per_page:P});
 api('/api/admin/watchlist?'+params).then(d=>{
-const items=d.watchlist||d.data||[];
+const items=d.watchlist||d.items||d.data||[];
 const total=d.total||d.pagination?.total||items.length;
 document.getElementById('watchlist-tbody').innerHTML=items.length?items.map(w=>`
 <tr>
@@ -1226,7 +1247,7 @@ document.getElementById('features-tbody').innerHTML=features.length?features.map
 
 function toggleFeature(id){
 api('/api/admin/features/'+id+'/toggle',{method:'POST'}).then(d=>{
-toast(d.message||'Feature toggled','success');
+toast('Feature '+(d.is_enabled?'enabled':'disabled'),'success');
 loadFeatures();
 }).catch(e=>{toast('Failed to toggle: '+e.message,'error');loadFeatures()});
 }
@@ -1234,12 +1255,14 @@ loadFeatures();
 // HEALTH
 function loadHealth(){
 api('/api/admin/health').then(d=>{
+const cpuVal=typeof d.cpu==='object'?d.cpu.percent+'%':d.cpu||'N/A';
+const memVal=d.memory?(typeof d.memory==='object'?d.memory.percent+'%':d.memory):'N/A';
+const diskVal=d.disk?(typeof d.disk==='object'?d.disk.percent+'%':d.disk):'N/A';
 const items=[
-{label:'CPU Usage',val:d.cpu||d.cpu_usage||'N/A',ok:!d.cpu_critical},
-{label:'Memory',val:d.memory||d.memory_usage||'N/A',ok:!d.memory_critical},
-{label:'Disk',val:d.disk||d.disk_usage||'N/A',ok:!d.disk_critical},
-{label:'Database',val:d.db_status||d.database||'OK',ok:!(d.db_status==='error')},
-{label:'Uptime',val:d.uptime||'N/A',ok:true},
+{label:'CPU Usage',val:cpuVal,ok:true},
+{label:'Memory',val:memVal,ok:true},
+{label:'Disk',val:diskVal,ok:true},
+{label:'Database',val:d.db_status||d.database||'OK',ok:!(d.db_status==='error'||d.database==='error')},
 {label:'Last Check',val:fmtDT(d.timestamp||d.checked_at),ok:true}
 ];
 document.getElementById('health-grid').innerHTML=items.map(i=>`
@@ -1276,9 +1299,9 @@ document.getElementById('jobs-tbody').innerHTML=jobs.length?jobs.map(j=>`
 <td>${j.username||j.user||'-'}</td>
 <td>${trunc(j.query||j.search_query||'',30)}</td>
 <td><span class="${bCls(j.status)}">${j.status||'pending'}</span></td>
-<td class="tabular-nums">${j.results_count||j.results||0}</td>
-<td class="tabular-nums">${j.credits_cost||j.credits||0}</td>
-<td>${j.duration?j.duration+'s':'-'}</td>
+<td class="tabular-nums">${j.result_count||j.results_count||j.results||0}</td>
+<td class="tabular-nums">${j.ai_credits_cost||j.credits_cost||j.credits||0}</td>
+<td>${j.duration_ms?((j.duration_ms/1000).toFixed(1)+'s'):j.duration?(j.duration+'s'):'-'}</td>
 <td>${fmtDT(j.created_at||j.created)}</td>
 </tr>`).join(''):'<tr><td colspan="7" class="empty">No jobs found</td></tr>';
 pag(document.getElementById('jobs-pagination'),total,jobsPage,P,'loadJobs');
