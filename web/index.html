@@ -1325,6 +1325,10 @@
             <div class="w-px h-5 bg-dark-600"></div>
             <button onclick="showExportDialog()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition flex items-center gap-1.5 border border-dark-600"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export</button>
             <div class="w-px h-5 bg-dark-600"></div>
+            <button onclick="showNotifications()" class="relative px-2 py-1.5 rounded-lg text-xs font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600" title="Notifications">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                <span id="notif-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">0</span>
+            </button>
             <button onclick="logout()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition flex items-center gap-1.5 border border-dark-600"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>Logout <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></button>
         </div>
     </header>
@@ -1768,8 +1772,24 @@ async function checkAuth() {
         if (!r.ok) { localStorage.removeItem('mjl_token'); authToken = null; showLogin(); return false; }
         const data = await r.json();
         if (data.subscription) userSub = data.subscription;
+        if (data.usage) updateUserCredits(data.usage);
         return true;
     } catch { showLogin(); return false; }
+}
+
+function updateUserCredits(usage) {
+    const used = usage.used?.ai_credits || 0;
+    const limit = usage.limits?.ai_credits || 2000;
+    const remaining = limit - used;
+    const pct = limit > 0 ? Math.round(remaining / limit * 100) : 0;
+    const creditsUsedEl = document.getElementById('credits-used');
+    const creditsTotalEl = document.getElementById('credits-total');
+    const creditsBar = document.getElementById('credits-bar');
+    const creditsPct = document.getElementById('credits-pct');
+    if (creditsUsedEl) creditsUsedEl.textContent = used.toLocaleString();
+    if (creditsTotalEl) creditsTotalEl.textContent = limit.toLocaleString();
+    if (creditsBar) creditsBar.style.width = pct + '%';
+    if (creditsPct) creditsPct.textContent = pct;
 }
 
 async function api(url, opts = {}) {
@@ -4012,8 +4032,8 @@ async function addTrackingProduct(input) {
     if (!/^[A-Z0-9]{10}$/i.test(asin)) return toast('Invalid ASIN format', 'warning');
     toast('Adding product to tracking...', 'info');
     try {
-        const result = await api('/api/products/track', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ asin: asin.toUpperCase() }) });
-        if (result?.success) { toast('Product added to tracking!', 'success'); renderTracking(); }
+        const result = await api('/api/tracking/' + asin.toUpperCase(), { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: '', category: '' }) });
+        if (result?.message) { toast('Product added to tracking!', 'success'); renderTracking(); }
         else { toast(result?.error || 'Failed to add product', 'error'); }
     } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
@@ -4901,6 +4921,7 @@ function selectAllWatchlist() {
 function removeFromWatchlist(asin) {
     watchlistData = watchlistData.filter(p => p.asin !== asin);
     watchlistSelected.delete(asin);
+    api('/api/watchlist/' + asin, { method: 'DELETE' }).catch(() => {});
     toast('Removed from watchlist', 'info');
     renderWatchlist();
 }
@@ -4962,6 +4983,7 @@ function addWatchlistProduct() {
     else { toast('Invalid ASIN format', 'error'); return; }
     if (watchlistData.find(p => p.asin === asin)) { toast('Already on watchlist', 'warning'); closeModal(); return; }
     watchlistData.unshift({asin, name: asin, category: 'Unknown', amazon_price: 0, estimated_margin_pct: 0, ai_score: 0, review_count: 0, rating: 0, traffic_light: 'YELLOW', created_at: new Date().toISOString()});
+    api('/api/watchlist/' + asin, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: asin, category: 'Unknown' }) }).catch(() => {});
     closeModal();
     toast(`${asin} added to watchlist`, 'success');
     renderWatchlist();
@@ -5003,12 +5025,18 @@ function showWatchlistCompare() {
 
 async function refreshWatchlist() {
     toast('Refreshing watchlist...', 'info');
-    const [allData, topData] = await Promise.all([api('/api/products/all'), api('/api/products/top20')]);
+    const [allData, topData, backendWl] = await Promise.all([api('/api/products/all'), api('/api/products/top20'), api('/api/watchlist').catch(() => null)]);
     const all = (allData?.products || allData || []);
     const top = (topData?.products || []);
     const map = new Map();
     [...all, ...top].forEach(p => { if (p && p.asin && !map.has(p.asin)) map.set(p.asin, p); });
-    watchlistData = [...map.values()].filter(p => (p.ai_score||0) >= 0.5 || p.traffic_light === 'GREEN' || (p.estimated_margin_pct||0) >= 25);
+    const backendItems = backendWl?.watchlist || [];
+    backendItems.forEach(w => {
+        if (w.asin && !map.has(w.asin)) {
+            map.set(w.asin, { asin: w.asin, name: w.product_name || w.asin, category: w.category || '', amazon_price: w.amazon_price || 0, rating: w.rating || 0, review_count: w.review_count || 0, ai_score: w.ai_score || 0, traffic_light: w.traffic_light || 'YELLOW', notes: w.notes || '' });
+        }
+    });
+    watchlistData = [...map.values()].filter(p => backendItems.some(w => w.asin === p.asin) || (p.ai_score||0) >= 0.5 || p.traffic_light === 'GREEN' || (p.estimated_margin_pct||0) >= 25);
     watchlistData.sort((a,b) => (b.ai_score||0) - (a.ai_score||0));
     toast(`Loaded ${watchlistData.length} products`, 'success');
     renderWatchlist();
@@ -5019,12 +5047,18 @@ async function renderWatchlist() {
         ${renderWatchlistSkeletons()}`;
 
     if (!watchlistData.length) {
-        const [allData, topData] = await Promise.all([api('/api/products/all'), api('/api/products/top20')]);
+        const [allData, topData, backendWl] = await Promise.all([api('/api/products/all'), api('/api/products/top20'), api('/api/watchlist').catch(() => null)]);
         const all = (allData?.products || allData || []);
         const top = (topData?.products || []);
         const map = new Map();
         [...all, ...top].forEach(p => { if (p && p.asin && !map.has(p.asin)) map.set(p.asin, p); });
-        watchlistData = [...map.values()].filter(p => (p.ai_score||0) >= 0.5 || p.traffic_light === 'GREEN' || (p.estimated_margin_pct||0) >= 25);
+        const backendItems = backendWl?.watchlist || [];
+        backendItems.forEach(w => {
+            if (w.asin && !map.has(w.asin)) {
+                map.set(w.asin, { asin: w.asin, name: w.product_name || w.asin, category: w.category || '', amazon_price: w.amazon_price || 0, rating: w.rating || 0, review_count: w.review_count || 0, ai_score: w.ai_score || 0, traffic_light: w.traffic_light || 'YELLOW', notes: w.notes || '' });
+            }
+        });
+        watchlistData = [...map.values()].filter(p => backendItems.some(w => w.asin === p.asin) || (p.ai_score||0) >= 0.5 || p.traffic_light === 'GREEN' || (p.estimated_margin_pct||0) >= 25);
         watchlistData.sort((a,b) => (b.ai_score||0) - (a.ai_score||0));
     }
 
@@ -8304,8 +8338,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ok = await checkAuth();
     if (!ok) return;
     updateSubBadge();
+    checkNotifications();
     connectWS();
     showTab('research', document.querySelector('.nav-btn'));
+    setInterval(checkNotifications, 60000);
 });
 
 function updateSubBadge() {
@@ -8327,6 +8363,57 @@ function updateSubBadge() {
         badge.textContent = 'FREE';
         badge.classList.remove('hidden');
     }
+}
+
+function checkNotifications() {
+    api('/api/user/notifications').then(d => {
+        const notifs = d?.notifications || [];
+        const unread = notifs.filter(n => !n.is_read).length;
+        const badge = document.getElementById('notif-badge');
+        if (badge) {
+            if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.classList.remove('hidden'); }
+            else { badge.classList.add('hidden'); }
+        }
+    }).catch(() => {});
+}
+
+function showNotifications() {
+    api('/api/user/notifications').then(d => {
+        const notifs = d?.notifications || [];
+        let html = '<div class="space-y-3 max-h-96 overflow-y-auto">';
+        if (!notifs.length) {
+            html += '<div class="text-center py-8 text-gray-500 text-sm">No notifications</div>';
+        } else {
+            notifs.forEach(n => {
+                const colors = { info: 'blue', success: 'green', warning: 'yellow', error: 'red' };
+                const c = colors[n.severity] || 'gray';
+                html += `<div class="p-3 bg-dark-700 rounded-lg border border-dark-600 ${n.is_read ? 'opacity-60' : ''}">
+                    <div class="flex items-start gap-2">
+                        <div class="w-2 h-2 rounded-full bg-${c}-500 mt-1.5 flex-shrink-0"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium text-white">${esc(n.title)}</div>
+                            <div class="text-xs text-gray-400 mt-0.5">${esc(n.message)}</div>
+                            <div class="text-[10px] text-gray-500 mt-1">${new Date(n.created_at).toLocaleString()}</div>
+                        </div>
+                        ${!n.is_read ? `<button onclick="markNotifRead(${n.id})" class="text-[10px] text-blue-400 hover:text-blue-300 flex-shrink-0">Mark read</button>` : ''}
+                    </div>
+                </div>`;
+            });
+        }
+        html += '</div>';
+        openModal(`<div class="space-y-3"><div class="flex items-center justify-between"><h3 class="text-lg font-bold text-white">Notifications</h3>${notifs.some(n => !n.is_read) ? '<button onclick="markAllRead()" class="text-xs text-blue-400 hover:text-blue-300">Mark all read</button>' : ''}</div>${html}</div>`);
+    }).catch(() => toast('Failed to load notifications', 'error'));
+}
+
+function markNotifRead(id) {
+    api('/api/user/notifications/' + id + '/read', { method: 'POST' }).then(() => { checkNotifications(); }).catch(() => {});
+}
+
+function markAllRead() {
+    api('/api/user/notifications').then(d => {
+        const notifs = (d?.notifications || []).filter(n => !n.is_read);
+        Promise.all(notifs.map(n => api('/api/user/notifications/' + n.id + '/read', { method: 'POST' }))).then(() => { checkNotifications(); showNotifications(); });
+    }).catch(() => {});
 }
 </script>
 </body>
