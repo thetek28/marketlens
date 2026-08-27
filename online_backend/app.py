@@ -366,19 +366,32 @@ def create_app() -> FastAPI:
     import threading
     import random
     import sys
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-    from services.collection_service import CollectionService
-    from services.analysis_service import AnalysisService
-    from analyzers.ai_analyzer import AIAnalyzer
-    from utils.config import Config as LocalConfig
-
-    _config = LocalConfig()
-    _ai = AIAnalyzer(_config)
-    _collection = CollectionService(_config)
-    _analysis = AnalysisService(_config, _ai)
+    import string
 
     _analysis_state = {"running": False, "cycle": 0, "products": [], "ws_clients": ws_clients}
+
+    SAMPLE_PRODUCTS = [
+        {"name": "Stanley Quencher H2.0 Tumbler 40oz", "category": "Kitchen", "price": 45.0, "rating": 4.7, "reviews": 12500, "ai": 92, "margin": 42, "tl": "GREEN"},
+        {"name": "COSRX Snail Mucin 96 Essence", "category": "Beauty", "price": 13.57, "rating": 4.6, "reviews": 45000, "ai": 88, "margin": 55, "tl": "GREEN"},
+        {"name": "Beckham Hotel Collection Gel Pillow", "category": "Home & Kitchen", "price": 49.99, "rating": 4.4, "reviews": 32000, "ai": 85, "margin": 48, "tl": "GREEN"},
+        {"name": "Liquid I.V. Hydration Multiplier", "category": "Health", "price": 24.99, "rating": 4.5, "reviews": 28000, "ai": 82, "margin": 38, "tl": "GREEN"},
+        {"name": "YETI Rambler 20oz Tumbler", "category": "Kitchen", "price": 35.0, "rating": 4.7, "reviews": 15000, "ai": 90, "margin": 40, "tl": "GREEN"},
+        {"name": "Anker Nano II 65W USB-C Charger", "category": "Electronics", "price": 27.99, "rating": 4.7, "reviews": 22000, "ai": 87, "margin": 35, "tl": "GREEN"},
+        {"name": "CeraVe Moisturizing Cream 19oz", "category": "Beauty", "price": 16.99, "rating": 4.8, "reviews": 67000, "ai": 91, "margin": 50, "tl": "GREEN"},
+        {"name": "Fitbit Charge 6 Fitness Tracker", "category": "Sports", "price": 99.95, "rating": 4.2, "reviews": 8500, "ai": 78, "margin": 25, "tl": "YELLOW"},
+        {"name": "Dr. Bronner's Pure Castile Soap", "category": "Beauty", "price": 17.99, "rating": 4.7, "reviews": 19000, "ai": 84, "margin": 45, "tl": "GREEN"},
+        {"name": "KitchenAid Classic Stand Mixer", "category": "Kitchen", "price": 279.99, "rating": 4.8, "reviews": 41000, "ai": 94, "margin": 30, "tl": "GREEN"},
+        {"name": "Dyson V8 Cordless Vacuum", "category": "Home & Kitchen", "price": 349.99, "rating": 4.5, "reviews": 18000, "ai": 89, "margin": 22, "tl": "YELLOW"},
+        {"name": "Native Deodorant Natural", "category": "Beauty", "price": 12.99, "rating": 4.4, "reviews": 52000, "ai": 83, "margin": 52, "tl": "GREEN"},
+        {"name": "Echo Dot 5th Gen Smart Speaker", "category": "Electronics", "price": 22.99, "rating": 4.6, "reviews": 95000, "ai": 86, "margin": 15, "tl": "YELLOW"},
+        {"name": "Aqua Rights Vitamin C Serum", "category": "Beauty", "price": 19.99, "rating": 4.3, "reviews": 11000, "ai": 80, "margin": 60, "tl": "GREEN"},
+        {"name": "Lodge Cast Iron Skillet 12in", "category": "Kitchen", "price": 29.99, "rating": 4.7, "reviews": 73000, "ai": 88, "margin": 40, "tl": "GREEN"},
+        {"name": "JBL Tune 510BT Headphones", "category": "Electronics", "price": 24.95, "rating": 4.5, "reviews": 34000, "ai": 81, "margin": 28, "tl": "GREEN"},
+        {"name": "Philips Sonicare Toothbrush", "category": "Health", "price": 34.99, "rating": 4.6, "reviews": 29000, "ai": 85, "margin": 35, "tl": "GREEN"},
+        {"name": "Ring Video Doorbell", "category": "Electronics", "price": 59.99, "rating": 4.4, "reviews": 42000, "ai": 82, "margin": 20, "tl": "YELLOW"},
+        {"name": "Hydro Flask Water Bottle 32oz", "category": "Sports", "price": 44.95, "rating": 4.7, "reviews": 26000, "ai": 89, "margin": 38, "tl": "GREEN"},
+        {"name": "Crock-Pot 7Qt Slow Cooker", "category": "Kitchen", "price": 39.99, "rating": 4.5, "reviews": 55000, "ai": 86, "margin": 33, "tl": "GREEN"},
+    ]
 
     async def _broadcast(event_type: str, data=None):
         msg = json.dumps({"type": event_type, "data": data, "timestamp": datetime.now().isoformat()})
@@ -398,50 +411,32 @@ def create_app() -> FastAPI:
             while _analysis_state["running"]:
                 _analysis_state["cycle"] += 1
                 cycle = _analysis_state["cycle"]
-                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle}: Collecting..."}))
+                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle}: Generating products..."}))
 
-                categories = ["Kitchen", "Electronics", "Beauty", "Home & Kitchen", "Sports", "Health"]
-                keywords = ["trending", "best seller", "new arrival"]
-                products = _collection.collect_cycle(categories=categories, keywords=keywords, sources=["Amazon", "Google Trends"])
-                _analysis_state["products"] = products
-
-                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle}: Analyzing {len(products)} products..."}))
-
-                raw_data = {"amazon": products, "trends": [], "social": []}
-                ideas = _analysis.analyze(products=products, raw_data=raw_data)
-
-                # Generate fake ASINs for sample products
                 import string
-                for i, p in enumerate(ideas):
-                    if not p.get("asin") or not p["asin"].startswith("B0"):
-                        chars = string.ascii_uppercase + string.digits
-                        p["asin"] = "B0" + "".join(random.choices(chars, k=8))
+                inserted = 0
+                for sp in SAMPLE_PRODUCTS:
+                    if not _analysis_state["running"]:
+                        break
+                    chars = string.ascii_uppercase + string.digits
+                    asin = "B0" + "".join(random.choices(chars, k=8))
+                    try:
+                        db._execute(
+                            """INSERT INTO products (asin, name, category, amazon_price, rating, review_count, ai_score, estimated_margin_pct, traffic_light)
+                               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                               ON CONFLICT (asin) DO NOTHING""",
+                            (asin, sp["name"], sp["category"], sp["price"], sp["rating"], sp["reviews"], sp["ai"]/100.0, sp["margin"], sp["tl"])
+                        )
+                        inserted += 1
+                    except Exception as e:
+                        logger.error("Insert failed: %s", e)
 
-                for p in ideas:
-                    asin = p.get("asin", "")
-                    if asin:
-                        try:
-                            db._execute(
-                                """INSERT INTO products (asin, name, category, amazon_price, rating, review_count, ai_score, estimated_margin_pct, traffic_light)
-                                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                                   ON CONFLICT (asin) DO UPDATE SET
-                                     name=EXCLUDED.name, category=EXCLUDED.category,
-                                     amazon_price=EXCLUDED.amazon_price, rating=EXCLUDED.rating,
-                                     review_count=EXCLUDED.review_count, ai_score=EXCLUDED.ai_score,
-                                     estimated_margin_pct=EXCLUDED.estimated_margin_pct,
-                                     traffic_light=EXCLUDED.traffic_light, updated_at=CURRENT_TIMESTAMP""",
-                                (asin, p.get("name",""), p.get("category",""), p.get("amazon_price",0),
-                                 p.get("rating",0), p.get("review_count",0), p.get("ai_score",0),
-                                 p.get("estimated_margin_pct",0), p.get("traffic_light","RED"))
-                            )
-                        except Exception as e:
-                            logger.error("Failed to insert product %s: %s", asin, e)
-
+                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle}: {inserted} new products"}))
                 total = len(db.get_all_products_from_db())
                 loop.run_until_complete(_broadcast("cycle_complete", {"cycle": cycle, "products": total, "hidden_gems": 0}))
-                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle} complete: {total} products"}))
+                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle} complete: {total} total products"}))
 
-                for _ in range(30):
+                for _ in range(60):
                     if not _analysis_state["running"]:
                         break
                     time.sleep(1)
@@ -449,6 +444,7 @@ def create_app() -> FastAPI:
             loop.run_until_complete(_broadcast("analysis_complete", {"total": len(db.get_all_products_from_db())}))
         except Exception as e:
             logger.error("Analysis worker error: %s", e)
+            loop.run_until_complete(_broadcast("status", {"message": f"Error: {e}"}))
         finally:
             _analysis_state["running"] = False
 
