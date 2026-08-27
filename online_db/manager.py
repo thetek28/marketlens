@@ -63,11 +63,17 @@ class OnlineDatabaseManager:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 cur.execute(query, params)
                 if fetch == "one":
-                    return dict(cur.fetchone()) if cur.rowcount > 0 else None
+                    row = dict(cur.fetchone()) if cur.rowcount > 0 else None
+                    conn.commit()
+                    return row
                 elif fetch == "all":
-                    return [dict(row) for row in cur.fetchall()]
+                    rows = [dict(row) for row in cur.fetchall()]
+                    conn.commit()
+                    return rows
                 elif fetch == "scalar":
-                    return cur.fetchone()[0] if cur.rowcount > 0 else None
+                    val = cur.fetchone()[0] if cur.rowcount > 0 else None
+                    conn.commit()
+                    return val
                 else:
                     conn.commit()
                     return cur.rowcount
