@@ -2,380 +2,1510 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MarketLens Admin Center</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0f172a;--surface:#1e293b;--surface2:#334155;--border:#475569;--text:#f1f5f9;--muted:#94a3b8;--accent:#6366f1;--accent2:#818cf8;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--sidebar-w:260px}
-html,body{height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
-.app{display:flex;height:100vh}
-.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .25s cubic-bezier(.4,0,.2,1)}
-.sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.sidebar-header .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
-.sidebar-header h1{font-size:16px;color:var(--text)}
-.sidebar-header p{font-size:10px;color:var(--muted);margin-top:2px}
-.sidebar-nav{flex:1;padding:8px 0;overflow-y:auto}
-.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s;border-left:3px solid transparent}
-.nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:rgba(99,102,241,.15);color:var(--accent2);border-left-color:var(--accent)}
-.nav-item .icon{width:20px;text-align:center;font-size:15px;flex-shrink:0}
-.sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0a0e1a;--surface:#111827;--surface2:#1f2937;--border:#374151;
+--accent:#6366f1;--accent-hover:#818cf8;--accent-dim:rgba(99,102,241,.15);
+--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--purple:#a855f7;
+--text:#e5e7eb;--text2:#9ca3af;--text3:#6b7280;
+--radius:8px;--radius-lg:12px;--shadow:0 4px 24px rgba(0,0,0,.4);
+--font:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+html{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+body{min-height:100vh;overflow:hidden}
+input,select,button,textarea{font-family:inherit;font-size:inherit}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.tabular-nums{font-variant-numeric:tabular-nums}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:48px 40px;width:100%;max-width:420px;box-shadow:var(--shadow)}
+.login-card h1{font-size:24px;font-weight:700;margin-bottom:4px;text-align:center}
+.login-card .sub{color:var(--text2);text-align:center;margin-bottom:32px;font-size:13px}
+.login-card .logo{font-size:36px;text-align:center;margin-bottom:16px}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);z-index:100;display:flex;flex-direction:column;transition:transform .25s ease}
+.sidebar.open{transform:translateX(0)}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
-.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.main-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface)}
-.hamburger{display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.hamburger span{width:18px;height:2px;background:var(--text);border-radius:2px;transition:all .2s}
-.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(3px,3px)}
-.hamburger.open span:nth-child(2){opacity:0}
-.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(3px,-3px)}
-.main-header h2{font-size:18px;flex:1}
-.main-scroll{flex:1;overflow-y:auto;padding:20px 24px}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:20px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
-.stat-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.stat-card .value{font-size:26px;font-weight:700;line-height:1.1}
-.stat-card .sub{font-size:11px;color:var(--muted);margin-top:4px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.card h3{font-size:15px}
-.btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
-.btn-danger{background:var(--red);color:#fff}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:var(--surface2)}
-.btn-sm{padding:5px 10px;font-size:12px}
-.btn-green{background:var(--green);color:#fff}
-.btn-yellow{background:var(--yellow);color:#000}
-.table-wrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
-table{width:100%;border-collapse:collapse;min-width:500px}
-th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
-th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;background:var(--surface);z-index:1}
-tr:hover td{background:var(--surface2)}
-.badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
+.sidebar-overlay.active{display:block}
+.sidebar-brand{padding:20px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-brand .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff}
+.sidebar-brand span{font-weight:700;font-size:16px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+.nav-section{padding:16px 20px 6px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:var(--text2);cursor:pointer;transition:all .15s;font-size:13px;border-left:3px solid transparent}
+.nav-item:hover{background:var(--accent-dim);color:var(--text)}
+.nav-item.active{color:var(--accent);background:var(--accent-dim);border-left-color:var(--accent);font-weight:600}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-footer .avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#fff;flex-shrink:0}
+.sidebar-footer .info{flex:1;min-width:0}
+.sidebar-footer .info .name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-footer .info .role{font-size:11px;color:var(--text3)}
+.sidebar-footer .logout-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.sidebar-footer .logout-btn:hover{color:var(--red);background:rgba(239,68,68,.1)}
+
+/* MAIN */
+.main{margin-left:260px;height:100vh;display:flex;flex-direction:column}
+.main-header{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0}
+.hamburger{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px}
+.hamburger svg{width:24px;height:24px}
+.header-title{font-weight:700;font-size:16px;white-space:nowrap}
+.header-search{flex:1;max-width:400px;position:relative}
+.header-search input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px 7px 36px;color:var(--text);outline:none;font-size:13px}
+.header-search input:focus{border-color:var(--accent)}
+.header-search .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.header-search .shortcut{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px;color:var(--text3)}
+.header-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+.status-text{font-size:12px;color:var(--green);font-weight:500}
+.notif-btn{position:relative;background:none;border:none;color:var(--text2);cursor:pointer;padding:4px}
+.notif-btn svg{width:20px;height:20px}
+.notif-badge{position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center}
+.admin-menu{position:relative}
+.admin-btn{display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--text);cursor:pointer;padding:4px 8px;border-radius:var(--radius)}
+.admin-btn:hover{background:var(--surface2)}
+.admin-btn .avatar-sm{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;color:#fff}
+.admin-dropdown{position:absolute;top:100%;right:0;margin-top:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);min-width:160px;box-shadow:var(--shadow);display:none;z-index:200}
+.admin-dropdown.show{display:block}
+.admin-dropdown button{display:block;width:100%;text-align:left;padding:10px 16px;background:none;border:none;color:var(--text);cursor:pointer;font-size:13px}
+.admin-dropdown button:hover{background:var(--surface2)}
+.main-scroll{flex:1;overflow-y:auto;padding:24px}
+
+/* SECTIONS */
+.section{display:none}
+.section.active{display:block}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden}
+.stat-card .icon{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-card .label{font-size:12px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.3px}
+.stat-card .value{font-size:28px;font-weight:700;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.stat-card .sub{font-size:12px;color:var(--text3)}
+
+/* HEALTH STRIP */
+.health-strip{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.health-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;gap:10px;flex:1;min-width:160px}
+.health-item .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.health-item .dot.ok{background:var(--green)}
+.health-item .dot.warn{background:var(--yellow)}
+.health-item .dot.err{background:var(--red)}
+.health-item .hlabel{font-size:12px;color:var(--text2)}
+.health-item .hval{font-size:14px;font-weight:600}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:24px}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-header h2{font-size:15px;font-weight:700}
+.card-body{padding:20px}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;white-space:nowrap}
+tr:hover td{background:rgba(99,102,241,.04)}
+tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.2px}
 .badge-green{background:rgba(34,197,94,.15);color:var(--green)}
 .badge-red{background:rgba(239,68,68,.15);color:var(--red)}
 .badge-yellow{background:rgba(245,158,11,.15);color:var(--yellow)}
 .badge-blue{background:rgba(59,130,246,.15);color:var(--blue)}
-.badge-gray{background:rgba(148,163,184,.15);color:var(--muted)}
-.input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;width:100%}
-.input:focus{outline:none;border-color:var(--accent)}
-select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
-.form-group{margin-bottom:12px}
-.form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-.form-row{display:grid;gap:10px;grid-template-columns:1fr 1fr}
-.search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.search-bar .input,.search-bar select{flex:1;min-width:120px}
-.pagination{display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap}
-.pagination button{padding:6px 12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;cursor:pointer;font-size:12px}
-.pagination button.active{background:var(--accent);border-color:var(--accent)}
-.toggle{position:relative;width:40px;height:22px;cursor:pointer;display:inline-block}
-.toggle input{opacity:0;width:0;height:0;position:absolute}
-.toggle .slider{position:absolute;inset:0;background:var(--surface2);border-radius:22px;transition:.2s}
-.toggle .slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s}
+.badge-gray{background:rgba(107,114,128,.15);color:var(--text3)}
+.badge-purple{background:rgba(168,85,247,.15);color:var(--purple)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--border)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn-danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn-danger:hover{opacity:.9}
+.btn-green{background:var(--green);border-color:var(--green);color:#fff}
+.btn-green:hover{opacity:.9}
+.btn-yellow{background:var(--yellow);border-color:var(--yellow);color:#000}
+.btn-yellow:hover{opacity:.9}
+.btn-ghost{background:transparent;border-color:transparent}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* FORM */
+.input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);outline:none;font-size:13px;width:100%}
+.input:focus{border-color:var(--accent)}
+select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.form-row{display:flex;gap:12px;align-items:end}
+.form-row .form-group{flex:1}
+
+/* SEARCH BAR */
+.search-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.search-bar .input{max-width:320px}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;gap:6px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.pagination button{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--radius);cursor:pointer;font-size:12px}
+.pagination button:hover{background:var(--border)}
+.pagination button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
+.pagination .page-info{font-size:12px;color:var(--text3)}
+
+/* TOGGLE */
+.toggle{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle .slider{position:absolute;inset:0;background:var(--border);border-radius:11px;transition:.2s}
+.toggle .slider::before{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
 .toggle input:checked+.slider{background:var(--accent)}
-.toggle input:checked+.slider:before{transform:translateX(18px);background:#fff}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;color:#fff;font-size:13px;z-index:9999;animation:slideUp .3s;max-width:90vw;text-align:center}
-.toast-success{background:var(--green)}.toast-error{background:var(--red)}.toast-info{background:var(--blue)}
-@keyframes slideUp{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:200;align-items:center;justify-content:center;padding:16px}
+.toggle input:checked+.slider::before{transform:translateX(18px)}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{padding:12px 24px;border-radius:var(--radius);font-size:13px;font-weight:500;box-shadow:var(--shadow);animation:toastIn .3s ease;max-width:400px;text-align:center}
+.toast-success{background:var(--green);color:#fff}
+.toast-error{background:var(--red);color:#fff}
+.toast-info{background:var(--blue);color:#fff}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center}
 .modal-overlay.active{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
-.modal h3{margin-bottom:16px;font-size:17px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:480px;box-shadow:var(--shadow)}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
-.section{display:none}.section.active{display:block}
-.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
-.health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.health-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:8px}
-.health-item .label{color:var(--muted);font-size:13px}
-.health-item .value{font-weight:600;font-size:14px}
-.log-entry{padding:10px 12px;border-left:3px solid var(--border);margin-bottom:8px;font-size:12px;background:var(--surface2);border-radius:0 6px 6px 0}
-.notif-card{padding:12px;background:var(--surface2);border-radius:6px;margin-bottom:8px}
-.plan-card{text-align:center;padding:20px 16px}
-.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px}
-.detail-item{padding:12px;background:var(--surface2);border-radius:8px}
-.detail-item .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.detail-item .v{font-size:16px;font-weight:600}
-.usage-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:6px}
-.usage-bar .fill{height:100%;border-radius:3px;transition:width .3s}
-.tab-bar{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
-.tab-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;transition:all .15s}
-.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.sidebar-overlay.active{display:block}.main{margin-left:0}.hamburger{display:flex}.main-header{padding:12px 16px}.main-scroll{padding:16px}.stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card .value{font-size:20px}.stat-card{padding:12px}.card{padding:14px}.search-bar{flex-direction:column}.form-row{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr 1fr}.modal{max-width:100%}table{min-width:400px}th,td{padding:8px 10px;font-size:12px}}
-@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.health-grid{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}}
+
+/* COMMAND PALETTE */
+.cmd-palette{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding-top:15vh}
+.cmd-palette.active{display:flex}
+.cmd-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:560px;box-shadow:var(--shadow);overflow:hidden}
+.cmd-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);padding:16px 20px;color:var(--text);font-size:15px;outline:none}
+.cmd-results{max-height:360px;overflow-y:auto;padding:8px}
+.cmd-group{padding:4px 12px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}
+.cmd-item{padding:10px 12px;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:13px}
+.cmd-item:hover,.cmd-item.selected{background:var(--accent-dim);color:var(--accent)}
+.cmd-item .cmd-icon{width:20px;text-align:center;color:var(--text3)}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty svg{width:48px;height:48px;margin-bottom:12px;opacity:.3}
+.empty p{font-size:14px}
+
+/* DETAIL GRID */
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+.detail-item{background:var(--surface2);border-radius:var(--radius);padding:16px}
+.detail-item .k{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;font-weight:600}
+.detail-item .v{font-size:15px;font-weight:600}
+
+/* USAGE BAR */
+.usage-bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:8px}
+.usage-bar .fill{height:100%;border-radius:4px;transition:width .3s ease}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.tab-btn{padding:10px 20px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* LOG ENTRY */
+.log-entry{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;display:flex;gap:12px;align-items:start}
+.log-entry:last-child{border-bottom:none}
+.log-entry .log-time{color:var(--text3);font-size:11px;white-space:nowrap;min-width:140px}
+.log-entry .log-msg{flex:1}
+
+/* PLAN CARD */
+.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;position:relative}
+.plan-card.featured{border-color:var(--accent)}
+.plan-card.featured::before{content:'CURRENT';position:absolute;top:12px;right:12px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.plan-card h3{font-size:18px;font-weight:700;margin-bottom:4px}
+.plan-card .price{font-size:32px;font-weight:700;margin:12px 0}
+.plan-card .price span{font-size:14px;font-weight:400;color:var(--text2)}
+.plan-card ul{list-style:none;margin:16px 0}
+.plan-card ul li{padding:6px 0;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.plan-card ul li::before{content:'✓';color:var(--green);font-weight:700}
+
+/* ALERTS */
+.alert-row{padding:12px 16px;border-radius:var(--radius);margin-bottom:8px;display:flex;align-items:center;gap:10px;font-size:13px}
+.alert-critical{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red)}
+.alert-warning{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--yellow)}
+.alert-success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green)}
+
+/* ACTIVITY */
+.activity-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.activity-text{flex:1;font-size:13px}
+.activity-time{font-size:11px;color:var(--text3);white-space:nowrap}
+
+/* QUICK ACTIONS */
+.quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.quick-action-btn{display:flex;align-items:center;gap:8px;padding:12px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text);font-size:13px;font-weight:500;transition:all .15s}
+.quick-action-btn:hover{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
+.quick-action-btn .qa-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius)}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* NOTIF CARD */
+.notif-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:8px;display:flex;gap:12px;align-items:start}
+.notif-card .unread{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+.sidebar{transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0}
+.hamburger{display:flex}
+.stats-grid{grid-template-columns:repeat(2,1fr)}
+.header-search{display:none}
+.detail-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+.stats-grid{grid-template-columns:1fr 1fr}
+.detail-grid{grid-template-columns:1fr}
+.card-body{padding:12px}
+.main-scroll{padding:16px}
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">M</div>
-      <div><h1>MarketLens</h1><p>Admin Center</p></div>
-    </div>
-    <nav class="sidebar-nav" id="sidebar-nav">
-      <div class="nav-item active" data-section="dashboard" onclick="nav('dashboard')"><span class="icon">&#9632;</span> Dashboard</div>
-      <div class="nav-item" data-section="users" onclick="nav('users')"><span class="icon">&#9787;</span> Users</div>
-      <div class="nav-item" data-section="plans" onclick="nav('plans')"><span class="icon">&#9733;</span> Plans</div>
-      <div class="nav-item" data-section="subscriptions" onclick="nav('subscriptions')"><span class="icon">&#8635;</span> Subscriptions</div>
-      <div class="nav-item" data-section="products" onclick="nav('products')"><span class="icon">&#9776;</span> Products</div>
-      <div class="nav-item" data-section="research" onclick="nav('research')"><span class="icon">&#128269;</span> Research</div>
-      <div class="nav-item" data-section="watchlist" onclick="nav('watchlist')"><span class="icon">&#9734;</span> Watchlists</div>
-      <div class="nav-item" data-section="features" onclick="nav('features')"><span class="icon">&#9873;</span> Features</div>
-      <div class="nav-item" data-section="health" onclick="nav('health')"><span class="icon">&#9829;</span> Health</div>
-      <div class="nav-item" data-section="jobs" onclick="nav('jobs')"><span class="icon">&#9881;</span> Jobs</div>
-      <div class="nav-item" data-section="audit" onclick="nav('audit')"><span class="icon">&#9776;</span> Audit</div>
-      <div class="nav-item" data-section="settings" onclick="nav('settings')"><span class="icon">&#9881;</span> Settings</div>
-    </nav>
-    <div class="sidebar-footer">
-      <div id="admin-info"></div>
-      <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="logout()">Sign Out</button>
-    </div>
-  </aside>
 
-  <div class="main" id="main">
-    <div class="main-header">
-      <button class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
-      <h2 id="page-title">Dashboard</h2>
-    </div>
-    <div class="main-scroll" id="main-scroll">
-      <!-- LOGIN -->
-      <div id="login-screen">
-        <div class="card" style="max-width:400px;margin:60px auto">
-          <h3 style="margin-bottom:16px">Admin Login</h3>
-          <div class="form-group"><label>Username</label><input class="input" id="login-user" value="admin"></div>
-          <div class="form-group"><label>Password</label><input class="input" id="login-pass" type="password" value="admin123"></div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Sign In</button>
-        </div>
-      </div>
-
-      <!-- DASHBOARD -->
-      <div id="section-dashboard" class="section"><div class="stats-grid" id="dash-stats"></div><div class="card"><h3 style="margin-bottom:12px">Recent Research Jobs</h3><div class="table-wrap"><table><thead><tr><th>User</th><th>Query</th><th>Status</th><th>Results</th><th>Credits</th><th>Time</th></tr></thead><tbody id="dash-research"></tbody></table></div></div></div>
-
-      <!-- USERS -->
-      <div id="section-users" class="section">
-        <div class="search-bar"><input class="input" id="user-search" placeholder="Search users..." oninput="debounced(loadUsers)()"><select class="input" style="max-width:150px" id="user-status-filter" onchange="loadUsers()"><option value="">All</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Tier</th><th>Credits</th><th>Status</th><th>Actions</th></tr></thead><tbody id="users-table"></tbody></table></div></div>
-        <div class="pagination" id="users-pagination"></div>
-      </div>
-
-      <!-- USER DETAIL (hidden by default) -->
-      <div id="section-user-detail" class="section">
-        <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
-          <button class="btn btn-ghost btn-sm" onclick="nav('users')">&#8592; Back</button>
-          <h3 id="user-detail-name"></h3>
-        </div>
-        <div class="tab-bar" id="user-detail-tabs"></div>
-        <div id="user-detail-content"></div>
-      </div>
-
-      <!-- PLANS -->
-      <div id="section-plans" class="section"><div class="stats-grid" id="plans-grid"></div></div>
-
-      <!-- SUBSCRIPTIONS -->
-      <div id="section-subscriptions" class="section">
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Tier</th><th>Credits Used</th><th>Credits Limit</th><th>Research Used</th><th>Active</th><th>Actions</th></tr></thead><tbody id="subs-table"></tbody></table></div></div>
-        <div class="pagination" id="subs-pagination"></div>
-      </div>
-
-      <!-- PRODUCTS -->
-      <div id="section-products" class="section">
-        <div class="search-bar"><input class="input" id="product-search" placeholder="Search..." oninput="debounced(loadProducts)()"></div>
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>ASIN</th><th>Name</th><th>Category</th><th>Price</th><th>Rating</th><th>AI</th><th>Traffic</th></tr></thead><tbody id="products-table"></tbody></table></div></div>
-        <div class="pagination" id="products-pagination"></div>
-      </div>
-
-      <!-- RESEARCH -->
-      <div id="section-research" class="section">
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Query</th><th>Market</th><th>Status</th><th>Results</th><th>AI</th><th>Credits</th><th>Time</th></tr></thead><tbody id="research-table"></tbody></table></div></div>
-        <div class="pagination" id="research-pagination"></div>
-      </div>
-
-      <!-- WATCHLIST -->
-      <div id="section-watchlist" class="section">
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>ASIN</th><th>Name</th><th>Price</th><th>AI</th><th>Traffic</th><th>Added</th></tr></thead><tbody id="watchlist-table"></tbody></table></div></div>
-        <div class="pagination" id="watchlist-pagination"></div>
-      </div>
-
-      <!-- FEATURES -->
-      <div id="section-features" class="section">
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>Flag</th><th>Description</th><th>Scope</th><th>Rollout</th><th>Enabled</th><th>Toggle</th></tr></thead><tbody id="features-table"></tbody></table></div></div>
-      </div>
-
-      <!-- HEALTH -->
-      <div id="section-health" class="section"><div class="health-grid" id="health-grid"></div></div>
-
-      <!-- JOBS -->
-      <div id="section-jobs" class="section">
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Query</th><th>Status</th><th>Results</th><th>Credits</th><th>Duration</th><th>Created</th></tr></thead><tbody id="jobs-table"></tbody></table></div></div>
-        <div class="pagination" id="jobs-pagination"></div>
-      </div>
-
-      <!-- AUDIT -->
-      <div id="section-audit" class="section">
-        <div class="card" id="audit-logs"></div>
-        <div class="pagination" id="audit-pagination"></div>
-      </div>
-
-      <!-- SETTINGS -->
-      <div id="section-settings" class="section"><div class="card" id="settings-list"></div></div>
-    </div>
-  </div>
+<!-- LOGIN -->
+<div id="login-wrap" class="login-wrap">
+<div class="login-card">
+<div class="logo">📊</div>
+<h1>MarketLens</h1>
+<p class="sub">Admin Center — Sign in to continue</p>
+<div id="login-error" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:10px;border-radius:var(--radius);margin-bottom:16px;font-size:13px"></div>
+<div class="form-group">
+<label>Username</label>
+<input type="text" id="login-user" class="input" placeholder="admin" autocomplete="username">
+</div>
+<div class="form-group">
+<label>Password</label>
+<input type="password" id="login-pass" class="input" placeholder="••••••••" autocomplete="current-password">
+</div>
+<button id="login-btn" class="btn btn-primary" style="width:100%;justify-content:center;padding:10px">Sign In</button>
+</div>
 </div>
 
-<div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
+<!-- APP -->
+<div id="app" style="display:none">
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="sidebar">
+<div class="sidebar-brand">
+<div class="logo-icon">M</div>
+<span>MarketLens Admin</span>
+</div>
+<nav class="sidebar-nav">
+<div class="nav-section">Overview</div>
+<div class="nav-item active" data-section="dashboard" onclick="navigate('dashboard')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+Dashboard
+</div>
+<div class="nav-section">Business</div>
+<div class="nav-item" data-section="users" onclick="navigate('users')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+Users
+</div>
+<div class="nav-item" data-section="subscriptions" onclick="navigate('subscriptions')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+Subscriptions
+</div>
+<div class="nav-item" data-section="plans" onclick="navigate('plans')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+Plans
+</div>
+<div class="nav-item" data-section="credits" onclick="navigate('credits')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10l4-4 4 4M8 14l4 4 4-4"/></svg>
+AI Credits
+</div>
+<div class="nav-section">Data</div>
+<div class="nav-item" data-section="products" onclick="navigate('products')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+Products
+</div>
+<div class="nav-item" data-section="research" onclick="navigate('research')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+Research
+</div>
+<div class="nav-item" data-section="watchlist" onclick="navigate('watchlist')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+Watchlist
+</div>
+<div class="nav-section">Platform</div>
+<div class="nav-item" data-section="features" onclick="navigate('features')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+Features
+</div>
+<div class="nav-item" data-section="jobs" onclick="navigate('jobs')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+Jobs
+</div>
+<div class="nav-item" data-section="audit" onclick="navigate('audit')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+Audit Logs
+</div>
+<div class="nav-section">Infrastructure</div>
+<div class="nav-item" data-section="health" onclick="navigate('health')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+Health
+</div>
+<div class="nav-item" data-section="settings" onclick="navigate('settings')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+Settings
+</div>
+</nav>
+<div class="sidebar-footer">
+<div class="avatar" id="sb-avatar">A</div>
+<div class="info">
+<div class="name" id="sb-name">Admin</div>
+<div class="role" id="sb-role">Super Admin</div>
+</div>
+<button class="logout-btn" onclick="logout()" title="Sign out">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+</button>
+</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+<header class="main-header">
+<button class="hamburger" onclick="toggleSidebar()">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+<div class="header-title">Admin Center</div>
+<div class="header-search">
+<span class="search-icon">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+</span>
+<input type="text" id="global-search" placeholder="Search... (Ctrl+K)" onfocus="openCmdPalette()">
+<span class="shortcut">Ctrl+K</span>
+</div>
+<div class="header-right">
+<div style="display:flex;align-items:center;gap:6px">
+<span class="status-dot"></span>
+<span class="status-text">Operational</span>
+</div>
+<button class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+<span class="notif-badge" id="notif-count" style="display:none">0</span>
+</button>
+<div class="admin-menu">
+<button class="admin-btn" onclick="toggleAdminMenu()">
+<div class="avatar-sm" id="hdr-avatar">A</div>
+<span id="hdr-name">Admin</span>
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+</button>
+<div class="admin-dropdown" id="admin-dropdown">
+<button onclick="logout()">Sign Out</button>
+</div>
+</div>
+</div>
+</header>
+
+<div class="main-scroll" id="main-scroll">
+
+<!-- DASHBOARD -->
+<div id="section-dashboard" class="section active">
+<div class="stats-grid" id="dash-stats"></div>
+<div class="health-strip" id="dash-health"></div>
+<div id="dash-alerts" style="margin-bottom:24px"></div>
+<div class="quick-actions">
+<button class="quick-action-btn" onclick="navigate('users')"><div class="qa-icon" style="background:var(--accent-dim);color:var(--accent)">👥</div>Manage Users</button>
+<button class="quick-action-btn" onclick="navigate('research')"><div class="qa-icon" style="background:rgba(34,197,94,.15);color:var(--green)">🔬</div>Research Jobs</button>
+<button class="quick-action-btn" onclick="navigate('health')"><div class="qa-icon" style="background:rgba(59,130,246,.15);color:var(--blue)">💓</div>System Health</button>
+<button class="quick-action-btn" onclick="navigate('settings')"><div class="qa-icon" style="background:rgba(245,158,11,.15);color:var(--yellow)">⚙️</div>Settings</button>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+<div class="card">
+<div class="card-header"><h2>Live Activity</h2></div>
+<div class="card-body" id="dash-activity"><div class="skeleton" style="height:200px"></div></div>
+</div>
+<div class="card">
+<div class="card-header"><h2>System Status</h2></div>
+<div class="card-body" id="dash-status"><div class="skeleton" style="height:200px"></div></div>
+</div>
+</div>
+</div>
+
+<!-- USERS -->
+<div id="section-users" class="section">
+<div class="search-bar">
+<input type="text" class="input" id="users-search" placeholder="Search users..." oninput="debouncedLoadUsers()">
+<select class="input" id="users-status" style="max-width:160px" onchange="loadUsers()">
+<option value="">All Status</option>
+<option value="active">Active</option>
+<option value="suspended">Suspended</option>
+<option value="pending">Pending</option>
+</select>
+</div>
+<div class="card">
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Tier</th><th>Credits</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody id="users-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="users-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- USER DETAIL -->
+<div id="section-user-detail" class="section">
+<button class="btn btn-ghost" onclick="navigate('users')" style="margin-bottom:16px">← Back to Users</button>
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap">
+<h2 id="ud-name" style="font-size:22px;font-weight:700">User</h2>
+<span id="ud-badge" class="badge"></span>
+<span id="ud-status-badge" class="badge"></span>
+</div>
+<div class="tab-bar" id="ud-tabs">
+<button class="tab-btn active" onclick="udTab('overview')">Overview</button>
+<button class="tab-btn" onclick="udTab('subscription')">Subscription</button>
+<button class="tab-btn" onclick="udTab('activity')">Activity</button>
+<button class="tab-btn" onclick="udTab('security')">Security</button>
+</div>
+<div id="ud-tab-overview" class="tab-content active"></div>
+<div id="ud-tab-subscription" class="tab-content"></div>
+<div id="ud-tab-activity" class="tab-content"></div>
+<div id="ud-tab-security" class="tab-content"></div>
+</div>
+
+<!-- PLANS -->
+<div id="section-plans" class="section">
+<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Subscription Plans</h2>
+<div id="plans-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px"></div>
+</div>
+
+<!-- SUBSCRIPTIONS -->
+<div id="section-subscriptions" class="section">
+<div class="search-bar">
+<select class="input" id="subs-status" style="max-width:160px" onchange="loadSubs()">
+<option value="">All Status</option>
+<option value="active">Active</option>
+<option value="cancelled">Cancelled</option>
+<option value="expired">Expired</option>
+</select>
+</div>
+<div class="card">
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>Tier</th><th>Credits Used</th><th>Credits Limit</th><th>Research Used</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody id="subs-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="subs-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- PRODUCTS -->
+<div id="section-products" class="section">
+<div class="search-bar">
+<input type="text" class="input" id="products-search" placeholder="Search products..." oninput="debouncedLoadProducts()">
+</div>
+<div class="card">
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>ASIN</th><th>Name</th><th>Category</th><th>Price</th><th>Rating</th><th>AI Score</th><th>Traffic Light</th></tr></thead>
+<tbody id="products-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="products-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- RESEARCH -->
+<div id="section-research" class="section">
+<div class="search-bar">
+<select class="input" id="research-status" style="max-width:160px" onchange="loadResearch()">
+<option value="">All Status</option>
+<option value="completed">Completed</option>
+<option value="running">Running</option>
+<option value="failed">Failed</option>
+<option value="pending">Pending</option>
+</select>
+</div>
+<div class="card">
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>Query</th><th>Market</th><th>Status</th><th>Results</th><th>AI Used</th><th>Credits</th><th>Time</th></tr></thead>
+<tbody id="research-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="research-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- WATCHLIST -->
+<div id="section-watchlist" class="section">
+<div class="card">
+<div class="card-header"><h2>Watchlist</h2></div>
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>ASIN</th><th>Name</th><th>Price</th><th>AI Score</th><th>Traffic Light</th><th>Added</th></tr></thead>
+<tbody id="watchlist-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="watchlist-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- FEATURES -->
+<div id="section-features" class="section">
+<div class="card">
+<div class="card-header"><h2>Feature Flags</h2></div>
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>Flag Name</th><th>Description</th><th>Scope</th><th>Rollout %</th><th>Enabled</th><th>Actions</th></tr></thead>
+<tbody id="features-tbody"></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<!-- JOBS -->
+<div id="section-jobs" class="section">
+<div class="search-bar">
+<select class="input" id="jobs-status" style="max-width:160px" onchange="loadJobs()">
+<option value="">All Status</option>
+<option value="completed">Completed</option>
+<option value="running">Running</option>
+<option value="failed">Failed</option>
+<option value="pending">Pending</option>
+</select>
+</div>
+<div class="card">
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>Query</th><th>Status</th><th>Results</th><th>Credits</th><th>Duration</th><th>Created</th></tr></thead>
+<tbody id="jobs-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="jobs-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- AUDIT -->
+<div id="section-audit" class="section">
+<div class="card">
+<div class="card-header"><h2>Audit Logs</h2></div>
+<div class="card-body" id="audit-body"></div>
+<div style="padding:0 20px 20px">
+<div class="pagination" id="audit-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- HEALTH -->
+<div id="section-health" class="section">
+<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">System Health</h2>
+<div id="health-grid" class="detail-grid"></div>
+<div class="card" style="margin-top:24px">
+<div class="card-header"><h2>Health Details</h2></div>
+<div class="card-body" id="health-details"></div>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div id="section-settings" class="section">
+<div class="card">
+<div class="card-header"><h2>System Settings</h2></div>
+<div class="card-body" id="settings-body"></div>
+</div>
+</div>
+
+<!-- CREDITS (reuses users with credit focus) -->
+<div id="section-credits" class="section">
+<div class="search-bar">
+<input type="text" class="input" id="credits-search" placeholder="Search by user..." oninput="debouncedLoadCredits()">
+</div>
+<div class="card">
+<div class="card-header"><h2>AI Credits Overview</h2></div>
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>Tier</th><th>Credits Used</th><th>Credits Limit</th><th>Usage</th><th>Actions</th></tr></thead>
+<tbody id="credits-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="credits-pagination"></div>
+</div>
+</div>
+</div>
+
+</div><!-- main-scroll -->
+</div><!-- main -->
+</div><!-- app -->
+
+<!-- COMMAND PALETTE -->
+<div id="cmd-palette" class="cmd-palette" onclick="if(event.target===this)closeCmdPalette()">
+<div class="cmd-box">
+<input type="text" class="cmd-input" id="cmd-input" placeholder="Search users, products, research..." oninput="cmdSearch(this.value)">
+<div class="cmd-results" id="cmd-results">
+<div class="cmd-group">Quick Navigation</div>
+<div class="cmd-item" onclick="navigate('dashboard');closeCmdPalette()"><span class="cmd-icon">📊</span>Dashboard</div>
+<div class="cmd-item" onclick="navigate('users');closeCmdPalette()"><span class="cmd-icon">👥</span>Users</div>
+<div class="cmd-item" onclick="navigate('products');closeCmdPalette()"><span class="cmd-icon">📦</span>Products</div>
+<div class="cmd-item" onclick="navigate('research');closeCmdPalette()"><span class="cmd-icon">🔬</span>Research</div>
+<div class="cmd-item" onclick="navigate('health');closeCmdPalette()"><span class="cmd-icon">💓</span>Health</div>
+</div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div id="modal-credit" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+<div class="modal">
+<h3 id="modal-credit-title">Adjust Credits</h3>
+<div class="form-group">
+<label>Amount</label>
+<input type="number" class="input" id="modal-credit-amount" placeholder="Enter amount">
+</div>
+<div class="form-group">
+<label>Reason</label>
+<input type="text" class="input" id="modal-credit-reason" placeholder="Reason for adjustment">
+</div>
+<div class="modal-actions">
+<button class="btn" onclick="document.getElementById('modal-credit').classList.remove('active')">Cancel</button>
+<button class="btn btn-primary" id="modal-credit-apply" onclick="applyCreditAdjust()">Apply</button>
+</div>
+</div>
+</div>
+
+<div id="modal-plan" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+<div class="modal">
+<h3>Change Plan</h3>
+<div class="form-group">
+<label>New Tier</label>
+<select class="input" id="modal-plan-tier">
+<option value="free">Free</option>
+<option value="starter">Starter</option>
+<option value="pro">Pro</option>
+<option value="enterprise">Enterprise</option>
+</select>
+</div>
+<div class="form-group">
+<label>Reason</label>
+<input type="text" class="input" id="modal-plan-reason" placeholder="Reason for plan change">
+</div>
+<div class="modal-actions">
+<button class="btn" onclick="document.getElementById('modal-plan').classList.remove('active')">Cancel</button>
+<button class="btn btn-primary" onclick="applyPlanChange()">Change Plan</button>
+</div>
+</div>
+</div>
+
+<div id="modal-confirm" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+<div class="modal">
+<h3 id="confirm-title">Confirm Action</h3>
+<p id="confirm-msg" style="color:var(--text2);margin-bottom:20px;font-size:14px"></p>
+<div class="modal-actions">
+<button class="btn" onclick="document.getElementById('modal-confirm').classList.remove('active')">Cancel</button>
+<button class="btn btn-danger" id="confirm-btn" onclick="">Confirm</button>
+</div>
+</div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
 
 <script>
-const API=location.origin;let token=localStorage.getItem('admin_token'),adminData=null;
-const _dt={};function debounced(fn,k){return()=>{clearTimeout(_dt[k]);_dt[k]=setTimeout(fn,300)}}
-async function api(p,o={}){const h={'Content-Type':'application/json',...o.headers};if(token)h['Authorization']='Bearer '+token;const r=await fetch(API+p,{...o,headers:h});if(r.status===401){logout();throw new Error('Unauthorized')}if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||r.statusText)}return r.json()}
-function toast(m,t='info'){const e=document.createElement('div');e.className='toast toast-'+t;e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),3000)}
-function fmtD(d){return d?new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'-'}
-function fmtDT(d){return d?new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'-'}
-function bCls(s){return s==='active'||s==='completed'||s==='running'?'badge-green':s==='failed'||s==='cancelled'?'badge-red':s==='queued'||s==='pending'?'badge-yellow':'badge-gray'}
-function showModal(h){document.getElementById('modal-content').innerHTML=h;document.getElementById('modal-overlay').classList.add('active')}
-function closeModal(){document.getElementById('modal-overlay').classList.remove('active')}
-document.getElementById('modal-overlay').onclick=e=>{if(e.target===e.currentTarget)closeModal()};
-function gv(id){return document.getElementById(id).value}
-function gf(id){return parseFloat(document.getElementById(id).value)||0}
-function gi(id){return parseInt(document.getElementById(id).value)||0}
+let TOKEN=localStorage.getItem('admin_token')||'';
+let CURRENT_ADMIN=null;
+let CURRENT_SECTION='dashboard';
+let CURRENT_USER_ID=null;
+let udCurrentTab='overview';
+let udData=null;
 
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-overlay').classList.toggle('active');document.getElementById('hamburger').classList.toggle('open')}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('active');document.getElementById('hamburger').classList.remove('open')}
-function nav(n){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));const sec=document.getElementById('section-'+n);if(sec)sec.classList.add('active');const ni=document.querySelector(`.nav-item[data-section="${n}"]`);if(ni)ni.classList.add('active');const titles={dashboard:'Dashboard',users:'Users','user-detail':'User Detail',plans:'Plans',subscriptions:'Subscriptions',products:'Products',research:'Research',watchlist:'Watchlists',features:'Feature Flags',health:'Health',jobs:'Jobs',audit:'Audit Logs',settings:'Settings'};document.getElementById('page-title').textContent=titles[n]||n;closeSidebar();document.getElementById('main-scroll').scrollTop=0;const L={dashboard:loadDashboard,users:loadUsers,plans:loadPlans,subscriptions:loadSubscriptions,products:loadProducts,research:loadResearch,watchlist:loadWatchlist,features:loadFeatures,health:loadHealth,jobs:loadJobs,audit:loadAudit,settings:loadSettings};if(L[n])L[n]()}
+const P=10;
 
-async function doLogin(){try{const d=await api('/api/admin/auth/login',{method:'POST',body:JSON.stringify({username:gv('login-user'),password:gv('login-pass')})});token=d.token;localStorage.setItem('admin_token',token);adminData=d.admin;document.getElementById('login-screen').style.display='none';document.getElementById('admin-info').innerHTML=`<div style="font-weight:600">${d.admin.display_name||d.admin.username}</div><div style="font-size:11px;color:var(--muted)">${d.admin.role}</div>`;nav('dashboard')}catch(e){toast(e.message,'error')}}
-document.getElementById('login-pass').onkeydown=e=>{if(e.key==='Enter')doLogin()};
-function logout(){token=null;localStorage.removeItem('admin_token');document.getElementById('login-screen').style.display='block';document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('page-title').textContent='Admin Login'}
+function api(path,opts={}){
+const h={'Content-Type':'application/json',...opts.headers};
+if(TOKEN)h['Authorization']='Bearer '+TOKEN;
+return fetch(path,{...opts,headers:h}).then(r=>{
+if(r.status===401){logout();throw new Error('Unauthorized')}
+if(!r.ok)return r.json().then(e=>{throw new Error(e.error||e.message||'Request failed')}).catch(e=>{if(e.message==='Unauthorized')throw e;throw e});
+return r.json();
+});
+}
+
+function toast(msg,type='info'){
+const c=document.getElementById('toast-container');
+const t=document.createElement('div');
+t.className='toast toast-'+type;
+t.textContent=msg;
+c.appendChild(t);
+setTimeout(()=>t.remove(),3500);
+}
+
+function fmtD(d){if(!d)return'-';const x=new Date(d);return x.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}
+function fmtDT(d){if(!d)return'-';const x=new Date(d);return x.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+function bCls(s){return'badge badge-'+({active:'green',suspended:'red',pending:'yellow',completed:'green',failed:'red',running:'blue',cancelled:'gray',expired:'yellow',operational:'green',online:'green',offline:'red',degraded:'yellow'}[s]||'gray')}
+function tlBadge(t){if(!t)return'<span class="badge badge-gray">N/A</span>';const c={green:'green',red:'red',yellow:'yellow'};return'<span class="badge badge-'+(c[t]||'gray')+'">'+t.toUpperCase()+'</span>'}
+function trunc(s,n){if(!s)return'-';return s.length>n?s.substring(0,n)+'...':s}
+
+function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms)}}
+const debouncedLoadUsers=debounce(()=>loadUsers(),300);
+const debouncedLoadProducts=debounce(()=>loadProducts(),300);
+const debouncedLoadCredits=debounce(()=>loadCredits(),300);
+
+function pag(el,total,page,perPage,fn){
+const pages=Math.ceil(total/perPage);
+if(pages<=1){el.innerHTML='';return}
+let h='<button '+(page<=1?'disabled':'')+' onclick="'+fn+'('+(page-1)+')">← Prev</button>';
+const start=Math.max(1,page-2);const end=Math.min(pages,page+2);
+if(start>1)h+='<button onclick="'+fn+'(1)">1</button>';
+if(start>2)h+='<span class="page-info">...</span>';
+for(let i=start;i<=end;i++)h+='<button class="'+(i===page?'active':'')+'" onclick="'+fn+'('+i+')">'+i+'</button>';
+if(end<pages-1)h+='<span class="page-info">...</span>';
+if(end<pages)h+='<button onclick="'+fn+'('+pages+')">'+pages+'</button>';
+h+='<button '+(page>=pages?'disabled':'')+' onclick="'+fn+'('+(page+1)+')">Next →</button>';
+h+='<span class="page-info">'+total+' total</span>';
+el.innerHTML=h;
+}
+
+function toggleSidebar(){
+document.getElementById('sidebar').classList.toggle('open');
+document.getElementById('sidebar-overlay').classList.toggle('active');
+}
+function closeSidebar(){
+document.getElementById('sidebar').classList.remove('open');
+document.getElementById('sidebar-overlay').classList.remove('active');
+}
+
+function navigate(section,data){
+CURRENT_SECTION=section;
+closeSidebar();
+document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+const el=document.getElementById('section-'+section);
+if(el)el.classList.add('active');
+const nav=document.querySelector('[data-section="'+section+'"]');
+if(nav)nav.classList.add('active');
+document.getElementById('main-scroll').scrollTop=0;
+
+if(section==='dashboard')loadDashboard();
+else if(section==='users'){CURRENT_USER_ID=null;loadUsers()}
+else if(section==='user-detail')loadUserDetail(data);
+else if(section==='plans')loadPlans();
+else if(section==='subscriptions')loadSubs();
+else if(section==='products')loadProducts();
+else if(section==='research')loadResearch();
+else if(section==='watchlist')loadWatchlist();
+else if(section==='features')loadFeatures();
+else if(section==='health')loadHealth();
+else if(section==='jobs')loadJobs();
+else if(section==='audit')loadAudit();
+else if(section==='settings')loadSettings();
+else if(section==='credits')loadCredits();
+}
+
+// AUTH
+document.getElementById('login-btn').onclick=doLogin;
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('login-user').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+function doLogin(){
+const u=document.getElementById('login-user').value.trim();
+const p=document.getElementById('login-pass').value;
+if(!u||!p){showLoginError('Enter username and password');return}
+const btn=document.getElementById('login-btn');
+btn.textContent='Signing in...';btn.disabled=true;
+fetch('/api/admin/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+.then(r=>r.json().then(d=>({ok:r.ok,data:d})))
+.then(({ok,data})=>{
+if(!ok)throw new Error(data.error||'Login failed');
+TOKEN=data.token;localStorage.setItem('admin_token',TOKEN);
+showApp();
+}).catch(e=>{showLoginError(e.message)}).finally(()=>{btn.textContent='Sign In';btn.disabled=false});
+}
+
+function showLoginError(msg){
+const el=document.getElementById('login-error');
+el.textContent=msg;el.style.display='block';
+}
+
+function logout(){
+TOKEN='';localStorage.removeItem('admin_token');
+document.getElementById('login-wrap').style.display='flex';
+document.getElementById('app').style.display='none';
+document.getElementById('login-error').style.display='none';
+}
+
+function showApp(){
+document.getElementById('login-wrap').style.display='none';
+document.getElementById('app').style.display='block';
+loadMe();
+navigate('dashboard');
+}
+
+function loadMe(){
+api('/api/admin/auth/me').then(d=>{
+CURRENT_ADMIN=d;
+document.getElementById('sb-avatar').textContent=(d.username||'A')[0].toUpperCase();
+document.getElementById('sb-name').textContent=d.username||'Admin';
+document.getElementById('sb-role').textContent=d.role||'Admin';
+document.getElementById('hdr-avatar').textContent=(d.username||'A')[0].toUpperCase();
+document.getElementById('hdr-name').textContent=d.username||'Admin';
+}).catch(()=>logout());
+}
 
 // DASHBOARD
-async function loadDashboard(){try{const d=await api('/api/admin/dashboard');document.getElementById('dash-stats').innerHTML=[
-{l:'Users',v:d.users.total,s:d.users.active+' active'},{l:'Products',v:d.products.total,s:d.products.tracked+' tracked'},
-{l:'Research',v:d.research.total,s:d.research.running+' running'},{l:'Listings',v:d.listings.total},
-{l:'AI Credits Used',v:d.ai_usage.total_credits},{l:'MRR',v:'$'+(d.revenue.mrr||0).toFixed(2)}
-].map(s=>`<div class="stat-card"><div class="label">${s.l}</div><div class="value">${s.v}</div>${s.s?`<div class="sub">${s.s}</div>`:''}</div>`).join('');
-const r=await api('/api/admin/research?per_page=5');document.getElementById('dash-research').innerHTML=r.jobs.map(j=>`<tr><td>${j.username||'?'}</td><td>${(j.query||'').substring(0,30)}</td><td><span class="badge ${bCls(j.status)}">${j.status}</span></td><td>${j.result_count}</td><td>${j.ai_credits_cost}</td><td>${fmtDT(j.created_at)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No research yet</td></tr>'}catch(e){toast(e.message,'error')}}
+function loadDashboard(){
+document.getElementById('dash-stats').innerHTML=Array(6).fill('<div class="stat-card"><div class="skeleton" style="height:80px"></div></div>').join('');
+document.getElementById('dash-health').innerHTML='';
+document.getElementById('dash-activity').innerHTML='<div class="skeleton" style="height:200px"></div>';
+document.getElementById('dash-status').innerHTML='<div class="skeleton" style="height:200px"></div>';
+
+api('/api/admin/dashboard').then(d=>{
+const s=d.stats||d;
+const stats=[
+{label:'Total Users',value:s.total_users||0,icon:'👥',bg:'var(--accent-dim)',color:'var(--accent)'},
+{label:'Active Users',value:s.active_users||0,icon:'✅',bg:'rgba(34,197,94,.15)',color:'var(--green)'},
+{label:'Products',value:s.total_products||s.products||0,icon:'📦',bg:'rgba(59,130,246,.15)',color:'var(--blue)'},
+{label:'Research Jobs',value:s.total_research||s.research_jobs||0,icon:'🔬',bg:'rgba(168,85,247,.15)',color:'var(--purple)'},
+{label:'Listings',value:s.total_listings||s.listings||0,icon:'📋',bg:'rgba(245,158,11,.15)',color:'var(--yellow)'},
+{label:'MRR',value:'$'+(s.mrr||s.monthly_revenue||0).toLocaleString(),icon:'💰',bg:'rgba(34,197,94,.15)',color:'var(--green)'}
+];
+document.getElementById('dash-stats').innerHTML=stats.map(st=>`
+<div class="stat-card">
+<div class="icon" style="background:${st.bg};color:${st.color}">${st.icon}</div>
+<div class="label">${st.label}</div>
+<div class="value">${st.value}</div>
+</div>`).join('');
+}).catch(()=>{document.getElementById('dash-stats').innerHTML='<div class="empty"><p>Failed to load dashboard</p></div>'});
+
+api('/api/admin/health').then(d=>{
+const items=[
+{name:'Database',val:d.db_status||d.database||'OK',ok:!(d.db_status==='error'||d.database==='error')},
+{name:'CPU',val:d.cpu||d.cpu_usage||'N/A',ok:true},
+{name:'Memory',val:d.memory||d.memory_usage||'N/A',ok:true},
+{name:'Disk',val:d.disk||d.disk_usage||'N/A',ok:true}
+];
+document.getElementById('dash-health').innerHTML=items.map(i=>`
+<div class="health-item">
+<div class="dot ${i.ok?'ok':'err'}"></div>
+<div><div class="hlabel">${i.name}</div><div class="hval">${i.val}</div></div>
+</div>`).join('');
+
+document.getElementById('dash-status').innerHTML=`
+<div style="padding:4px 0">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="status-dot"></span><span style="font-weight:600">All Systems Operational</span></div>
+<div style="font-size:12px;color:var(--text3)">Last checked: ${fmtDT(d.timestamp||d.checked_at||new Date())}</div>
+${d.db_response_time?'<div style="margin-top:8px;font-size:13px">DB Response: <strong>'+d.db_response_time+'</strong></div>':''}
+${d.uptime?'<div style="margin-top:4px;font-size:13px">Uptime: <strong>'+d.uptime+'</strong></div>':''}
+</div>`;
+}).catch(()=>{document.getElementById('dash-health').innerHTML='<div class="empty"><p>Health data unavailable</p></div>'});
+
+api('/api/admin/research?per_page=8').then(d=>{
+const jobs=d.research||d.data||d.jobs||[];
+if(!jobs.length){document.getElementById('dash-activity').innerHTML='<div class="empty"><p>No recent activity</p></div>';return}
+document.getElementById('dash-activity').innerHTML=jobs.slice(0,8).map(j=>`
+<div class="activity-item">
+<div class="activity-icon" style="background:${j.status==='completed'?'rgba(34,197,94,.15)':j.status==='failed'?'rgba(239,68,68,.15)':'rgba(59,130,246,.15)'};color:${j.status==='completed'?'var(--green)':j.status==='failed'?'var(--red)':'var(--blue)'}">
+${j.status==='completed'?'✓':j.status==='failed'?'✗':'⟳'}</div>
+<div class="activity-text"><strong>${trunc(j.query||j.search_query||'',30)}</strong> <span style="color:var(--text3)">· ${j.market||j.category||'N/A'}</span></div>
+<div class="activity-time">${fmtDT(j.created_at||j.created)}</div>
+</div>`).join('');
+}).catch(()=>{document.getElementById('dash-activity').innerHTML='<div class="empty"><p>Activity unavailable</p></div>'});
+
+document.getElementById('dash-alerts').innerHTML='<div class="alert-row alert-success">✓ No critical issues detected</div>';
+}
 
 // USERS
-let userPage=1;
-async function loadUsers(page){if(page)userPage=page;const s=gv('user-search'),st=gv('user-status-filter');try{const d=await api(`/api/admin/users?page=${userPage}&per_page=25&search=${encodeURIComponent(s)}&status=${st}`);
-document.getElementById('users-table').innerHTML=d.users.map(u=>`<tr><td>${u.id}</td><td><a href="#" onclick="showUserDetail(${u.id});return false" style="color:var(--accent2);text-decoration:none">${u.username}</a></td><td>${u.email||'-'}</td><td><span class="badge badge-blue">${u.tier||'free'}</span></td><td>${u.ai_credits_used||0}/${u.ai_credits_limit||0}</td><td><span class="badge ${u.is_active?'badge-green':'badge-red'}">${u.is_active?'Active':'Suspended'}</span></td><td><button class="btn btn-sm btn-ghost" onclick="showUserDetail(${u.id})">View</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No users</td></tr>';
-pag('users-pagination',d.total,25,userPage,loadUsers)}catch(e){toast(e.message,'error')}}
+let usersPage=1;
+function loadUsers(page){
+usersPage=page||usersPage;
+const search=document.getElementById('users-search')?.value||'';
+const status=document.getElementById('users-status')?.value||'';
+const params=new URLSearchParams({page:usersPage,per_page:P});
+if(search)params.set('search',search);
+if(status)params.set('status',status);
+api('/api/admin/users?'+params).then(d=>{
+const users=d.users||d.data||[];
+const total=d.total||d.pagination?.total||users.length;
+document.getElementById('users-tbody').innerHTML=users.length?users.map(u=>`
+<tr>
+<td>${u.id}</td>
+<td><a href="#" onclick="event.preventDefault();navigate('user-detail',${u.id})">${trunc(u.username||'',20)}</a></td>
+<td>${trunc(u.email||'',25)}</td>
+<td><span class="badge badge-${({free:'gray',starter:'blue',pro:'purple',enterprise:'yellow'}[u.tier]||'gray')}">${(u.tier||'free').toUpperCase()}</span></td>
+<td class="tabular-nums">${u.ai_credits_used||0}/${u.ai_credits_limit||0}</td>
+<td><span class="${bCls(u.status)}">${u.status||'active'}</span></td>
+<td>
+<button class="btn btn-sm btn-ghost" onclick="navigate('user-detail',${u.id})">View</button>
+</td>
+</tr>`).join(''):'<tr><td colspan="7" class="empty">No users found</td></tr>';
+pag(document.getElementById('users-pagination'),total,usersPage,P,'loadUsers');
+}).catch(()=>{document.getElementById('users-tbody').innerHTML='<tr><td colspan="7" class="empty">Error loading users</td></tr>'});
+}
 
 // USER DETAIL
-let currentUserId=null;
-async function showUserDetail(uid){currentUserId=uid;nav('user-detail');try{const d=await api(`/api/admin/users/${uid}`);const u=d.user;const sub=d.subscription;const us=d.usage;const st=d.stats;
-document.getElementById('user-detail-name').textContent=u.username+' ('+u.email+')';
-const tabs=['overview','subscription','activity','security'];
-document.getElementById('user-detail-tabs').innerHTML=tabs.map(t=>`<button class="tab-btn ${t==='overview'?'active':''}" onclick="showUserTab('${t}',${uid})">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('');
-showUserTab('overview',uid)}catch(e){toast(e.message,'error')}}
+function loadUserDetail(id){
+CURRENT_USER_ID=id;
+udData=null;
+udCurrentTab='overview';
+document.querySelectorAll('#ud-tabs .tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+document.querySelectorAll('[id^="ud-tab-"]').forEach((c,i)=>c.classList.toggle('active',i===0));
 
-async function showUserTab(tab,uid){
-const d=await api(`/api/admin/users/${uid}`);
-const u=d.user;const sub=d.subscription;const us=d.usage;const st=d.stats;
-let html='';
-if(tab==='overview'){
-html=`<div class="detail-grid">
-<div class="detail-item"><div class="k">Status</div><div class="v"><span class="badge ${u.is_active?'badge-green':'badge-red'}">${u.is_active?'Active':'Suspended'}</span></div></div>
-<div class="detail-item"><div class="k">Plan</div><div class="v">${sub?sub.tier:'Free'}</div></div>
-<div class="detail-item"><div class="k">AI Credits</div><div class="v">${sub?sub.ai_credits_used:0}/${sub?sub.ai_credits_limit:0}</div><div class="usage-bar"><div class="fill" style="width:${sub?Math.min(100,sub.ai_credits_used/sub.ai_credits_limit*100):0}%;background:var(--accent)"></div></div></div>
-<div class="detail-item"><div class="k">Research</div><div class="v">${sub?sub.research_used:0}/${sub?sub.research_limit:0}</div><div class="usage-bar"><div class="fill" style="width:${sub?Math.min(100,sub.research_used/sub.research_limit*100):0}%;background:var(--blue)"></div></div></div>
-<div class="detail-item"><div class="k">Tracking</div><div class="v">${sub?sub.tracking_used:0}/${sub?sub.tracking_limit:0}</div><div class="usage-bar"><div class="fill" style="width:${sub?Math.min(100,sub.tracking_used/sub.tracking_limit*100):0}%;background:var(--green)"></div></div></div>
-<div class="detail-item"><div class="k">Listings</div><div class="v">${sub?sub.listing_gen_used:0}/${sub?sub.listing_gen_limit:0}</div><div class="usage-bar"><div class="fill" style="width:${sub?Math.min(100,sub.listing_gen_used/sub.listing_gen_limit*100):0}%;background:var(--yellow)"></div></div></div>
-<div class="detail-item"><div class="k">Products</div><div class="v">${st.products}</div></div>
-<div class="detail-item"><div class="k">Watchlist</div><div class="v">${st.watchlist}</div></div>
-<div class="detail-item"><div class="k">Tracking</div><div class="v">${st.tracking}</div></div>
-<div class="detail-item"><div class="k">Research Jobs</div><div class="v">${st.research}</div></div>
-<div class="detail-item"><div class="k">Listings</div><div class="v">${st.listings}</div></div>
-<div class="detail-item"><div class="k">Joined</div><div class="v">${fmtD(u.created_at)}</div></div>
-</div>
-<div class="card-header"><h3>Actions</h3></div>
-<div style="display:flex;gap:8px;flex-wrap:wrap">
-<button class="btn btn-sm ${u.is_active?'btn-danger':'btn-green'}" onclick="userAction(${uid},'${u.is_active?'suspend':'activate'}')">${u.is_active?'Suspend':'Activate'} Account</button>
-<button class="btn btn-sm btn-primary" onclick="showCreditModal(${uid})">Adjust Credits</button>
-<button class="btn btn-sm btn-yellow" onclick="showPlanModal(${uid},'${sub?sub.tier:'free'}')">Change Plan</button>
-</div>`;
-} else if(tab==='subscription'){
-html=`<div class="card"><h3 style="margin-bottom:12px">Subscription Details</h3>
-<div class="detail-grid">
-<div class="detail-item"><div class="k">Tier</div><div class="v">${sub?sub.tier:'Free'}</div></div>
-<div class="detail-item"><div class="k">Status</div><div class="v"><span class="badge ${sub&&sub.is_active?'badge-green':'badge-red'}">${sub&&sub.is_active?'Active':'Inactive'}</span></div></div>
-<div class="detail-item"><div class="k">Billing Cycle</div><div class="v">${sub?sub.billing_cycle:'-'}</div></div>
-<div class="detail-item"><div class="k">Expiry</div><div class="v">${sub?fmtD(sub.expiry_date):'-'}</div></div>
-</div></div>`;
-} else if(tab==='activity'){
-const acts=d.recent_actions||[];const res=d.recent_research||[];
-html=`<div class="card"><h3 style="margin-bottom:12px">Recent Research</h3><div class="table-wrap"><table><thead><tr><th>Query</th><th>Status</th><th>Results</th><th>Time</th></tr></thead><tbody>${res.map(r=>`<tr><td>${(r.query||'').substring(0,40)}</td><td><span class="badge ${bCls(r.status)}">${r.status}</span></td><td>${r.result_count}</td><td>${fmtDT(r.created_at)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No research yet</td></tr>'}</tbody></table></div></div>
-<div class="card"><h3 style="margin-bottom:12px">Admin Actions</h3>${acts.map(a=>`<div class="log-entry" style="border-color:${a.action.includes('suspend')?'var(--red)':a.action.includes('activate')?'var(--green)':'var(--blue)'}"><strong>${a.admin_username}</strong> - ${a.action} ${a.reason?'('+a.reason+')':''} <span style="color:var(--muted)">${fmtDT(a.created_at)}</span></div>`).join('')||'<div class="empty">No admin actions</div>'}</div>`;
-} else if(tab==='security'){
-html=`<div class="card"><h3 style="margin-bottom:12px">Security</h3>
-<div class="detail-grid">
-<div class="detail-item"><div class="k">Last Login</div><div class="v">${fmtDT(u.last_login)}</div></div>
-<div class="detail-item"><div class="k">Account Created</div><div class="v">${fmtD(u.created_at)}</div></div>
-</div></div>`;
+api('/api/admin/users/'+id).then(d=>{
+udData=d;
+document.getElementById('ud-name').textContent=d.username||'User';
+document.getElementById('ud-badge').className='badge badge-'+({free:'gray',starter:'blue',pro:'purple',enterprise:'yellow'}[d.tier]||'gray');
+document.getElementById('ud-badge').textContent=(d.tier||'free').toUpperCase();
+document.getElementById('ud-status-badge').className=bCls(d.status);
+document.getElementById('ud-status').textContent=d.status||'active';
+renderUdOverview();
+}).catch(()=>{toast('Failed to load user','error')});
 }
-document.getElementById('user-detail-content').innerHTML=html}
 
-async function userAction(uid,action){if(!confirm(action+' this user?'))return;try{await api(`/api/admin/users/${uid}/action`,{method:'POST',body:JSON.stringify({action})});toast('Done','success');showUserDetail(uid)}catch(e){toast(e.message,'error')}}
-function showCreditModal(uid){showModal(`<h3>Adjust AI Credits</h3><div class="form-group"><label>Amount (positive=add, negative=remove)</label><input class="input" id="credit-amount" type="number" value="100"></div><div class="form-group"><label>Reason</label><input class="input" id="credit-reason" value="Admin adjustment"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doCreditAdjust(${uid})">Apply</button></div>`)}
-async function doCreditAdjust(uid){const amt=gi('credit-amount');const reason=gv('credit-reason');const action=amt>=0?'add_credits':'remove_credits';try{await api(`/api/admin/users/${uid}/action`,{method:'POST',body:JSON.stringify({action,amount:Math.abs(amt),reason})});closeModal();toast('Credits updated','success');showUserDetail(uid)}catch(e){toast(e.message,'error')}}
-function showPlanModal(uid,currentTier){showModal(`<h3>Change Plan</h3><div class="form-group"><label>New Plan</label><select class="input" id="plan-select"><option value="free" ${currentTier==='free'?'selected':''}>Free</option><option value="pro" ${currentTier==='pro'?'selected':''}>Pro ($29.99/mo)</option><option value="business" ${currentTier==='business'?'selected':''}>Business ($79.99/mo)</option></select></div><div class="form-group"><label>Reason</label><input class="input" id="plan-reason" value="Plan change"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doPlanChange(${uid})">Change Plan</button></div>`)}
-async function doPlanChange(uid){const tier=gv('plan-select');const reason=gv('plan-reason');const action=tier==='free'?'downgrade_plan':'upgrade_plan';try{await api(`/api/admin/users/${uid}/action`,{method:'POST',body:JSON.stringify({action,tier,reason})});closeModal();toast('Plan changed','success');showUserDetail(uid)}catch(e){toast(e.message,'error')}}
+function udTab(tab){
+udCurrentTab=tab;
+document.querySelectorAll('#ud-tabs .tab-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===tab));
+document.querySelectorAll('[id^="ud-tab-"]').forEach(c=>c.classList.toggle('active',c.id==='ud-tab-'+tab));
+if(tab==='overview')renderUdOverview();
+else if(tab==='subscription')renderUdSubscription();
+else if(tab==='activity')renderUdActivity();
+else if(tab==='security')renderUdSecurity();
+}
+
+function usageBar(used,max,color){
+const pct=max>0?Math.min(100,Math.round(used/max*100)):0;
+const c=color||(pct>90?'var(--red)':pct>70?'var(--yellow)':'var(--accent)');
+return`<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${used} / ${max}</span><span>${pct}%</span></div><div class="usage-bar"><div class="fill" style="width:${pct}%;background:${c}"></div></div>`;
+}
+
+function renderUdOverview(){
+if(!udData)return;
+const d=udData;
+document.getElementById('ud-tab-overview').innerHTML=`
+<div class="detail-grid">
+<div class="detail-item"><div class="k">Status</div><div class="v"><span class="${bCls(d.status)}">${d.status||'active'}</span></div></div>
+<div class="detail-item"><div class="k">Plan</div><div class="v"><span class="badge badge-${({free:'gray',starter:'blue',pro:'purple',enterprise:'yellow'}[d.tier]||'gray')}">${(d.tier||'free').toUpperCase()}</span></div></div>
+<div class="detail-item"><div class="k">AI Credits</div><div class="v">${usageBar(d.ai_credits_used||0,d.ai_credits_limit||100)}</div></div>
+<div class="detail-item"><div class="k">Research</div><div class="v">${usageBar(d.research_used||0,d.research_limit||10)}</div></div>
+<div class="detail-item"><div class="k">Tracking</div><div class="v">${usageBar(d.tracking_used||0,d.tracking_limit||50)}</div></div>
+<div class="detail-item"><div class="k">Listings</div><div class="v">${usageBar(d.listings_used||0,d.listings_limit||100)}</div></div>
+<div class="detail-item"><div class="k">Products</div><div class="v">${d.products_count||d.total_products||0}</div></div>
+<div class="detail-item"><div class="k">Watchlist</div><div class="v">${d.watchlist_count||d.total_watchlist||0}</div></div>
+<div class="detail-item"><div class="k">Joined</div><div class="v">${fmtD(d.created_at||d.joined_at)}</div></div>
+<div class="detail-item"><div class="k">Email</div><div class="v">${d.email||'-'}</div></div>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+${d.status==='active'?`<button class="btn btn-danger" onclick="confirmAction('Suspend this user?','suspend',${d.id})">Suspend User</button>`
+:`<button class="btn btn-green" onclick="confirmAction('Activate this user?','activate',${d.id})">Activate User</button>`}
+<button class="btn btn-primary" onclick="openCreditModal(${d.id})">Adjust Credits</button>
+<button class="btn btn-yellow" onclick="openPlanModal(${d.id})">Change Plan</button>
+</div>`;
+}
+
+function renderUdSubscription(){
+if(!udData)return;
+const d=udData;
+document.getElementById('ud-tab-subscription').innerHTML=`
+<div class="detail-grid">
+<div class="detail-item"><div class="k">Current Tier</div><div class="v">${(d.tier||'free').toUpperCase()}</div></div>
+<div class="detail-item"><div class="k">Status</div><div class="v"><span class="${bCls(d.subscription_status||d.status)}">${d.subscription_status||d.status||'active'}</span></div></div>
+<div class="detail-item"><div class="k">Billing Cycle</div><div class="v">${d.billing_cycle||'monthly'}</div></div>
+<div class="detail-item"><div class="k">Expiry</div><div class="v">${fmtD(d.subscription_expiry||d.expiry_date)}</div></div>
+</div>
+<div class="card" style="margin-top:16px">
+<div class="card-header"><h2>Plan Limits</h2></div>
+<div class="card-body">
+<table>
+<thead><tr><th>Feature</th><th>Used</th><th>Limit</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td>AI Credits</td><td>${d.ai_credits_used||0}</td><td>${d.ai_credits_limit||100}</td><td style="width:200px">${usageBar(d.ai_credits_used||0,d.ai_credits_limit||100)}</td></tr>
+<tr><td>Research</td><td>${d.research_used||0}</td><td>${d.research_limit||10}</td><td>${usageBar(d.research_used||0,d.research_limit||10)}</td></tr>
+<tr><td>Tracking</td><td>${d.tracking_used||0}</td><td>${d.tracking_limit||50}</td><td>${usageBar(d.tracking_used||0,d.tracking_limit||50)}</td></tr>
+<tr><td>Listings</td><td>${d.listings_used||0}</td><td>${d.listings_limit||100}</td><td>${usageBar(d.listings_used||0,d.listings_limit||100)}</td></tr>
+</tbody>
+</table>
+</div>
+</div>`;
+}
+
+function renderUdActivity(){
+if(!udData)return;
+const d=udData;
+const jobs=d.recent_research||d.research_jobs||[];
+const actions=d.admin_actions||d.audit_logs||[];
+let h='';
+if(jobs.length){
+h+='<div class="card"><div class="card-header"><h2>Recent Research</h2></div><div class="card-body"><div class="table-wrap"><table><thead><tr><th>Query</th><th>Status</th><th>Results</th><th>Date</th></tr></thead><tbody>';
+jobs.forEach(j=>{h+=`<tr><td>${trunc(j.query||j.search_query||'',30)}</td><td><span class="${bCls(j.status)}">${j.status}</span></td><td>${j.results_count||j.results||0}</td><td>${fmtDT(j.created_at)}</td></tr>`});
+h+='</tbody></table></div></div></div>';
+}else{h+='<div style="color:var(--text3);margin-bottom:16px">No recent research</div>'}
+
+if(actions.length){
+h+='<div class="card"><div class="card-header"><h2>Admin Actions</h2></div><div class="card-body">';
+actions.forEach(a=>{h+=`<div class="log-entry"><div class="log-time">${fmtDT(a.created_at||a.timestamp)}</div><div class="log-msg"><strong>${a.admin_username||'Admin'}</strong> → ${a.action}${a.reason?' ('+a.reason+')':''}</div></div>`});
+h+='</div></div>';
+}
+document.getElementById('ud-tab-activity').innerHTML=h||'<div class="empty"><p>No activity data</p></div>';
+}
+
+function renderUdSecurity(){
+if(!udData)return;
+const d=udData;
+document.getElementById('ud-tab-security').innerHTML=`
+<div class="detail-grid">
+<div class="detail-item"><div class="k">Last Login</div><div class="v">${fmtDT(d.last_login||d.last_login_at)}</div></div>
+<div class="detail-item"><div class="k">Account Created</div><div class="v">${fmtDT(d.created_at||d.joined_at)}</div></div>
+<div class="detail-item"><div class="k">Login IP</div><div class="v">${d.last_login_ip||d.ip_address||'N/A'}</div></div>
+<div class="detail-item"><div class="k">Sessions</div><div class="v">${d.active_sessions||d.sessions||'N/A'}</div></div>
+</div>`;
+}
 
 // PLANS
-async function loadPlans(){try{const d=await api('/api/admin/plans');document.getElementById('plans-grid').innerHTML=d.plans.map(p=>`<div class="stat-card plan-card"><div style="font-size:17px;font-weight:700;margin-bottom:6px">${p.name}</div><div style="font-size:28px;font-weight:700;color:var(--accent2)">$${p.price_monthly}<span style="font-size:13px;color:var(--muted)">/mo</span></div><div style="margin:10px 0;font-size:12px;color:var(--muted);line-height:1.6">${p.ai_credits_monthly} AI credits<br>${p.research_limit} research/mo<br>${p.tracking_limit} tracking<br>${p.team_members} member${p.team_members>1?'s':''}</div></div>`).join('')}catch(e){toast(e.message,'error')}}
+function loadPlans(){
+api('/api/admin/plans').then(d=>{
+const plans=d.plans||d.data||d;
+const arr=Array.isArray(plans)?plans:Object.values(plans);
+document.getElementById('plans-grid').innerHTML=arr.map(p=>`
+<div class="plan-card ${p.featured?'featured':''}">
+<h3>${p.name||p.tier||'Plan'}</h3>
+<div class="price">$${p.price||0}<span>/mo</span></div>
+<ul>
+<li>${p.ai_credits||0} AI Credits/mo</li>
+<li>${p.research_limit||0} Research Jobs/mo</li>
+<li>${p.tracking_limit||0} Product Tracking</li>
+<li>${p.team_members||1} Team Member${(p.team_members||1)>1?'s':''}</li>
+${p.api_access?'<li>API Access</li>':''}
+${p.priority_support?'<li>Priority Support</li>':''}
+</ul>
+</div>`).join('')||'<div class="empty"><p>No plans configured</p></div>';
+}).catch(()=>{document.getElementById('plans-grid').innerHTML='<div class="empty"><p>Failed to load plans</p></div>'});
+}
 
 // SUBSCRIPTIONS
-let subPage=1;
-async function loadSubscriptions(page){if(page)subPage=page;try{const d=await api(`/api/admin/subscriptions?page=${subPage}&per_page=25`);
-document.getElementById('subs-table').innerHTML=d.subscriptions.map(s=>`<tr><td>${s.username||s.user_id}</td><td><span class="badge badge-blue">${s.tier}</span></td><td>${s.ai_credits_used||0}</td><td>${s.ai_credits_limit||0}</td><td>${s.research_used||0}/${s.research_limit||0}</td><td><span class="badge ${s.is_active?'badge-green':'badge-red'}">${s.is_active?'Active':'Inactive'}</span></td><td><button class="btn btn-sm btn-ghost" onclick="showUserDetail(${s.user_id})">View</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No subscriptions</td></tr>';
-pag('subs-pagination',d.total,25,subPage,loadSubscriptions)}catch(e){toast(e.message,'error')}}
+let subsPage=1;
+function loadSubs(page){
+subsPage=page||subsPage;
+const status=document.getElementById('subs-status')?.value||'';
+const params=new URLSearchParams({page:subsPage,per_page:P});
+if(status)params.set('status',status);
+api('/api/admin/subscriptions?'+params).then(d=>{
+const subs=d.subscriptions||d.data||[];
+const total=d.total||d.pagination?.total||subs.length;
+document.getElementById('subs-tbody').innerHTML=subs.length?subs.map(s=>`
+<tr>
+<td>${s.username||s.user||'-'}</td>
+<td><span class="badge badge-${({free:'gray',starter:'blue',pro:'purple',enterprise:'yellow'}[s.tier]||'gray')}">${(s.tier||'free').toUpperCase()}</span></td>
+<td class="tabular-nums">${s.credits_used||s.ai_credits_used||0}</td>
+<td class="tabular-nums">${s.credits_limit||s.ai_credits_limit||0}</td>
+<td class="tabular-nums">${s.research_used||0}</td>
+<td><span class="${bCls(s.status)}">${s.status||'active'}</span></td>
+<td><button class="btn btn-sm btn-ghost" onclick="navigate('users');setTimeout(()=>searchUser('${s.username||s.user_id||''}'),100)">View User</button></td>
+</tr>`).join(''):'<tr><td colspan="7" class="empty">No subscriptions found</td></tr>';
+pag(document.getElementById('subs-pagination'),total,subsPage,P,'loadSubs');
+}).catch(()=>{document.getElementById('subs-tbody').innerHTML='<tr><td colspan="7" class="empty">Error loading subscriptions</td></tr>'});
+}
 
 // PRODUCTS
-let productPage=1;
-async function loadProducts(page){if(page)productPage=page;const s=gv('product-search');try{const d=await api(`/api/admin/products?page=${productPage}&per_page=25&search=${encodeURIComponent(s)}`);
-document.getElementById('products-table').innerHTML=d.products.map(p=>`<tr><td style="font-family:monospace">${p.asin}</td><td>${(p.name||'').substring(0,35)}</td><td>${p.category||'-'}</td><td>$${(p.amazon_price||0).toFixed(2)}</td><td>${p.rating||0}*</td><td>${((p.ai_score||0)*100).toFixed(0)}%</td><td><span class="badge badge-${p.traffic_light==='GREEN'?'green':p.traffic_light==='YELLOW'?'yellow':'red'}">${p.traffic_light}</span></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No products</td></tr>';
-pag('products-pagination',d.total,25,productPage,loadProducts)}catch(e){toast(e.message,'error')}}
+let productsPage=1;
+function loadProducts(page){
+productsPage=page||productsPage;
+const search=document.getElementById('products-search')?.value||'';
+const params=new URLSearchParams({page:productsPage,per_page:P});
+if(search)params.set('search',search);
+api('/api/admin/products?'+params).then(d=>{
+const prods=d.products||d.data||[];
+const total=d.total||d.pagination?.total||prods.length;
+document.getElementById('products-tbody').innerHTML=prods.length?prods.map(p=>`
+<tr>
+<td style="font-family:monospace;font-size:12px">${p.asin||'-'}</td>
+<td>${trunc(p.name||p.title||'',35)}</td>
+<td>${trunc(p.category||'',20)}</td>
+<td class="tabular-nums">${p.price?'$'+p.price:'-'}</td>
+<td>${p.rating?'★ '+p.rating:'-'}</td>
+<td class="tabular-nums">${p.ai_score||p.score||'-'}</td>
+<td>${tlBadge(p.traffic_light||p.signal)}</td>
+</tr>`).join(''):'<tr><td colspan="7" class="empty">No products found</td></tr>';
+pag(document.getElementById('products-pagination'),total,productsPage,P,'loadProducts');
+}).catch(()=>{document.getElementById('products-tbody').innerHTML='<tr><td colspan="7" class="empty">Error loading products</td></tr>'});
+}
 
 // RESEARCH
 let researchPage=1;
-async function loadResearch(page){if(page)researchPage=page;try{const d=await api(`/api/admin/research?page=${researchPage}&per_page=25`);
-document.getElementById('research-table').innerHTML=d.jobs.map(j=>`<tr><td>${j.username||'?'}</td><td>${(j.query||'').substring(0,30)}</td><td>${j.marketplace}</td><td><span class="badge ${bCls(j.status)}">${j.status}</span></td><td>${j.result_count}</td><td>${j.ai_analysis_used?'Yes':'No'}</td><td>${j.ai_credits_cost}</td><td>${fmtDT(j.created_at)}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">No research jobs</td></tr>';
-pag('research-pagination',d.total,25,researchPage,loadResearch)}catch(e){toast(e.message,'error')}}
+function loadResearch(page){
+researchPage=page||researchPage;
+const status=document.getElementById('research-status')?.value||'';
+const params=new URLSearchParams({page:researchPage,per_page:P});
+if(status)params.set('status',status);
+api('/api/admin/research?'+params).then(d=>{
+const jobs=d.research||d.data||d.jobs||[];
+const total=d.total||d.pagination?.total||jobs.length;
+document.getElementById('research-tbody').innerHTML=jobs.length?jobs.map(j=>`
+<tr>
+<td>${j.username||j.user||'-'}</td>
+<td>${trunc(j.query||j.search_query||'',30)}</td>
+<td>${j.market||j.category||'-'}</td>
+<td><span class="${bCls(j.status)}">${j.status||'pending'}</span></td>
+<td class="tabular-nums">${j.results_count||j.results||0}</td>
+<td>${j.ai_used||j.ai_model||'-'}</td>
+<td class="tabular-nums">${j.credits_cost||j.credits||0}</td>
+<td>${fmtDT(j.created_at||j.created)}</td>
+</tr>`).join(''):'<tr><td colspan="8" class="empty">No research jobs found</td></tr>';
+pag(document.getElementById('research-pagination'),total,researchPage,P,'loadResearch');
+}).catch(()=>{document.getElementById('research-tbody').innerHTML='<tr><td colspan="8" class="empty">Error loading research</td></tr>'});
+}
 
 // WATCHLIST
-let watchPage=1;
-async function loadWatchlist(page){if(page)watchPage=page;try{const d=await api(`/api/admin/watchlist?page=${watchPage}&per_page=25`);
-document.getElementById('watchlist-table').innerHTML=d.items.map(w=>`<tr><td>${w.username||'?'}</td><td style="font-family:monospace">${w.asin}</td><td>${(w.product_name||'').substring(0,30)}</td><td>$${(w.amazon_price||0).toFixed(2)}</td><td>${((w.ai_score||0)*100).toFixed(0)}%</td><td><span class="badge badge-${w.traffic_light==='GREEN'?'green':w.traffic_light==='YELLOW'?'yellow':'red'}">${w.traffic_light}</span></td><td>${fmtDT(w.added_at)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No watchlist items</td></tr>';
-pag('watchlist-pagination',d.total,25,watchPage,loadWatchlist)}catch(e){toast(e.message,'error')}}
+let watchlistPage=1;
+function loadWatchlist(page){
+watchlistPage=page||watchlistPage;
+const params=new URLSearchParams({page:watchlistPage,per_page:P});
+api('/api/admin/watchlist?'+params).then(d=>{
+const items=d.watchlist||d.data||[];
+const total=d.total||d.pagination?.total||items.length;
+document.getElementById('watchlist-tbody').innerHTML=items.length?items.map(w=>`
+<tr>
+<td>${w.username||w.user||'-'}</td>
+<td style="font-family:monospace;font-size:12px">${w.asin||'-'}</td>
+<td>${trunc(w.name||w.product_name||'',30)}</td>
+<td class="tabular-nums">${w.price?'$'+w.price:'-'}</td>
+<td class="tabular-nums">${w.ai_score||w.score||'-'}</td>
+<td>${tlBadge(w.traffic_light||w.signal)}</td>
+<td>${fmtD(w.created_at||w.added_at)}</td>
+</tr>`).join(''):'<tr><td colspan="7" class="empty">No watchlist items found</td></tr>';
+pag(document.getElementById('watchlist-pagination'),total,watchlistPage,P,'loadWatchlist');
+}).catch(()=>{document.getElementById('watchlist-tbody').innerHTML='<tr><td colspan="7" class="empty">Error loading watchlist</td></tr>'});
+}
 
 // FEATURES
-async function loadFeatures(){try{const d=await api('/api/admin/features');document.getElementById('features-table').innerHTML=d.features.map(f=>`<tr><td><strong>${f.flag_name}</strong></td><td>${f.description||'-'}</td><td>${f.scope}</td><td>${f.rollout_percentage}%</td><td><label class="toggle"><input type="checkbox" ${f.is_enabled?'checked':''} onchange="toggleFeature(${f.id})"><span class="slider"></span></label></td><td>-</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No feature flags</td></tr>'}catch(e){toast(e.message,'error')}}
-async function toggleFeature(id){try{await api(`/api/admin/features/${id}/toggle`,{method:'POST'});toast('Toggled','success')}catch(e){toast(e.message,'error')}}
+function loadFeatures(){
+api('/api/admin/features').then(d=>{
+const features=d.features||d.data||[];
+document.getElementById('features-tbody').innerHTML=features.length?features.map(f=>`
+<tr>
+<td><strong>${f.name||f.flag_name||'-'}</strong></td>
+<td style="max-width:250px;white-space:normal">${f.description||'-'}</td>
+<td><span class="badge badge-blue">${f.scope||'global'}</span></td>
+<td class="tabular-nums">${f.rollout_percent||f.rollout||100}%</td>
+<td>
+<label class="toggle">
+<input type="checkbox" ${f.enabled!==false?'checked':''} onchange="toggleFeature(${f.id})">
+<span class="slider"></span>
+</label>
+</td>
+<td></td>
+</tr>`).join(''):'<tr><td colspan="6" class="empty">No feature flags configured</td></tr>';
+}).catch(()=>{document.getElementById('features-tbody').innerHTML='<tr><td colspan="6" class="empty">Error loading features</td></tr>'});
+}
+
+function toggleFeature(id){
+api('/api/admin/features/'+id+'/toggle',{method:'POST'}).then(d=>{
+toast(d.message||'Feature toggled','success');
+loadFeatures();
+}).catch(e=>{toast('Failed to toggle: '+e.message,'error');loadFeatures()});
+}
 
 // HEALTH
-async function loadHealth(){try{const d=await api('/api/admin/health');document.getElementById('health-grid').innerHTML=[{l:'CPU',v:d.cpu+'%'},{l:'Memory',v:d.memory.percent+'%'},{l:'Disk',v:d.disk.percent+'%'},{l:'Database',v:d.database},{l:'Time',v:fmtDT(d.timestamp)}].map(h=>`<div class="health-item"><span class="label">${h.l}</span><span class="value">${h.v}</span></div>`).join('')}catch(e){document.getElementById('health-grid').innerHTML=`<div class="health-item"><span class="label">Error</span><span class="value" style="color:var(--red)">${e.message}</span></div>`}}
+function loadHealth(){
+api('/api/admin/health').then(d=>{
+const items=[
+{label:'CPU Usage',val:d.cpu||d.cpu_usage||'N/A',ok:!d.cpu_critical},
+{label:'Memory',val:d.memory||d.memory_usage||'N/A',ok:!d.memory_critical},
+{label:'Disk',val:d.disk||d.disk_usage||'N/A',ok:!d.disk_critical},
+{label:'Database',val:d.db_status||d.database||'OK',ok:!(d.db_status==='error')},
+{label:'Uptime',val:d.uptime||'N/A',ok:true},
+{label:'Last Check',val:fmtDT(d.timestamp||d.checked_at),ok:true}
+];
+document.getElementById('health-grid').innerHTML=items.map(i=>`
+<div class="detail-item">
+<div class="k">${i.label}</div>
+<div class="v" style="display:flex;align-items:center;gap:8px">
+<span class="dot ${i.ok?'ok':'err'}" style="width:10px;height:10px;border-radius:50%;display:inline-block;background:${i.ok?'var(--green)':'var(--red)'}"></span>
+${i.val}
+</div>
+</div>`).join('');
+
+let details='<table><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody>';
+Object.entries(d).forEach(([k,v])=>{
+if(typeof v==='object')return;
+details+=`<tr><td style="font-weight:600">${k.replace(/_/g,' ')}</td><td>${v}</td></tr>`;
+});
+details+='</tbody></table>';
+document.getElementById('health-details').innerHTML=details;
+}).catch(()=>{document.getElementById('health-grid').innerHTML='<div class="empty"><p>Health data unavailable</p></div>'});
+}
 
 // JOBS
-let jobPage=1;
-async function loadJobs(page){if(page)jobPage=page;try{const d=await api(`/api/admin/jobs?page=${jobPage}&per_page=25`);
-document.getElementById('jobs-table').innerHTML=d.jobs.map(j=>`<tr><td>${j.username||'?'}</td><td>${(j.query||'').substring(0,30)}</td><td><span class="badge ${bCls(j.status)}">${j.status}</span></td><td>${j.result_count}</td><td>${j.ai_credits_cost}</td><td>${j.duration_ms?j.duration_ms+'ms':'-'}</td><td>${fmtDT(j.created_at)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No jobs</td></tr>';
-pag('jobs-pagination',d.total,25,jobPage,loadJobs)}catch(e){toast(e.message,'error')}}
+let jobsPage=1;
+function loadJobs(page){
+jobsPage=page||jobsPage;
+const status=document.getElementById('jobs-status')?.value||'';
+const params=new URLSearchParams({page:jobsPage,per_page:P});
+if(status)params.set('status',status);
+api('/api/admin/jobs?'+params).then(d=>{
+const jobs=d.jobs||d.data||[];
+const total=d.total||d.pagination?.total||jobs.length;
+document.getElementById('jobs-tbody').innerHTML=jobs.length?jobs.map(j=>`
+<tr>
+<td>${j.username||j.user||'-'}</td>
+<td>${trunc(j.query||j.search_query||'',30)}</td>
+<td><span class="${bCls(j.status)}">${j.status||'pending'}</span></td>
+<td class="tabular-nums">${j.results_count||j.results||0}</td>
+<td class="tabular-nums">${j.credits_cost||j.credits||0}</td>
+<td>${j.duration?j.duration+'s':'-'}</td>
+<td>${fmtDT(j.created_at||j.created)}</td>
+</tr>`).join(''):'<tr><td colspan="7" class="empty">No jobs found</td></tr>';
+pag(document.getElementById('jobs-pagination'),total,jobsPage,P,'loadJobs');
+}).catch(()=>{document.getElementById('jobs-tbody').innerHTML='<tr><td colspan="7" class="empty">Error loading jobs</td></tr>'});
+}
 
 // AUDIT
 let auditPage=1;
-async function loadAudit(page){if(page)auditPage=page;try{const d=await api(`/api/admin/audit?page=${auditPage}&per_page=25`);
-document.getElementById('audit-logs').innerHTML=d.logs.map(l=>`<div class="log-entry" style="border-color:${l.action.includes('suspend')?'var(--red)':l.action.includes('activate')||l.action.includes('upgrade')?'var(--green)':'var(--blue)'}"><strong>${l.admin_username}</strong> &rarr; ${l.target_username} - ${l.action} ${l.reason?'('+l.reason+')':''} <span style="color:var(--muted)">${fmtDT(l.created_at)}</span></div>`).join('')||'<div class="empty">No audit logs</div>';
-pag('audit-pagination',d.total,25,auditPage,loadAudit)}catch(e){toast(e.message,'error')}}
+function loadAudit(page){
+auditPage=page||auditPage;
+const params=new URLSearchParams({page:auditPage,per_page:P*2});
+api('/api/admin/audit?'+params).then(d=>{
+const logs=d.logs||d.data||d.audit||[];
+const total=d.total||d.pagination?.total||logs.length;
+document.getElementById('audit-body').innerHTML=logs.length?logs.map(l=>`
+<div class="log-entry">
+<div class="log-time">${fmtDT(l.created_at||l.timestamp)}</div>
+<div class="log-msg">
+<strong>${l.admin_username||l.admin||'System'}</strong> →
+<strong>${l.target_username||l.target||l.user||''}</strong>
+— ${l.action||l.event||''}
+${l.reason?' <span style="color:var(--text3)">('+l.reason+')</span>':''}
+</div>
+</div>`).join(''):'<div class="empty"><p>No audit logs found</p></div>';
+pag(document.getElementById('audit-pagination'),total,auditPage,P*2,'loadAudit');
+}).catch(()=>{document.getElementById('audit-body').innerHTML='<div class="empty"><p>Error loading audit logs</p></div>'});
+}
 
 // SETTINGS
-async function loadSettings(){try{const d=await api('/api/admin/settings');document.getElementById('settings-list').innerHTML=d.settings.map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:150px"><strong>${s.setting_key}</strong><div style="font-size:11px;color:var(--muted)">${s.description}</div></div><div style="display:flex;gap:8px;align-items:center;flex:1;min-width:200px"><input class="input" value="${JSON.stringify(s.setting_value)}" id="setting-${s.setting_key}"><button class="btn btn-sm btn-primary" onclick="saveSetting('${s.setting_key}')">Save</button></div></div>`).join('')}catch(e){toast(e.message,'error')}}
-async function saveSetting(k){try{await api(`/api/admin/settings/${k}`,{method:'PUT',body:JSON.stringify({setting_value:JSON.parse(gv('setting-'+k))})});toast('Saved','success')}catch(e){toast(e.message,'error')}}
+function loadSettings(){
+api('/api/admin/settings').then(d=>{
+const settings=d.settings||d.data||d;
+const arr=Array.isArray(settings)?settings:Object.entries(settings).map(([k,v])=>({key:k,...(typeof v==='object'?v:{value:v})}));
+document.getElementById('settings-body').innerHTML=arr.length?arr.map(s=>`
+<div class="form-row" style="align-items:end;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+<div class="form-group" style="flex:1">
+<label style="font-weight:600">${(s.key||s.name||'').replace(/_/g,' ')}</label>
+<div style="font-size:12px;color:var(--text3);margin-bottom:6px">${s.description||s.desc||''}</div>
+</div>
+<div style="flex:1">
+<input type="text" class="input" id="set-${s.key||s.name}" value="${s.value||s.setting_value||''}">
+</div>
+<div>
+<button class="btn btn-sm btn-primary" onclick="saveSetting('${s.key||s.name}')">Save</button>
+</div>
+</div>`).join(''):'<div class="empty"><p>No settings configured</p></div>';
+}).catch(()=>{document.getElementById('settings-body').innerHTML='<div class="empty"><p>Error loading settings</p></div>'});
+}
 
-// PAGINATION
-function pag(id,total,per,cur,fn){const pages=Math.ceil(total/per);if(pages<=1){document.getElementById(id).innerHTML='';return}let h='';if(cur>1)h+=`<button onclick="${fn.name}(${cur-1})">Prev</button>`;for(let i=Math.max(1,cur-2);i<=Math.min(pages,cur+2);i++)h+=`<button class="${i===cur?'active':''}" onclick="${fn.name}(${i})">${i}</button>`;if(cur<pages)h+=`<button onclick="${fn.name}(${cur+1})">Next</button>`;document.getElementById(id).innerHTML=h}
+function saveSetting(key){
+const val=document.getElementById('set-'+key)?.value||'';
+api('/api/admin/settings/'+key,{method:'PUT',body:JSON.stringify({setting_value:val})}).then(()=>{
+toast('Setting saved','success');
+}).catch(e=>toast('Failed to save: '+e.message,'error'));
+}
 
-if(token)api('/api/admin/auth/me').then(d=>{adminData=d;document.getElementById('login-screen').style.display='none';document.getElementById('admin-info').innerHTML=`<div style="font-weight:600">${d.display_name||d.username}</div><div style="font-size:11px;color:var(--muted)">${d.role}</div>`;nav('dashboard')}).catch(()=>{token=null;localStorage.removeItem('admin_token')});
+// CREDITS
+let creditsPage=1;
+function loadCredits(page){
+creditsPage=page||creditsPage;
+const search=document.getElementById('credits-search')?.value||'';
+const params=new URLSearchParams({page:creditsPage,per_page:P});
+if(search)params.set('search',search);
+api('/api/admin/users?'+params).then(d=>{
+const users=d.users||d.data||[];
+const total=d.total||d.pagination?.total||users.length;
+document.getElementById('credits-tbody').innerHTML=users.length?users.map(u=>{
+const used=u.ai_credits_used||0;const lim=u.ai_credits_limit||100;
+const pct=lim>0?Math.round(used/lim*100):0;
+return`<tr>
+<td>${u.username||u.email||'-'}</td>
+<td><span class="badge badge-${({free:'gray',starter:'blue',pro:'purple',enterprise:'yellow'}[u.tier]||'gray')}">${(u.tier||'free').toUpperCase()}</span></td>
+<td class="tabular-nums">${used}</td>
+<td class="tabular-nums">${lim}</td>
+<td style="min-width:180px">${usageBar(used,lim)}</td>
+<td><button class="btn btn-sm btn-primary" onclick="openCreditModal(${u.id},'${u.username||''}')">Adjust</button></td>
+</tr>`}).join(''):'<tr><td colspan="6" class="empty">No users found</td></tr>';
+pag(document.getElementById('credits-pagination'),total,creditsPage,P,'loadCredits');
+}).catch(()=>{document.getElementById('credits-tbody').innerHTML='<tr><td colspan="6" class="empty">Error loading credits</td></tr>'});
+}
+
+// MODALS
+let modalUserId=null;
+function openCreditModal(userId,username){
+modalUserId=userId;
+document.getElementById('modal-credit-title').textContent='Adjust Credits'+(username?' — '+username:'');
+document.getElementById('modal-credit-amount').value='';
+document.getElementById('modal-credit-reason').value='';
+document.getElementById('modal-credit').classList.add('active');
+}
+
+function applyCreditAdjust(){
+const amount=parseInt(document.getElementById('modal-credit-amount').value);
+const reason=document.getElementById('modal-credit-reason').value.trim();
+if(!amount){toast('Enter an amount','error');return}
+const action=amount>0?'add_credits':'remove_credits';
+api('/api/admin/users/'+modalUserId+'/action',{method:'POST',body:JSON.stringify({action,amount:Math.abs(amount),reason:reason||'Admin adjustment'})}).then(()=>{
+toast('Credits adjusted','success');
+document.getElementById('modal-credit').classList.remove('active');
+if(CURRENT_SECTION==='credits')loadCredits();
+if(CURRENT_SECTION==='user-detail'&&CURRENT_USER_ID===modalUserId)loadUserDetail(modalUserId);
+}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+
+function openPlanModal(userId){
+modalUserId=userId;
+document.getElementById('modal-plan-tier').value='pro';
+document.getElementById('modal-plan-reason').value='';
+document.getElementById('modal-plan').classList.add('active');
+}
+
+function applyPlanChange(){
+const tier=document.getElementById('modal-plan-tier').value;
+const reason=document.getElementById('modal-plan-reason').value.trim();
+const currentTier=udData?.tier||'free';
+const action=tier==='free'?'downgrade_plan':'upgrade_plan';
+api('/api/admin/users/'+modalUserId+'/action',{method:'POST',body:JSON.stringify({action,tier,reason:reason||'Plan change'})}).then(()=>{
+toast('Plan changed to '+tier,'success');
+document.getElementById('modal-plan').classList.remove('active');
+if(CURRENT_SECTION==='user-detail'&&CURRENT_USER_ID===modalUserId)loadUserDetail(modalUserId);
+}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+
+function confirmAction(msg,action,userId){
+document.getElementById('confirm-title').textContent=action==='suspend'?'Suspend User':'Activate User';
+document.getElementById('confirm-msg').textContent=msg;
+document.getElementById('confirm-btn').onclick=function(){
+api('/api/admin/users/'+userId+'/action',{method:'POST',body:JSON.stringify({action})}).then(()=>{
+toast('User '+(action==='suspend'?'suspended':'activated'),'success');
+document.getElementById('modal-confirm').classList.remove('active');
+if(CURRENT_SECTION==='user-detail'&&CURRENT_USER_ID===userId)loadUserDetail(userId);
+if(CURRENT_SECTION==='users')loadUsers();
+}).catch(e=>toast('Failed: '+e.message,'error'));
+};
+document.getElementById('modal-confirm').classList.add('active');
+}
+
+// COMMAND PALETTE
+function openCmdPalette(){
+document.getElementById('cmd-palette').classList.add('active');
+const inp=document.getElementById('cmd-input');
+inp.value='';inp.focus();
+document.getElementById('cmd-results').innerHTML=`
+<div class="cmd-group">Quick Navigation</div>
+<div class="cmd-item" onclick="navigate('dashboard');closeCmdPalette()"><span class="cmd-icon">📊</span>Dashboard</div>
+<div class="cmd-item" onclick="navigate('users');closeCmdPalette()"><span class="cmd-icon">👥</span>Users</div>
+<div class="cmd-item" onclick="navigate('products');closeCmdPalette()"><span class="cmd-icon">📦</span>Products</div>
+<div class="cmd-item" onclick="navigate('research');closeCmdPalette()"><span class="cmd-icon">🔬</span>Research</div>
+<div class="cmd-item" onclick="navigate('subscriptions');closeCmdPalette()"><span class="cmd-icon">💳</span>Subscriptions</div>
+<div class="cmd-item" onclick="navigate('features');closeCmdPalette()"><span class="cmd-icon">⭐</span>Features</div>
+<div class="cmd-item" onclick="navigate('health');closeCmdPalette()"><span class="cmd-icon">💓</span>Health</div>
+<div class="cmd-item" onclick="navigate('audit');closeCmdPalette()"><span class="cmd-icon">📋</span>Audit Logs</div>
+<div class="cmd-item" onclick="navigate('settings');closeCmdPalette()"><span class="cmd-icon">⚙️</span>Settings</div>`;
+}
+function closeCmdPalette(){document.getElementById('cmd-palette').classList.remove('active')}
+
+const cmdSearch=debounce(function(q){
+if(!q){openCmdPalette();return}
+const el=document.getElementById('cmd-results');
+el.innerHTML='<div class="cmd-group">Searching...</div>';
+
+Promise.allSettled([
+api('/api/admin/users?search='+encodeURIComponent(q)+'&per_page=3'),
+api('/api/admin/products?search='+encodeURIComponent(q)+'&per_page=3'),
+api('/api/admin/research?per_page=5')
+]).then(results=>{
+let h='';
+const[uRes,pRes,rRes]=results;
+if(uRes.status==='fulfilled'){
+const users=uRes.value.users||uRes.value.data||[];
+if(users.length){
+h+='<div class="cmd-group">Users</div>';
+users.forEach(u=>{h+=`<div class="cmd-item" onclick="navigate('user-detail',${u.id});closeCmdPalette()"><span class="cmd-icon">👤</span>${u.username||u.email} <span class="badge badge-${({free:'gray',starter:'blue',pro:'purple',enterprise:'yellow'}[u.tier]||'gray')}" style="margin-left:auto">${(u.tier||'free').toUpperCase()}</span></div>`});
+}}
+if(pRes.status==='fulfilled'){
+const prods=pRes.value.products||pRes.value.data||[];
+if(prods.length){
+h+='<div class="cmd-group">Products</div>';
+prods.forEach(p=>{h+=`<div class="cmd-item" onclick="navigate('products');closeCmdPalette()"><span class="cmd-icon">📦</span>${trunc(p.name||p.title||p.asin||'',30)}</div>`});
+}}
+if(rRes.status==='fulfilled'){
+const jobs=rRes.value.research||rRes.value.data||rRes.value.jobs||[];
+if(jobs.length){
+h+='<div class="cmd-group">Research</div>';
+jobs.forEach(j=>{h+=`<div class="cmd-item" onclick="navigate('research');closeCmdPalette()"><span class="cmd-icon">🔬</span>${trunc(j.query||j.search_query||'',30)}</div>`});
+}}
+if(!h)h='<div class="empty" style="padding:24px"><p>No results found</p></div>';
+el.innerHTML=h;
+}).catch(()=>{el.innerHTML='<div class="empty" style="padding:24px"><p>Search failed</p></div>'});
+},300);
+
+// KEYBOARD
+document.addEventListener('keydown',e=>{
+if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openCmdPalette()}
+if(e.key==='Escape'){closeCmdPalette();document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'))}
+});
+
+// NOTIFICATIONS
+function toggleNotifs(){
+const c=document.getElementById('notif-count');
+if(c.style.display==='none'){
+api('/api/admin/audit?per_page=3').then(d=>{
+const logs=d.logs||d.data||[];
+c.textContent=logs.length;c.style.display='flex';
+setTimeout(()=>{c.style.display='none'},5000);
+}).catch(()=>{});
+}
+}
+
+// ADMIN MENU
+function toggleAdminMenu(){
+document.getElementById('admin-dropdown').classList.toggle('show');
+}
+document.addEventListener('click',e=>{
+if(!e.target.closest('.admin-menu'))document.getElementById('admin-dropdown').classList.remove('show');
+});
+
+// SEARCH USER HELPER
+function searchUser(query){
+document.getElementById('users-search').value=query;
+loadUsers();
+}
+
+// INIT
+if(TOKEN){
+api('/api/admin/auth/me').then(()=>showApp()).catch(()=>logout());
+}
 </script>
 </body>
 </html>
