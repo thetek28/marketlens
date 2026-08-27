@@ -2,217 +2,304 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>MarketLens Admin Center</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0f172a;--surface:#1e293b;--surface2:#334155;--border:#475569;--text:#f1f5f9;--muted:#94a3b8;--accent:#6366f1;--accent2:#818cf8;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
-.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;overflow-y:auto}
-.sidebar-header{padding:20px;border-bottom:1px solid var(--border);text-align:center}
-.sidebar-header h1{font-size:18px;color:var(--accent2)}
-.sidebar-header p{font-size:11px;color:var(--muted);margin-top:4px}
-.sidebar-nav{flex:1;padding:12px 0}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s}
+:root{--bg:#0f172a;--surface:#1e293b;--surface2:#334155;--border:#475569;--text:#f1f5f9;--muted:#94a3b8;--accent:#6366f1;--accent2:#818cf8;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--sidebar-w:260px}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+.app{display:flex;height:100vh}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-header .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
+.sidebar-header h1{font-size:16px;color:var(--text);white-space:nowrap}
+.sidebar-header p{font-size:10px;color:var(--muted);margin-top:2px}
+.sidebar-nav{flex:1;padding:8px 0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s;white-space:nowrap;border-left:3px solid transparent}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--accent);color:#fff;border-right:3px solid var(--accent2)}
-.nav-item .icon{width:18px;text-align:center}
-.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
-.main{margin-left:240px;flex:1;padding:24px;min-height:100vh}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.header h2{font-size:22px}
-.header-actions{display:flex;gap:8px}
-.btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
+.nav-item.active{background:rgba(99,102,241,.15);color:var(--accent2);border-left-color:var(--accent)}
+.nav-item .icon{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+
+/* ── Main ── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:margin .25s}
+.main-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface)}
+.hamburger{display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.hamburger span{width:18px;height:2px;background:var(--text);border-radius:2px;transition:all .2s}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(3px,3px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(3px,-3px)}
+.main-header h2{font-size:18px;flex:1}
+.main-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 24px}
+
+/* ── Cards ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.stat-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-card .value{font-size:26px;font-weight:700;line-height:1.1}
+.stat-card .sub{font-size:11px;color:var(--muted);margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.card h3{font-size:15px}
+
+/* ── Buttons ── */
+.btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:active{transform:scale(.97)}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
-.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{opacity:.9}
+.btn-danger{background:var(--red);color:#fff}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:var(--surface2)}
 .btn-sm{padding:5px 10px;font-size:12px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.card h3{font-size:16px}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
-.stat-card .label{font-size:12px;color:var(--muted);margin-bottom:4px}
-.stat-card .value{font-size:28px;font-weight:700}
-.stat-card .change{font-size:11px;margin-top:4px}
-.change.up{color:var(--green)}.change.down{color:var(--red)}
-table{width:100%;border-collapse:collapse}
+.btn-icon{width:32px;height:32px;padding:0;justify-content:center}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
+table{width:100%;border-collapse:collapse;min-width:600px}
 th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
-th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
-tr:hover{background:var(--surface2)}
-.badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600}
+th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;background:var(--surface);z-index:1}
+tr:hover td{background:var(--surface2)}
+
+/* ── Badges ── */
+.badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge-green{background:rgba(34,197,94,.15);color:var(--green)}
 .badge-red{background:rgba(239,68,68,.15);color:var(--red)}
 .badge-yellow{background:rgba(245,158,11,.15);color:var(--yellow)}
 .badge-blue{background:rgba(59,130,246,.15);color:var(--blue)}
 .badge-gray{background:rgba(148,163,184,.15);color:var(--muted)}
-.input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;width:100%}
+
+/* ── Form ── */
+.input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;width:100%;transition:border-color .15s}
 .input:focus{outline:none;border-color:var(--accent)}
+select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 .form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-.search-bar{display:flex;gap:8px;margin-bottom:16px}
-.search-bar .input{flex:1}
-.pagination{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.form-row{display:grid;gap:10px}
+.form-row-2{grid-template-columns:1fr 1fr}
+.search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.search-bar .input,.search-bar select{flex:1;min-width:120px}
+
+/* ── Pagination ── */
+.pagination{display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .pagination button{padding:6px 12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;cursor:pointer;font-size:12px}
 .pagination button.active{background:var(--accent);border-color:var(--accent)}
-.pagination button:hover:not(.active){background:var(--border)}
-.toggle{position:relative;width:40px;height:22px;cursor:pointer}
-.toggle input{opacity:0;width:0;height:0}
+
+/* ── Toggle ── */
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;display:inline-block}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
 .toggle .slider{position:absolute;inset:0;background:var(--surface2);border-radius:22px;transition:.2s}
 .toggle .slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s}
 .toggle input:checked+.slider{background:var(--accent)}
 .toggle input:checked+.slider:before{transform:translateX(18px);background:#fff}
-.toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-size:13px;z-index:9999;animation:slideIn .3s}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;color:#fff;font-size:13px;z-index:9999;animation:slideUp .3s;max-width:90vw;text-align:center}
 .toast-success{background:var(--green)}.toast-error{background:var(--red)}.toast-info{background:var(--blue)}
-@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:999;align-items:center;justify-content:center}
+@keyframes slideUp{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:200;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.active{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;min-width:400px;max-width:90vw}
-.modal h3{margin-bottom:16px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal h3{margin-bottom:16px;font-size:17px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
-.empty{text-align:center;padding:40px;color:var(--muted)}
+
+/* ── Misc ── */
 .section{display:none}.section.active{display:block}
-.health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+.health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .health-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface2);border-radius:8px}
 .health-item .label{color:var(--muted);font-size:13px}
-.health-item .value{font-weight:600}
-.log-entry{padding:8px 12px;border-left:3px solid var(--border);margin-bottom:8px;font-size:12px}
+.health-item .value{font-weight:600;font-size:14px}
+.log-entry{padding:10px 12px;border-left:3px solid var(--border);margin-bottom:8px;font-size:12px;background:var(--surface2);border-radius:0 6px 6px 0}
 .log-entry.action-create{border-color:var(--green)}.log-entry.action-delete{border-color:var(--red)}.log-entry.action-update{border-color:var(--yellow)}
 .notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;display:inline-block;margin-left:6px}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.setting-row:last-child{border-bottom:none}
+.notif-card{padding:12px;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:6px;margin-bottom:8px}
+.notif-card:last-child{margin-bottom:0}
+.plan-card{text-align:center;padding:20px 16px}
+
+/* ── Responsive ── */
+@media(max-width:1024px){
+  .stats-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .form-row-2{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.active{display:block}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .main-header{padding:12px 16px}
+  .main-scroll{padding:16px}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat-card .value{font-size:20px}
+  .stat-card{padding:12px}
+  .card{padding:14px}
+  .search-bar{flex-direction:column}
+  .search-bar .input,.search-bar select{min-width:100%}
+  .modal{max-width:100%;margin:0 8px}
+  table{min-width:500px}
+  th,td{padding:8px 10px;font-size:12px}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .stat-card .value{font-size:18px}
+  .health-grid{grid-template-columns:1fr}
+  .setting-row{flex-direction:column;align-items:flex-start}
+  .setting-row .input{width:100%;margin-top:6px}
+}
 </style>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <h1>MarketLens</h1>
-    <p>Admin Center</p>
-  </div>
-  <nav class="sidebar-nav">
-    <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')"><span class="icon">📊</span> Dashboard</div>
-    <div class="nav-item" data-section="users" onclick="showSection('users')"><span class="icon">👥</span> Users</div>
-    <div class="nav-item" data-section="plans" onclick="showSection('plans')"><span class="icon">💳</span> Plans</div>
-    <div class="nav-item" data-section="subscriptions" onclick="showSection('subscriptions')"><span class="icon">🔄</span> Subscriptions</div>
-    <div class="nav-item" data-section="products" onclick="showSection('products')"><span class="icon">📦</span> Products</div>
-    <div class="nav-item" data-section="features" onclick="showSection('features')"><span class="icon">🚩</span> Feature Flags</div>
-    <div class="nav-item" data-section="health" onclick="showSection('health')"><span class="icon">💓</span> Health</div>
-    <div class="nav-item" data-section="jobs" onclick="showSection('jobs')"><span class="icon">⚙️</span> Jobs</div>
-    <div class="nav-item" data-section="audit" onclick="showSection('audit')"><span class="icon">📋</span> Audit Logs</div>
-    <div class="nav-item" data-section="settings" onclick="showSection('settings')"><span class="icon">🔧</span> Settings</div>
-    <div class="nav-item" data-section="support" onclick="showSection('support')"><span class="icon">🎫</span> Support</div>
-    <div class="nav-item" data-section="notifications" onclick="showSection('notifications')"><span class="icon">🔔</span> Notifications<span id="notif-badge"></span></div>
-  </nav>
-  <div class="sidebar-footer">
-    <div id="admin-info"></div>
-    <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="logout()">Sign Out</button>
-  </div>
-</aside>
+<div class="app">
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
-<main class="main">
-  <!-- LOGIN -->
-  <div id="login-screen">
-    <div class="card" style="max-width:400px;margin:80px auto">
-      <h3 style="margin-bottom:16px">Admin Login</h3>
-      <div class="form-group"><label>Username</label><input class="input" id="login-user" value="admin"></div>
-      <div class="form-group"><label>Password</label><input class="input" id="login-pass" type="password" value="admin123"></div>
-      <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">M</div>
+      <div><h1>MarketLens</h1><p>Admin Center</p></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <div class="nav-item active" data-section="dashboard" onclick="nav('dashboard')"><span class="icon">&#9632;</span> Dashboard</div>
+      <div class="nav-item" data-section="users" onclick="nav('users')"><span class="icon">&#9787;</span> Users</div>
+      <div class="nav-item" data-section="plans" onclick="nav('plans')"><span class="icon">&#9733;</span> Plans</div>
+      <div class="nav-item" data-section="subscriptions" onclick="nav('subscriptions')"><span class="icon">&#8635;</span> Subscriptions</div>
+      <div class="nav-item" data-section="products" onclick="nav('products')"><span class="icon">&#9776;</span> Products</div>
+      <div class="nav-item" data-section="features" onclick="nav('features')"><span class="icon">&#9873;</span> Feature Flags</div>
+      <div class="nav-item" data-section="health" onclick="nav('health')"><span class="icon">&#9829;</span> Health</div>
+      <div class="nav-item" data-section="jobs" onclick="nav('jobs')"><span class="icon">&#9881;</span> Jobs</div>
+      <div class="nav-item" data-section="audit" onclick="nav('audit')"><span class="icon">&#9776;</span> Audit Logs</div>
+      <div class="nav-item" data-section="settings" onclick="nav('settings')"><span class="icon">&#9881;</span> Settings</div>
+      <div class="nav-item" data-section="support" onclick="nav('support')"><span class="icon">&#9993;</span> Support</div>
+      <div class="nav-item" data-section="notifications" onclick="nav('notifications')"><span class="icon">&#9854;</span> Notifications <span id="notif-badge"></span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <div id="admin-info"></div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main" id="main">
+    <div class="main-header">
+      <button class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <h2 id="page-title">Dashboard</h2>
+      <div id="header-actions"></div>
+    </div>
+    <div class="main-scroll" id="main-scroll">
+
+      <!-- LOGIN -->
+      <div id="login-screen">
+        <div class="card" style="max-width:400px;margin:60px auto">
+          <h3 style="margin-bottom:16px">Admin Login</h3>
+          <div class="form-group"><label>Username</label><input class="input" id="login-user" value="admin"></div>
+          <div class="form-group"><label>Password</label><input class="input" id="login-pass" type="password" value="admin123"></div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Sign In</button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="section-dashboard" class="section">
+        <div class="stats-grid" id="dash-stats"></div>
+        <div class="card"><div class="card-header"><h3>Recent Jobs</h3></div>
+          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Created</th></tr></thead><tbody id="dash-jobs"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="section-users" class="section">
+        <div class="search-bar"><input class="input" id="user-search" placeholder="Search users..." oninput="debounce(loadUsers,300)()"><select class="input" style="max-width:150px" id="user-status-filter" onchange="loadUsers()"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Plan</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="users-table"></tbody></table></div></div>
+        <div class="pagination" id="users-pagination"></div>
+      </div>
+
+      <!-- PLANS -->
+      <div id="section-plans" class="section">
+        <div class="stats-grid" id="plans-grid"></div>
+      </div>
+
+      <!-- SUBSCRIPTIONS -->
+      <div id="section-subscriptions" class="section">
+        <div class="search-bar"><select class="input" style="max-width:150px" id="sub-status-filter" onchange="loadSubscriptions()"><option value="">All</option><option value="active">Active</option><option value="cancelled">Cancelled</option><option value="trial">Trial</option></select></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Plan</th><th>Status</th><th>Credits</th><th>Created</th><th>Actions</th></tr></thead><tbody id="subs-table"></tbody></table></div></div>
+        <div class="pagination" id="subs-pagination"></div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div id="section-products" class="section">
+        <div class="search-bar"><input class="input" id="product-search" placeholder="Search products..." oninput="debounce(loadProducts,300)()"></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>ASIN</th><th>Name</th><th>Category</th><th>Price</th><th>Rating</th><th>AI</th><th>Traffic</th></tr></thead><tbody id="products-table"></tbody></table></div></div>
+        <div class="pagination" id="products-pagination"></div>
+      </div>
+
+      <!-- FEATURES -->
+      <div id="section-features" class="section">
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Flag</th><th>Description</th><th>Scope</th><th>Rollout</th><th>Enabled</th><th>Actions</th></tr></thead><tbody id="features-table"></tbody></table></div></div>
+      </div>
+
+      <!-- HEALTH -->
+      <div id="section-health" class="section">
+        <div class="health-grid" id="health-grid"></div>
+        <div class="card" style="margin-top:16px"><h3 style="margin-bottom:12px">Recent Snapshots</h3>
+          <div class="table-wrap"><table><thead><tr><th>Time</th><th>CPU</th><th>Memory</th><th>Disk</th><th>DB</th></tr></thead><tbody id="health-history"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- JOBS -->
+      <div id="section-jobs" class="section">
+        <div class="search-bar"><select class="input" style="max-width:150px" id="job-status-filter" onchange="loadJobs()"><option value="">All</option><option value="running">Running</option><option value="queued">Queued</option><option value="completed">Completed</option><option value="failed">Failed</option></select></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Error</th><th>Duration</th><th>Created</th></tr></thead><tbody id="jobs-table"></tbody></table></div></div>
+        <div class="pagination" id="jobs-pagination"></div>
+      </div>
+
+      <!-- AUDIT -->
+      <div id="section-audit" class="section">
+        <div class="search-bar"><input class="input" id="audit-action-search" placeholder="Filter by action..." oninput="debounce(loadAudit,300)()"><input class="input" id="audit-email-search" placeholder="Filter by admin..." oninput="debounce(loadAudit,300)()"></div>
+        <div class="card" id="audit-logs"></div>
+        <div class="pagination" id="audit-pagination"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="section-settings" class="section">
+        <div class="card" id="settings-list"></div>
+      </div>
+
+      <!-- SUPPORT -->
+      <div id="section-support" class="section">
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Subject</th><th>Status</th><th>Priority</th><th>Created</th></tr></thead><tbody id="support-table"></tbody></table></div></div>
+        <div class="pagination" id="support-pagination"></div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div id="section-notifications" class="section">
+        <div id="notif-list"></div>
+      </div>
+
     </div>
   </div>
+</div>
 
-  <!-- DASHBOARD -->
-  <div id="section-dashboard" class="section">
-    <div class="header"><h2>Dashboard</h2></div>
-    <div class="stats-grid" id="dash-stats"></div>
-    <div class="card"><div class="card-header"><h3>Recent Jobs</h3></div><table><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Created</th></tr></thead><tbody id="dash-jobs"></tbody></table></div>
-  </div>
-
-  <!-- USERS -->
-  <div id="section-users" class="section">
-    <div class="header"><h2>Users</h2></div>
-    <div class="search-bar"><input class="input" id="user-search" placeholder="Search users..." onkeyup="loadUsers()"><select class="input" style="max-width:150px" id="user-status-filter" onchange="loadUsers()"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-    <div class="card"><table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Plan</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="users-table"></tbody></table></div>
-    <div class="pagination" id="users-pagination"></div>
-  </div>
-
-  <!-- PLANS -->
-  <div id="section-plans" class="section">
-    <div class="header"><h2>Plans</h2><button class="btn btn-primary" onclick="showPlanModal()">+ New Plan</button></div>
-    <div id="plans-grid" class="stats-grid"></div>
-  </div>
-
-  <!-- SUBSCRIPTIONS -->
-  <div id="section-subscriptions" class="section">
-    <div class="header"><h2>Subscriptions</h2></div>
-    <div class="search-bar"><select class="input" style="max-width:150px" id="sub-status-filter" onchange="loadSubscriptions()"><option value="">All</option><option value="active">Active</option><option value="cancelled">Cancelled</option><option value="trial">Trial</option></select></div>
-    <div class="card"><table><thead><tr><th>ID</th><th>User</th><th>Plan</th><th>Status</th><th>Credits Used</th><th>Created</th><th>Actions</th></tr></thead><tbody id="subs-table"></tbody></table></div>
-    <div class="pagination" id="subs-pagination"></div>
-  </div>
-
-  <!-- PRODUCTS -->
-  <div id="section-products" class="section">
-    <div class="header"><h2>Products</h2></div>
-    <div class="search-bar"><input class="input" id="product-search" placeholder="Search products..." onkeyup="loadProducts()"></div>
-    <div class="card"><table><thead><tr><th>ASIN</th><th>Name</th><th>Category</th><th>Price</th><th>Rating</th><th>AI Score</th><th>Traffic</th></tr></thead><tbody id="products-table"></tbody></table></div>
-    <div class="pagination" id="products-pagination"></div>
-  </div>
-
-  <!-- FEATURES -->
-  <div id="section-features" class="section">
-    <div class="header"><h2>Feature Flags</h2><button class="btn btn-primary" onclick="showFeatureModal()">+ New Flag</button></div>
-    <div class="card"><table><thead><tr><th>Flag</th><th>Description</th><th>Scope</th><th>Rollout</th><th>Enabled</th><th>Actions</th></tr></thead><tbody id="features-table"></tbody></table></div>
-  </div>
-
-  <!-- HEALTH -->
-  <div id="section-health" class="section">
-    <div class="header"><h2>Server Health</h2><button class="btn btn-primary" onclick="loadHealth()">Refresh</button></div>
-    <div class="health-grid" id="health-grid"></div>
-    <div class="card" style="margin-top:16px"><h3>Recent Snapshots</h3><table><thead><tr><th>Time</th><th>CPU</th><th>Memory</th><th>Disk</th><th>DB</th></tr></thead><tbody id="health-history"></tbody></table></div>
-  </div>
-
-  <!-- JOBS -->
-  <div id="section-jobs" class="section">
-    <div class="header"><h2>Background Jobs</h2></div>
-    <div class="search-bar"><select class="input" style="max-width:150px" id="job-status-filter" onchange="loadJobs()"><option value="">All</option><option value="running">Running</option><option value="queued">Queued</option><option value="completed">Completed</option><option value="failed">Failed</option></select></div>
-    <div class="card"><table><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Error</th><th>Duration</th><th>Created</th></tr></thead><tbody id="jobs-table"></tbody></table></div>
-    <div class="pagination" id="jobs-pagination"></div>
-  </div>
-
-  <!-- AUDIT -->
-  <div id="section-audit" class="section">
-    <div class="header"><h2>Audit Logs</h2></div>
-    <div class="search-bar"><input class="input" id="audit-action-search" placeholder="Filter by action..." onkeyup="loadAudit()"><input class="input" id="audit-email-search" placeholder="Filter by admin..." onkeyup="loadAudit()"></div>
-    <div class="card" id="audit-logs"></div>
-    <div class="pagination" id="audit-pagination"></div>
-  </div>
-
-  <!-- SETTINGS -->
-  <div id="section-settings" class="section">
-    <div class="header"><h2>System Settings</h2></div>
-    <div class="card" id="settings-list"></div>
-  </div>
-
-  <!-- SUPPORT -->
-  <div id="section-support" class="section">
-    <div class="header"><h2>Support Tickets</h2></div>
-    <div class="card"><table><thead><tr><th>ID</th><th>User</th><th>Subject</th><th>Status</th><th>Priority</th><th>Created</th></tr></thead><tbody id="support-table"></tbody></table></div>
-    <div class="pagination" id="support-pagination"></div>
-  </div>
-
-  <!-- NOTIFICATIONS -->
-  <div id="section-notifications" class="section">
-    <div class="header"><h2>Notifications</h2></div>
-    <div class="card" id="notif-list"></div>
-  </div>
-</main>
-
-<!-- MODALS -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal-content"></div>
 </div>
 
 <script>
-const API = window.location.origin;
+const API = location.origin;
 let token = localStorage.getItem('admin_token');
 let adminData = null;
+let _debounceTimers = {};
+
+function debounce(fn, ms) {
+  const key = fn.name;
+  return () => { clearTimeout(_debounceTimers[key]); _debounceTimers[key] = setTimeout(fn, ms); };
+}
 
 async function api(path, opts = {}) {
   const headers = { 'Content-Type': 'application/json', ...opts.headers };
@@ -231,19 +318,37 @@ function toast(msg, type = 'info') {
   setTimeout(() => el.remove(), 3000);
 }
 
-function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'; }
-function formatDateTime(d) { return d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'; }
-function badgeClass(s) { return s === 'active' || s === 'completed' || s === 'running' ? 'badge-green' : s === 'failed' || s === 'cancelled' || s === 'closed' ? 'badge-red' : s === 'queued' || s === 'pending' || s === 'open' ? 'badge-yellow' : 'badge-gray'; }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'; }
+function fmtDT(d) { return d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'; }
+function badgeCls(s) { return s === 'active' || s === 'completed' || s === 'running' ? 'badge-green' : s === 'failed' || s === 'cancelled' || s === 'closed' ? 'badge-red' : s === 'queued' || s === 'pending' || s === 'open' ? 'badge-yellow' : 'badge-gray'; }
 
 function showModal(html) { document.getElementById('modal-content').innerHTML = html; document.getElementById('modal-overlay').classList.add('active'); }
 function closeModal() { document.getElementById('modal-overlay').classList.remove('active'); }
 document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
-function showSection(name) {
+// Sidebar
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('active');
+  document.getElementById('hamburger').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('active');
+  document.getElementById('hamburger').classList.remove('open');
+}
+
+function nav(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('section-' + name).classList.add('active');
-  document.querySelector(`.nav-item[data-section="${name}"]`).classList.add('active');
+  const sec = document.getElementById('section-' + name);
+  if (sec) sec.classList.add('active');
+  const navEl = document.querySelector(`.nav-item[data-section="${name}"]`);
+  if (navEl) navEl.classList.add('active');
+  const titles = { dashboard:'Dashboard', users:'Users', plans:'Plans', subscriptions:'Subscriptions', products:'Products', features:'Feature Flags', health:'Health', jobs:'Jobs', audit:'Audit Logs', settings:'Settings', support:'Support', notifications:'Notifications' };
+  document.getElementById('page-title').textContent = titles[name] || name;
+  closeSidebar();
+  document.getElementById('main-scroll').scrollTop = 0;
   const loaders = { dashboard: loadDashboard, users: loadUsers, plans: loadPlans, subscriptions: loadSubscriptions, products: loadProducts, features: loadFeatures, health: loadHealth, jobs: loadJobs, audit: loadAudit, settings: loadSettings, support: loadSupport, notifications: loadNotifications };
   if (loaders[name]) loaders[name]();
 }
@@ -257,15 +362,17 @@ async function doLogin() {
     adminData = data.admin;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin-info').innerHTML = `<div style="font-weight:600">${data.admin.display_name || data.admin.username}</div><div style="font-size:11px;color:var(--muted)">${data.admin.role}</div>`;
-    showSection('dashboard');
+    nav('dashboard');
   } catch (e) { toast(e.message, 'error'); }
 }
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
 function logout() {
   token = null;
   localStorage.removeItem('admin_token');
   document.getElementById('login-screen').style.display = 'block';
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('page-title').textContent = 'Admin Login';
 }
 
 // DASHBOARD
@@ -273,43 +380,37 @@ async function loadDashboard() {
   try {
     const d = await api('/api/admin/dashboard');
     document.getElementById('dash-stats').innerHTML = [
-      { label: 'Users', value: d.users.total, sub: `${d.users.active} active`, cls: '' },
-      { label: 'Products', value: d.products.total, sub: '', cls: '' },
-      { label: 'Subscriptions', value: d.subscriptions.total, sub: '', cls: '' },
-      { label: 'MRR', value: '$' + (d.revenue.mrr || 0).toFixed(2), sub: '', cls: '' },
-      { label: 'Credits Used', value: d.credits.used + '/' + d.credits.limit, sub: '', cls: '' },
-      { label: 'Jobs Running', value: d.jobs.running, sub: `${d.jobs.total} total`, cls: '' },
-    ].map(s => `<div class="stat-card"><div class="label">${s.label}</div><div class="value">${s.value}</div>${s.sub ? `<div class="change">${s.sub}</div>` : ''}</div>`).join('');
-    document.getElementById('dash-jobs').innerHTML = d.recent_jobs.map(j => `<tr><td>${j.id}</td><td>${j.job_type}</td><td><span class="badge ${badgeClass(j.status)}">${j.status}</span></td><td>${formatDateTime(j.created_at)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">No recent jobs</td></tr>';
+      { l: 'Users', v: d.users.total, s: d.users.active + ' active' },
+      { l: 'Products', v: d.products.total },
+      { l: 'Subscriptions', v: d.subscriptions.total },
+      { l: 'MRR', v: '$' + (d.revenue.mrr || 0).toFixed(2) },
+      { l: 'Credits', v: d.credits.used + '/' + d.credits.limit },
+      { l: 'Jobs', v: d.jobs.running + ' running', s: d.jobs.total + ' total' },
+    ].map(s => `<div class="stat-card"><div class="label">${s.l}</div><div class="value">${s.v}</div>${s.s ? `<div class="sub">${s.s}</div>` : ''}</div>`).join('');
+    document.getElementById('dash-jobs').innerHTML = d.recent_jobs.map(j => `<tr><td>${j.id}</td><td>${j.job_type}</td><td><span class="badge ${badgeCls(j.status)}">${j.status}</span></td><td>${fmtDT(j.created_at)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">No recent jobs</td></tr>';
   } catch (e) { toast(e.message, 'error'); }
 }
 
 // USERS
 let userPage = 1;
-async function loadUsers(page = 1) {
-  userPage = page;
+async function loadUsers(page) {
+  if (page) userPage = page;
   const search = document.getElementById('user-search').value;
   const status = document.getElementById('user-status-filter').value;
   try {
-    const d = await api(`/api/admin/users?page=${page}&per_page=25&search=${encodeURIComponent(search)}&status=${status}`);
+    const d = await api(`/api/admin/users?page=${userPage}&per_page=25&search=${encodeURIComponent(search)}&status=${status}`);
     document.getElementById('users-table').innerHTML = d.users.map(u => `<tr>
       <td>${u.id}</td><td>${u.username}</td><td>${u.email || '-'}</td><td>${u.plan_name || 'Free'}</td>
       <td><span class="badge ${u.is_active ? 'badge-green' : 'badge-red'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
-      <td>${formatDate(u.created_at)}</td>
+      <td>${fmtDate(u.created_at)}</td>
       <td><button class="btn btn-sm btn-ghost" onclick="userAction(${u.id},'${u.is_active ? 'suspend' : 'activate'}')">${u.is_active ? 'Suspend' : 'Activate'}</button></td>
     </tr>`).join('') || '<tr><td colspan="7" class="empty">No users found</td></tr>';
-    const totalPages = Math.ceil(d.total / 25);
-    document.getElementById('users-pagination').innerHTML = Array.from({length: Math.min(totalPages, 5)}, (_, i) => i + 1).map(p => `<button class="${p === page ? 'active' : ''}" onclick="loadUsers(${p})">${p}</button>`).join('');
+    renderPagination('users-pagination', d.total, 25, userPage, loadUsers);
   } catch (e) { toast(e.message, 'error'); }
 }
-
 async function userAction(userId, action) {
   if (!confirm(`${action} user ${userId}?`)) return;
-  try {
-    await api(`/api/admin/users/${userId}/action`, { method: 'POST', body: JSON.stringify({ action }) });
-    toast(`User ${action}d`, 'success');
-    loadUsers(userPage);
-  } catch (e) { toast(e.message, 'error'); }
+  try { await api(`/api/admin/users/${userId}/action`, { method: 'POST', body: JSON.stringify({ action }) }); toast(`User ${action}d`, 'success'); loadUsers(); } catch (e) { toast(e.message, 'error'); }
 }
 
 // PLANS
@@ -317,100 +418,74 @@ async function loadPlans() {
   try {
     const d = await api('/api/admin/plans');
     document.getElementById('plans-grid').innerHTML = d.plans.map(p => `
-      <div class="stat-card" style="text-align:center">
-        <div style="font-size:18px;font-weight:700;margin-bottom:8px">${p.name}</div>
-        <div style="font-size:28px;font-weight:700;color:var(--accent2)">$${p.price_monthly}<span style="font-size:14px;color:var(--muted)">/mo</span></div>
-        <div style="margin:12px 0;font-size:12px;color:var(--muted)">
-          ${p.ai_credits_monthly} AI credits<br>
-          ${p.research_limit} research/mo<br>
-          ${p.tracking_limit} tracking<br>
-          ${p.team_members} team member${p.team_members > 1 ? 's' : ''}
-        </div>
-        <button class="btn btn-sm btn-ghost" onclick="editPlan(${p.id})">Edit</button>
+      <div class="stat-card plan-card">
+        <div style="font-size:17px;font-weight:700;margin-bottom:6px">${p.name}</div>
+        <div style="font-size:28px;font-weight:700;color:var(--accent2)">$${p.price_monthly}<span style="font-size:13px;color:var(--muted)">/mo</span></div>
+        <div style="margin:10px 0;font-size:12px;color:var(--muted);line-height:1.6">${p.ai_credits_monthly} AI credits<br>${p.research_limit} research/mo<br>${p.tracking_limit} tracking<br>${p.team_members} member${p.team_members > 1 ? 's' : ''}</div>
+        <button class="btn btn-sm btn-ghost" onclick="showPlanModal(${JSON.stringify(p).replace(/"/g, '&quot;')})">Edit</button>
       </div>
     `).join('');
   } catch (e) { toast(e.message, 'error'); }
 }
-
-function showPlanModal(plan = null) {
-  const p = plan || {};
+function showPlanModal(p) {
+  p = p || {};
   showModal(`
-    <h3>${plan ? 'Edit Plan' : 'New Plan'}</h3>
+    <h3>${p.id ? 'Edit' : 'New'} Plan</h3>
     <div class="form-group"><label>Name</label><input class="input" id="plan-name" value="${p.name || ''}"></div>
     <div class="form-group"><label>Slug</label><input class="input" id="plan-slug" value="${p.slug || ''}"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="form-row form-row-2">
       <div class="form-group"><label>Monthly ($)</label><input class="input" id="plan-monthly" type="number" step="0.01" value="${p.price_monthly || 0}"></div>
       <div class="form-group"><label>Yearly ($)</label><input class="input" id="plan-yearly" type="number" step="0.01" value="${p.price_yearly || 0}"></div>
       <div class="form-group"><label>AI Credits/mo</label><input class="input" id="plan-credits" type="number" value="${p.ai_credits_monthly || 50}"></div>
       <div class="form-group"><label>Research Limit</label><input class="input" id="plan-research" type="number" value="${p.research_limit || 10}"></div>
-      <div class="form-group"><label>Tracking Limit</label><input class="input" id="plan-tracking" type="number" value="${p.tracking_limit || 5}"></div>
+      <div class="form-group"><label>Tracking</label><input class="input" id="plan-tracking" type="number" value="${p.tracking_limit || 5}"></div>
       <div class="form-group"><label>Team Members</label><input class="input" id="plan-team" type="number" value="${p.team_members || 1}"></div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="savePlan(${p.id || 'null'})">Save</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="savePlan(${p.id || 'null'})">Save</button></div>
   `);
 }
-
 async function savePlan(id) {
-  const body = {
-    name: document.getElementById('plan-name').value,
-    slug: document.getElementById('plan-slug').value,
-    price_monthly: parseFloat(document.getElementById('plan-monthly').value) || 0,
-    price_yearly: parseFloat(document.getElementById('plan-yearly').value) || 0,
-    ai_credits_monthly: parseInt(document.getElementById('plan-credits').value) || 50,
-    research_limit: parseInt(document.getElementById('plan-research').value) || 10,
-    tracking_limit: parseInt(document.getElementById('plan-tracking').value) || 5,
-    team_members: parseInt(document.getElementById('plan-team').value) || 1,
-  };
-  try {
-    if (id) { await api(`/api/admin/plans/${id}`, { method: 'PUT', body: JSON.stringify(body) }); }
-    else { await api('/api/admin/plans', { method: 'POST', body: JSON.stringify(body) }); }
-    closeModal();
-    toast('Plan saved', 'success');
-    loadPlans();
-  } catch (e) { toast(e.message, 'error'); }
+  const body = { name: gv('plan-name'), slug: gv('plan-slug'), price_monthly: gf('plan-monthly'), price_yearly: gf('plan-yearly'), ai_credits_monthly: gi('plan-credits'), research_limit: gi('plan-research'), tracking_limit: gi('plan-tracking'), team_members: gi('plan-team') };
+  try { if (id) await api(`/api/admin/plans/${id}`, { method: 'PUT', body: JSON.stringify(body) }); else await api('/api/admin/plans', { method: 'POST', body: JSON.stringify(body) }); closeModal(); toast('Plan saved', 'success'); loadPlans(); } catch (e) { toast(e.message, 'error'); }
 }
+function gv(id) { return document.getElementById(id).value; }
+function gf(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function gi(id) { return parseInt(document.getElementById(id).value) || 0; }
 
 // SUBSCRIPTIONS
 let subPage = 1;
-async function loadSubscriptions(page = 1) {
-  subPage = page;
+async function loadSubscriptions(page) {
+  if (page) subPage = page;
   const status = document.getElementById('sub-status-filter').value;
   try {
-    const d = await api(`/api/admin/subscriptions?page=${page}&per_page=25&status=${status}`);
+    const d = await api(`/api/admin/subscriptions?page=${subPage}&per_page=25&status=${status}`);
     document.getElementById('subs-table').innerHTML = d.subscriptions.map(s => `<tr>
-      <td>${s.id}</td><td>${s.username || 'User #' + s.user_id}</td><td>${s.plan_name}</td>
-      <td><span class="badge ${badgeClass(s.status)}">${s.status}</span></td>
-      <td>${s.ai_credits_used || 0}/${s.ai_credits_limit || 0}</td><td>${formatDate(s.created_at)}</td>
-      <td><button class="btn btn-sm btn-ghost" onclick="subAction(${s.id},'cancel')">Cancel</button>
-      <button class="btn btn-sm btn-ghost" onclick="subAction(${s.id},'reactivate')">Reactivate</button></td>
-    </tr>`).join('') || '<tr><td colspan="7" class="empty">No subscriptions found</td></tr>';
+      <td>${s.id}</td><td>${s.username || '#' + s.user_id}</td><td>${s.plan_name}</td>
+      <td><span class="badge ${badgeCls(s.status)}">${s.status}</span></td>
+      <td>${s.ai_credits_used || 0}/${s.ai_credits_limit || 0}</td><td>${fmtDate(s.created_at)}</td>
+      <td><button class="btn btn-sm btn-ghost" onclick="subAction(${s.id},'cancel')">Cancel</button> <button class="btn btn-sm btn-ghost" onclick="subAction(${s.id},'reactivate')">Reactivate</button></td>
+    </tr>`).join('') || '<tr><td colspan="7" class="empty">No subscriptions</td></tr>';
+    renderPagination('subs-pagination', d.total, 25, subPage, loadSubscriptions);
   } catch (e) { toast(e.message, 'error'); }
 }
-
 async function subAction(id, action) {
   if (!confirm(`${action} subscription ${id}?`)) return;
-  try {
-    await api(`/api/admin/subscriptions/${id}/action`, { method: 'POST', body: JSON.stringify({ action }) });
-    toast(`Subscription ${action}d`, 'success');
-    loadSubscriptions(subPage);
-  } catch (e) { toast(e.message, 'error'); }
+  try { await api(`/api/admin/subscriptions/${id}/action`, { method: 'POST', body: JSON.stringify({ action }) }); toast('Done', 'success'); loadSubscriptions(); } catch (e) { toast(e.message, 'error'); }
 }
 
 // PRODUCTS
 let productPage = 1;
-async function loadProducts(page = 1) {
-  productPage = page;
+async function loadProducts(page) {
+  if (page) productPage = page;
   const search = document.getElementById('product-search').value;
   try {
-    const d = await api(`/api/admin/products?page=${page}&per_page=25&search=${encodeURIComponent(search)}`);
+    const d = await api(`/api/admin/products?page=${productPage}&per_page=25&search=${encodeURIComponent(search)}`);
     document.getElementById('products-table').innerHTML = d.products.map(p => `<tr>
-      <td style="font-family:monospace">${p.asin}</td><td>${(p.name || '').substring(0, 40)}</td><td>${p.category || '-'}</td>
-      <td>$${(p.amazon_price || 0).toFixed(2)}</td><td>${p.rating || 0} ⭐</td><td>${((p.ai_score || 0) * 100).toFixed(0)}%</td>
+      <td style="font-family:monospace">${p.asin}</td><td>${(p.name || '').substring(0, 35)}</td><td>${p.category || '-'}</td>
+      <td>$${(p.amazon_price || 0).toFixed(2)}</td><td>${p.rating || 0} *</td><td>${((p.ai_score || 0) * 100).toFixed(0)}%</td>
       <td><span class="badge badge-${p.traffic_light === 'GREEN' ? 'green' : p.traffic_light === 'YELLOW' ? 'yellow' : 'red'}">${p.traffic_light}</span></td>
-    </tr>`).join('') || '<tr><td colspan="7" class="empty">No products found</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="7" class="empty">No products</td></tr>';
+    renderPagination('products-pagination', d.total, 25, productPage, loadProducts);
   } catch (e) { toast(e.message, 'error'); }
 }
 
@@ -422,34 +497,12 @@ async function loadFeatures() {
       <td><strong>${f.flag_name}</strong></td><td>${f.description || '-'}</td><td>${f.scope}</td>
       <td>${f.rollout_percentage}%</td>
       <td><label class="toggle"><input type="checkbox" ${f.is_enabled ? 'checked' : ''} onchange="toggleFeature(${f.id})"><span class="slider"></span></label></td>
-      <td><button class="btn btn-sm btn-ghost" onclick="editFeature(${f.id})">Edit</button></td>
+      <td><button class="btn btn-sm btn-ghost" onclick="toast('Edit coming soon','info')">Edit</button></td>
     </tr>`).join('') || '<tr><td colspan="6" class="empty">No feature flags</td></tr>';
   } catch (e) { toast(e.message, 'error'); }
 }
-
 async function toggleFeature(id) {
-  try { await api(`/api/admin/features/${id}/toggle`, { method: 'POST' }); toast('Feature toggled', 'success'); } catch (e) { toast(e.message, 'error'); }
-}
-
-function showFeatureModal() {
-  showModal(`
-    <h3>New Feature Flag</h3>
-    <div class="form-group"><label>Flag Name</label><input class="input" id="flag-name"></div>
-    <div class="form-group"><label>Description</label><input class="input" id="flag-desc"></div>
-    <div class="form-group"><label>Scope</label><select class="input" id="flag-scope"><option value="global">Global</option><option value="plan">Plan</option><option value="user">User</option></select></div>
-    <div class="form-group"><label>Rollout %</label><input class="input" id="flag-rollout" type="number" value="100"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveFeature()">Create</button>
-    </div>
-  `);
-}
-
-async function saveFeature() {
-  try {
-    await api('/api/admin/features', { method: 'POST', body: JSON.stringify({ flag_name: document.getElementById('flag-name').value, description: document.getElementById('flag-desc').value, scope: document.getElementById('flag-scope').value, rollout_percentage: parseInt(document.getElementById('flag-rollout').value) || 100 }) });
-    closeModal(); toast('Feature created', 'success'); loadFeatures();
-  } catch (e) { toast(e.message, 'error'); }
+  try { await api(`/api/admin/features/${id}/toggle`, { method: 'POST' }); toast('Toggled', 'success'); } catch (e) { toast(e.message, 'error'); }
 }
 
 // HEALTH
@@ -457,42 +510,39 @@ async function loadHealth() {
   try {
     const d = await api('/api/admin/health');
     document.getElementById('health-grid').innerHTML = [
-      { label: 'CPU', value: d.cpu + '%' },
-      { label: 'Memory', value: d.memory.percent + '%' },
-      { label: 'Disk', value: d.disk.percent + '%' },
-      { label: 'Database', value: d.database },
-      { label: 'Uptime', value: formatDateTime(d.timestamp) },
-    ].map(h => `<div class="health-item"><span class="label">${h.label}</span><span class="value">${h.value}</span></div>`).join('');
+      { l: 'CPU', v: d.cpu + '%' }, { l: 'Memory', v: d.memory.percent + '%' }, { l: 'Disk', v: d.disk.percent + '%' },
+      { l: 'Database', v: d.database }, { l: 'Time', v: fmtDT(d.timestamp) }
+    ].map(h => `<div class="health-item"><span class="label">${h.l}</span><span class="value">${h.v}</span></div>`).join('');
   } catch (e) { document.getElementById('health-grid').innerHTML = `<div class="health-item"><span class="label">Error</span><span class="value" style="color:var(--red)">${e.message}</span></div>`; }
 }
 
 // JOBS
 let jobPage = 1;
-async function loadJobs(page = 1) {
-  jobPage = page;
+async function loadJobs(page) {
+  if (page) jobPage = page;
   const status = document.getElementById('job-status-filter').value;
   try {
-    const d = await api(`/api/admin/jobs?page=${page}&per_page=25&status=${status}`);
+    const d = await api(`/api/admin/jobs?page=${jobPage}&per_page=25&status=${status}`);
     document.getElementById('jobs-table').innerHTML = d.jobs.map(j => `<tr>
-      <td>${j.id}</td><td>${j.job_type}</td>
-      <td><span class="badge ${badgeClass(j.status)}">${j.status}</span></td>
-      <td>${j.error ? j.error.substring(0, 50) : '-'}</td>
-      <td>${j.duration_ms ? j.duration_ms + 'ms' : '-'}</td><td>${formatDateTime(j.created_at)}</td>
-    </tr>`).join('') || '<tr><td colspan="6" class="empty">No jobs found</td></tr>';
+      <td>${j.id}</td><td>${j.job_type}</td><td><span class="badge ${badgeCls(j.status)}">${j.status}</span></td>
+      <td>${j.error ? j.error.substring(0, 40) : '-'}</td><td>${j.duration_ms ? j.duration_ms + 'ms' : '-'}</td><td>${fmtDT(j.created_at)}</td>
+    </tr>`).join('') || '<tr><td colspan="6" class="empty">No jobs</td></tr>';
+    renderPagination('jobs-pagination', d.total, 25, jobPage, loadJobs);
   } catch (e) { toast(e.message, 'error'); }
 }
 
 // AUDIT
 let auditPage = 1;
-async function loadAudit(page = 1) {
-  auditPage = page;
+async function loadAudit(page) {
+  if (page) auditPage = page;
   const action = document.getElementById('audit-action-search').value;
   const email = document.getElementById('audit-email-search').value;
   try {
-    const d = await api(`/api/admin/audit?page=${page}&per_page=25&action=${encodeURIComponent(action)}&admin_email=${encodeURIComponent(email)}`);
+    const d = await api(`/api/admin/audit?page=${auditPage}&per_page=25&action=${encodeURIComponent(action)}&admin_email=${encodeURIComponent(email)}`);
     document.getElementById('audit-logs').innerHTML = d.logs.map(l => `<div class="log-entry action-${l.action.includes('create') ? 'create' : l.action.includes('delete') ? 'delete' : 'update'}">
-      <strong>${l.admin_email}</strong> — ${l.action} — ${l.target_type} ${l.target_id} ${l.reason ? '(' + l.reason + ')' : ''} <span style="color:var(--muted)">${formatDateTime(l.created_at)}</span>
+      <strong>${l.admin_email}</strong> - ${l.action} - ${l.target_type} ${l.target_id} ${l.reason ? '(' + l.reason + ')' : ''} <span style="color:var(--muted)">${fmtDT(l.created_at)}</span>
     </div>`).join('') || '<div class="empty">No audit logs</div>';
+    renderPagination('audit-pagination', d.total, 25, auditPage, loadAudit);
   } catch (e) { toast(e.message, 'error'); }
 }
 
@@ -500,36 +550,32 @@ async function loadAudit(page = 1) {
 async function loadSettings() {
   try {
     const d = await api('/api/admin/settings');
-    document.getElementById('settings-list').innerHTML = d.settings.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
-      <div><strong>${s.setting_key}</strong><div style="font-size:11px;color:var(--muted)">${s.description}</div></div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input class="input" style="width:200px" value="${JSON.stringify(s.setting_value)}" id="setting-${s.setting_key}">
+    document.getElementById('settings-list').innerHTML = d.settings.map(s => `<div class="setting-row">
+      <div style="flex:1;min-width:150px"><strong>${s.setting_key}</strong><div style="font-size:11px;color:var(--muted)">${s.description}</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex:1;min-width:200px">
+        <input class="input" value="${JSON.stringify(s.setting_value)}" id="setting-${s.setting_key}">
         <button class="btn btn-sm btn-primary" onclick="saveSetting('${s.setting_key}')">Save</button>
       </div>
     </div>`).join('');
   } catch (e) { toast(e.message, 'error'); }
 }
-
 async function saveSetting(key) {
-  try {
-    const val = document.getElementById('setting-' + key).value;
-    await api(`/api/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify({ setting_value: JSON.parse(val) }) });
-    toast('Setting saved', 'success');
-  } catch (e) { toast(e.message, 'error'); }
+  try { await api(`/api/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify({ setting_value: JSON.parse(document.getElementById('setting-' + key).value) }) }); toast('Saved', 'success'); } catch (e) { toast(e.message, 'error'); }
 }
 
 // SUPPORT
 let supportPage = 1;
-async function loadSupport(page = 1) {
-  supportPage = page;
+async function loadSupport(page) {
+  if (page) supportPage = page;
   try {
-    const d = await api(`/api/admin/support?page=${page}&per_page=25`);
+    const d = await api(`/api/admin/support?page=${supportPage}&per_page=25`);
     document.getElementById('support-table').innerHTML = d.tickets.map(t => `<tr>
-      <td>${t.id}</td><td>${t.username || 'User #' + t.user_id}</td><td>${t.subject}</td>
-      <td><span class="badge ${badgeClass(t.status)}">${t.status}</span></td>
+      <td>${t.id}</td><td>${t.username || '#' + t.user_id}</td><td>${t.subject}</td>
+      <td><span class="badge ${badgeCls(t.status)}">${t.status}</span></td>
       <td><span class="badge ${t.priority === 'urgent' ? 'badge-red' : t.priority === 'high' ? 'badge-yellow' : 'badge-gray'}">${t.priority}</span></td>
-      <td>${formatDate(t.created_at)}</td>
+      <td>${fmtDate(t.created_at)}</td>
     </tr>`).join('') || '<tr><td colspan="6" class="empty">No tickets</td></tr>';
+    renderPagination('support-pagination', d.total, 25, supportPage, loadSupport);
   } catch (e) { toast(e.message, 'error'); }
 }
 
@@ -538,17 +584,37 @@ async function loadNotifications() {
   try {
     const d = await api('/api/admin/notifications');
     const unread = d.notifications.filter(n => !n.is_read).length;
-    document.getElementById('notif-badge').innerHTML = unread > 0 ? `<span class="notif-dot"></span>` : '';
-    document.getElementById('notif-list').innerHTML = d.notifications.map(n => `<div style="padding:12px;border-bottom:1px solid var(--border);${n.is_read ? 'opacity:.6' : ''}">
-      <div style="display:flex;justify-content:space-between"><strong>${n.title}</strong><span class="badge badge-${n.severity === 'error' || n.severity === 'critical' ? 'red' : n.severity === 'warning' ? 'yellow' : 'blue'}">${n.severity}</span></div>
+    document.getElementById('notif-badge').innerHTML = unread > 0 ? '<span class="notif-dot"></span>' : '';
+    document.getElementById('notif-list').innerHTML = d.notifications.map(n => `<div class="notif-card" style="${n.is_read ? 'opacity:.6' : ''}">
+      <div style="display:flex;justify-content:space-between;align-items:center"><strong>${n.title}</strong><span class="badge badge-${n.severity === 'error' || n.severity === 'critical' ? 'red' : n.severity === 'warning' ? 'yellow' : 'blue'}">${n.severity}</span></div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px">${n.message}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">${formatDateTime(n.created_at)}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">${fmtDT(n.created_at)}</div>
     </div>`).join('') || '<div class="empty">No notifications</div>';
   } catch (e) { toast(e.message, 'error'); }
 }
 
+// PAGINATION HELPER
+function renderPagination(elId, total, perPage, current, fn) {
+  const pages = Math.ceil(total / perPage);
+  if (pages <= 1) { document.getElementById(elId).innerHTML = ''; return; }
+  let html = '';
+  if (current > 1) html += `<button onclick="${fn.name}(${current - 1})">Prev</button>`;
+  for (let i = Math.max(1, current - 2); i <= Math.min(pages, current + 2); i++) {
+    html += `<button class="${i === current ? 'active' : ''}" onclick="${fn.name}(${i})">${i}</button>`;
+  }
+  if (current < pages) html += `<button onclick="${fn.name}(${current + 1})">Next</button>`;
+  document.getElementById(elId).innerHTML = html;
+}
+
 // INIT
-if (token) { api('/api/admin/auth/me').then(d => { adminData = d; document.getElementById('login-screen').style.display = 'none'; document.getElementById('admin-info').innerHTML = `<div style="font-weight:600">${d.display_name || d.username}</div><div style="font-size:11px;color:var(--muted)">${d.role}</div>`; showSection('dashboard'); }).catch(() => { token = null; localStorage.removeItem('admin_token'); }); }
+if (token) {
+  api('/api/admin/auth/me').then(d => {
+    adminData = d;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-info').innerHTML = `<div style="font-weight:600">${d.display_name || d.username}</div><div style="font-size:11px;color:var(--muted)">${d.role}</div>`;
+    nav('dashboard');
+  }).catch(() => { token = null; localStorage.removeItem('admin_token'); });
+}
 </script>
 </body>
 </html>
