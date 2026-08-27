@@ -495,11 +495,33 @@ class OnlineDatabaseManager:
         return self._execute("SELECT COUNT(*) FROM products", fetch="scalar") or 0
 
     def get_all_products_from_db(self) -> List[Dict[str, Any]]:
-        rows = self._execute("SELECT full_data FROM products ORDER BY ai_score DESC", fetch="all")
+        rows = self._execute(
+            "SELECT asin, name, category, amazon_price, rating, review_count, "
+            "ai_score, estimated_margin_pct, traffic_light, priority_tier, "
+            "supplier_price, seller_info, full_data, created_at, updated_at "
+            "FROM products ORDER BY ai_score DESC", fetch="all")
         products = []
         for row in rows:
             try:
-                products.append(json.loads(row["full_data"]))
+                fd = row.get("full_data") or {}
+                if isinstance(fd, str):
+                    fd = json.loads(fd)
+                product = {
+                    "asin": row.get("asin", ""),
+                    "name": row.get("name", ""),
+                    "category": row.get("category", ""),
+                    "amazon_price": row.get("amazon_price", 0),
+                    "rating": row.get("rating", 0),
+                    "review_count": row.get("review_count", 0),
+                    "ai_score": row.get("ai_score", 0),
+                    "estimated_margin_pct": row.get("estimated_margin_pct", 0),
+                    "traffic_light": row.get("traffic_light", "RED"),
+                    "priority_tier": row.get("priority_tier", ""),
+                    "supplier_price": row.get("supplier_price", 0),
+                }
+                if fd and isinstance(fd, dict):
+                    product.update(fd)
+                products.append(product)
             except Exception:
                 continue
         return products
