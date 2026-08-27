@@ -347,6 +347,16 @@ def create_app() -> FastAPI:
     _web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
     _index_html = os.path.join(_web_dir, "index.html")
 
+    @app.get("/api/debug/paths")
+    async def debug_paths():
+        return {
+            "file": __file__,
+            "web_dir": _web_dir,
+            "index_html": _index_html,
+            "exists": os.path.exists(_index_html),
+            "web_dir_exists": os.path.isdir(_web_dir),
+        }
+
     if os.path.exists(_index_html):
         @app.get("/", response_class=HTMLResponse)
         async def serve_frontend():
