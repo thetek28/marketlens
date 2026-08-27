@@ -341,6 +341,49 @@ def create_app() -> FastAPI:
         return {"categories": [], "keywords": [], "config": {}}
 
     # ════════════════════════════════════════════════════════
+    # WEBSOCKET
+    # ════════════════════════════════════════════════════════
+
+    ws_clients = set()
+
+    @app.websocket("/ws")
+    async def websocket_endpoint(ws: WebSocket):
+        await ws.accept()
+        ws_clients.add(ws)
+        try:
+            await ws.send_text(json.dumps({"type": "connected", "data": {"products": len(db.get_all_products_from_db())}}))
+            while True:
+                await ws.receive_text()
+        except WebSocketDisconnect:
+            ws_clients.discard(ws)
+        except Exception:
+            ws_clients.discard(ws)
+
+    # ════════════════════════════════════════════════════════
+    # ANALYSIS STUBS (cloud has no live data collection)
+    # ════════════════════════════════════════════════════════
+
+    @app.get("/api/analysis/status")
+    async def analysis_status(user: str = Depends(get_current_user)):
+        return {"running": False, "cycle": 0, "total_products": len(db.get_all_products_from_db()), "hidden_gems": 0, "seen_asins": 0, "elapsed_seconds": 0, "categories": [], "keywords": []}
+
+    @app.post("/api/analysis/start")
+    async def analysis_start(user: str = Depends(get_current_user)):
+        return {"status": "started", "message": "Cloud mode: using seeded data"}
+
+    @app.post("/api/analysis/stop")
+    async def analysis_stop(user: str = Depends(get_current_user)):
+        return {"status": "stopped"}
+
+    @app.post("/api/analysis/cycle")
+    async def analysis_cycle(user: str = Depends(get_current_user)):
+        return {"status": "ok", "products": len(db.get_all_products_from_db())}
+
+    @app.post("/api/analysis/collect")
+    async def analysis_collect(user: str = Depends(get_current_user)):
+        return {"status": "ok", "products": 0}
+
+    # ════════════════════════════════════════════════════════
     # FRONTEND
     # ════════════════════════════════════════════════════════
 
