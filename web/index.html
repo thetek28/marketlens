@@ -1345,17 +1345,18 @@
                 <button onclick="showTab('watchlist',this)" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition text-sm" title="Watchlist"><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><span>Watchlist</span></button>
                 <button onclick="showTab('analytics',this)" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition text-sm" title="Analytics"><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg><span>Analytics</span></button>
                 <button onclick="showTab('settings',this)" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition text-sm" title="Settings"><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>Settings</span></button>
+                <button onclick="showTab('billing',this)" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition text-sm" title="Billing"><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg><span>Billing</span></button>
                 <button onclick="showTab('help',this)" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition text-sm" title="Help"><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Help</span></button>
             </div>
             <div class="px-3 pt-3 border-t border-dark-600">
                 <div class="flex items-center gap-2 mb-2">
                     <span class="text-[10px] text-yellow-500">&#9733;</span>
-                    <span class="text-xs font-medium text-gray-300">AI Credits</span>
+                    <span class="text-xs font-medium text-gray-300" id="sidebar-plan-name">Free Plan</span>
                 </div>
-                <div class="text-xs text-gray-400 mb-1"><span class="text-white font-semibold" id="credits-used">0</span> / <span id="credits-total">2,000</span></div>
+                <div class="text-xs text-gray-400 mb-1"><span class="text-white font-semibold" id="credits-used">0</span> / <span id="credits-total">2,000</span> AI Credits</div>
                 <div class="w-full bg-dark-700 rounded-full h-1.5 mb-1"><div id="credits-bar" class="bg-yellow-500 h-1.5 rounded-full transition-all" style="width:0%"></div></div>
                 <div class="text-[10px] text-gray-500 mb-2"><span id="credits-pct">0</span>% Remaining</div>
-                <button onclick="showUpgradeModal()" class="w-full py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-400 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all flex items-center justify-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>Upgrade Plan</button>
+                <button onclick="showTab('billing',document.querySelector('[onclick*=billing]'))" class="w-full py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-400 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all flex items-center justify-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>Manage Plan</button>
             </div>
         </nav>
 
@@ -1773,6 +1774,9 @@ async function checkAuth() {
         const data = await r.json();
         if (data.subscription) userSub = data.subscription;
         if (data.usage) updateUserCredits(data.usage);
+        api('/api/billing/usage').then(d => {
+            if (d && d.remaining) updateUserCredits(d);
+        }).catch(() => {});
         return true;
     } catch { showLogin(); return false; }
 }
@@ -1786,10 +1790,15 @@ function updateUserCredits(usage) {
     const creditsTotalEl = document.getElementById('credits-total');
     const creditsBar = document.getElementById('credits-bar');
     const creditsPct = document.getElementById('credits-pct');
+    const planNameEl = document.getElementById('sidebar-plan-name');
     if (creditsUsedEl) creditsUsedEl.textContent = used.toLocaleString();
     if (creditsTotalEl) creditsTotalEl.textContent = limit.toLocaleString();
     if (creditsBar) creditsBar.style.width = pct + '%';
     if (creditsPct) creditsPct.textContent = pct;
+    if (planNameEl && usage.tier) {
+        const tierNames = { free: 'Free Plan', pro: 'Pro Plan', business: 'Business Plan' };
+        planNameEl.textContent = tierNames[usage.tier] || usage.tier + ' Plan';
+    }
 }
 
 async function api(url, opts = {}) {
@@ -1848,7 +1857,7 @@ function showTab(name, el) {
     loadCurrentTab();
 }
 function loadCurrentTab() {
-    const renderers = { research: renderResearch, dashboard: renderDashboard, ideas: renderIdeas, tracking: renderTracking, history: renderHistory, watchlist: renderWatchlist, analytics: renderAnalytics, settings: renderSettings, help: renderHelp, products: renderProducts, keywords: renderKeywords, listing: renderListing, profits: renderProfits, suppliers: renderSuppliers, portfolio: renderPortfolio, tools: renderTools, charts: renderCharts, excluded: renderExcluded };
+    const renderers = { research: renderResearch, dashboard: renderDashboard, ideas: renderIdeas, tracking: renderTracking, history: renderHistory, watchlist: renderWatchlist, analytics: renderAnalytics, settings: renderSettings, help: renderHelp, products: renderProducts, keywords: renderKeywords, listing: renderListing, profits: renderProfits, suppliers: renderSuppliers, portfolio: renderPortfolio, tools: renderTools, charts: renderCharts, excluded: renderExcluded, billing: renderBilling };
     const r = renderers[currentTab];
     if (r) r();
 }
@@ -8414,6 +8423,252 @@ function markAllRead() {
         const notifs = (d?.notifications || []).filter(n => !n.is_read);
         Promise.all(notifs.map(n => api('/api/user/notifications/' + n.id + '/read', { method: 'POST' }))).then(() => { checkNotifications(); showNotifications(); });
     }).catch(() => {});
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TAB: BILLING — Plans, Subscription, Invoices
+   ══════════════════════════════════════════════════════════════ */
+let billingInterval = 'monthly';
+let billingPlans = [];
+let billingSub = null;
+
+async function renderBilling() {
+    $('main-content').innerHTML = `<div class="space-y-6"><h1 class="text-2xl font-bold text-white">Billing & Subscription</h1><p class="text-sm text-gray-400">Manage your plan, payments, and invoices</p><div class="grid grid-cols-1 md:grid-cols-3 gap-4">${Array(3).fill('<div class="bg-dark-800 rounded-xl p-5 border border-dark-600 skeleton" style="height:120px"></div>').join('')}</div></div>`;
+
+    const [plansRes, subRes] = await Promise.all([
+        api('/api/billing/plans').catch(() => null),
+        api('/api/billing/subscription').catch(() => null)
+    ]);
+
+    billingPlans = plansRes?.plans || [];
+    billingSub = subRes?.subscription;
+    const usage = subRes?.usage;
+
+    let html = `<div class="space-y-6">
+        <div class="flex items-center justify-between">
+            <div><h1 class="text-2xl font-bold text-white">Billing & Subscription</h1><p class="text-sm text-gray-400 mt-1">Manage your plan, payments, and invoices</p></div>
+            ${billingSub?.status === 'active' ? `<button onclick="openCustomerPortal()" class="px-4 py-2 rounded-lg text-sm font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600">Manage Billing Portal</button>` : ''}
+        </div>`;
+
+    // Current Plan Card
+    const plan = billingSub;
+    const planName = plan?.plan_name || plan?.plan_slug || 'Free';
+    const planSlug = plan?.plan_slug || 'free';
+    const status = plan?.status || 'active';
+    const cycle = plan?.billing_cycle || 'monthly';
+    const periodEnd = plan?.current_period_end;
+    const cancelAtEnd = plan?.cancel_at_period_end;
+
+    const statusColors = { active: 'green', trialing: 'blue', past_due: 'yellow', cancelled: 'red', incomplete: 'gray', expired: 'red', paused: 'yellow' };
+    const statusColor = statusColors[status] || 'gray';
+
+    html += `<div class="bg-dark-800 rounded-xl p-6 border border-dark-600">
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <h2 class="text-xl font-bold text-white">${esc(planName)}</h2>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-${statusColor}-500/20 text-${statusColor}-400 border border-${statusColor}-500/30">${status.toUpperCase()}</span>
+                    ${cancelAtEnd ? '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Cancels at period end</span>' : ''}
+                </div>
+                <div class="text-sm text-gray-400">${planSlug === 'free' ? 'Free forever' : `$${plan?.price_monthly || 0}/${cycle === 'yearly' ? 'yr' : 'mo'}`}</div>
+            </div>
+            ${planSlug !== 'free' ? `<div class="flex gap-2">
+                ${!cancelAtEnd ? `<button onclick="showCancelSubscription()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition">Cancel</button>` : `<button onclick="reactivateSubscription()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/10 text-green-400 hover:bg-green-500/20 border border-green-500/20 transition">Reactivate</button>`}
+            </div>` : ''}
+        </div>
+        ${periodEnd ? `<div class="text-xs text-gray-500">${cancelAtEnd ? 'Access ends' : 'Next billing date'}: ${new Date(periodEnd).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}</div>` : ''}
+    </div>`;
+
+    // Usage Bars
+    if (usage && usage.limits) {
+        const items = [
+            { label: 'AI Credits', used: usage.used?.ai_credits || 0, limit: usage.limits?.ai_credits || 0, icon: '🤖' },
+            { label: 'Research', used: usage.used?.research || 0, limit: usage.limits?.research || 0, icon: '🔬' },
+            { label: 'Tracking', used: usage.used?.tracking || 0, limit: usage.limits?.tracking || 0, icon: '📊' },
+            { label: 'Suppliers', used: usage.used?.suppliers || 0, limit: usage.limits?.suppliers || 0, icon: '🏭' },
+            { label: 'Listings', used: usage.used?.listings || 0, limit: usage.limits?.listings || 0, icon: '📋' },
+            { label: 'Exports', used: usage.used?.exports || 0, limit: usage.limits?.exports || 0, icon: '📤' }
+        ];
+        html += `<div class="bg-dark-800 rounded-xl p-6 border border-dark-600">
+            <h3 class="text-sm font-bold text-white mb-4">Usage This Period</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                ${items.map(i => {
+                    const pct = i.limit > 0 ? Math.min(100, Math.round(i.used / i.limit * 100)) : 0;
+                    const color = pct > 90 ? 'red' : pct > 70 ? 'yellow' : 'accent';
+                    return `<div>
+                        <div class="flex items-center justify-between text-xs mb-1"><span class="text-gray-400">${i.icon} ${i.label}</span><span class="text-white font-medium">${i.used} / ${i.limit}</span></div>
+                        <div class="w-full bg-dark-700 rounded-full h-1.5"><div class="bg-${color} h-1.5 rounded-full transition-all" style="width:${pct}%"></div></div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>`;
+    }
+
+    // Plan Comparison
+    html += `<div class="bg-dark-800 rounded-xl p-6 border border-dark-600">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-white">Change Plan</h3>
+            <div class="flex bg-dark-700 rounded-lg border border-dark-600 overflow-hidden">
+                <button onclick="billingInterval='monthly';renderBilling()" class="px-3 py-1.5 text-xs font-medium ${billingInterval==='monthly'?'bg-accent text-white':'text-gray-400 hover:text-white'} transition">Monthly</button>
+                <button onclick="billingInterval='yearly';renderBilling()" class="px-3 py-1.5 text-xs font-medium ${billingInterval==='yearly'?'bg-accent text-white':'text-gray-400 hover:text-white'} transition">Yearly <span class="text-green-400 text-[10px]">Save ~17%</span></button>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${billingPlans.filter(p => p.is_active !== false).map(p => {
+                const price = billingInterval === 'yearly' ? (p.price_yearly || 0) : (p.price_monthly || 0);
+                const monthly = billingInterval === 'yearly' && price > 0 ? (price / 12).toFixed(2) : price;
+                const isCurrent = p.slug === planSlug;
+                const features = typeof p.features === 'string' ? JSON.parse(p.features || '{}') : (p.features || {});
+                const featureList = [
+                    { key: 'ai_analysis', label: 'AI Analysis' },
+                    { key: 'tracking', label: 'Product Tracking' },
+                    { key: 'supplier_sourcing', label: 'Supplier Sourcing' },
+                    { key: 'listing_generator', label: 'Listing Generator' },
+                    { key: 'analytics', label: 'Analytics' },
+                    { key: 'api_access', label: 'API Access' },
+                    { key: 'export', label: 'Export' },
+                    { key: 'team_features', label: 'Team Features' }
+                ];
+                return `<div class="bg-dark-700 rounded-xl p-5 border ${isCurrent ? 'border-accent' : 'border-dark-600'} relative">
+                    ${isCurrent ? '<div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent rounded-full text-[10px] font-bold text-white">CURRENT</div>' : ''}
+                    <div class="text-center mb-4">
+                        <div class="text-lg font-bold text-white">${esc(p.name)}</div>
+                        <div class="text-3xl font-bold text-white mt-2">$${typeof monthly === 'string' ? monthly : monthly.toFixed(2)}<span class="text-sm font-normal text-gray-400">/${billingInterval === 'yearly' ? 'mo' : 'mo'}</span></div>
+                        ${billingInterval === 'yearly' && price > 0 ? `<div class="text-xs text-gray-500 mt-1">$${price}/year billed annually</div>` : ''}
+                        <div class="text-xs text-gray-400 mt-2">${esc(p.description || '')}</div>
+                    </div>
+                    <div class="space-y-2 mb-5 text-xs">
+                        <div class="flex items-center gap-2 text-gray-300"><span class="text-green-400">✓</span> ${p.ai_credits_monthly} AI Credits/mo</div>
+                        <div class="flex items-center gap-2 text-gray-300"><span class="text-green-400">✓</span> ${p.research_limit} Research Jobs/mo</div>
+                        <div class="flex items-center gap-2 text-gray-300"><span class="text-green-400">✓</span> ${p.tracking_limit} Products Tracked</div>
+                        <div class="flex items-center gap-2 text-gray-300"><span class="text-green-400">✓</span> ${p.supplier_search_limit} Supplier Searches</div>
+                        <div class="flex items-center gap-2 text-gray-300"><span class="text-green-400">✓</span> ${p.listing_gen_limit} Listing Generations</div>
+                        ${p.api_access ? '<div class="flex items-center gap-2 text-gray-300"><span class="text-green-400">✓</span> API Access</div>' : '<div class="flex items-center gap-2 text-gray-500"><span>—</span> API Access</div>'}
+                        ${p.advanced_analytics ? '<div class="flex items-center gap-2 text-gray-300"><span class="text-green-400">✓</span> Advanced Analytics</div>' : ''}
+                    </div>
+                    ${isCurrent ? '<button class="w-full py-2 rounded-lg text-sm font-medium bg-dark-600 text-gray-400 border border-dark-500 cursor-default">Current Plan</button>'
+                        : (p.slug === 'free' ? '<button class="w-full py-2 rounded-lg text-sm font-medium bg-dark-600 text-gray-400 border border-dark-500 cursor-default">Free Plan</button>'
+                        : `<button onclick="startCheckout('${esc(p.slug)}')" class="w-full py-2 rounded-lg text-sm font-semibold bg-accent text-white hover:bg-accent-dark transition">Choose ${esc(p.name)}</button>`)}
+                </div>`;
+            }).join('')}
+        </div>
+    </div>`;
+
+    // Payment History & Invoices
+    const [paymentsRes, invoicesRes] = await Promise.all([
+        api('/api/billing/payments').catch(() => null),
+        api('/api/billing/invoices').catch(() => null)
+    ]);
+    const payments = paymentsRes?.payments || [];
+    const invoices = invoicesRes?.invoices || [];
+
+    if (payments.length || invoices.length) {
+        html += `<div class="bg-dark-800 rounded-xl border border-dark-600 overflow-hidden">
+            <div class="px-6 py-4 border-b border-dark-600"><h3 class="text-sm font-bold text-white">Payment History</h3></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead><tr class="border-b border-dark-600"><th class="text-left px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Date</th><th class="text-left px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Description</th><th class="text-right px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Amount</th><th class="text-left px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Method</th><th class="text-left px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Status</th></tr></thead>
+                    <tbody>
+                        ${payments.length ? payments.map(p => {
+                            const sc = { succeeded: 'green', pending: 'yellow', failed: 'red', refunded: 'purple' };
+                            return `<tr class="border-b border-dark-700/50 hover:bg-dark-700/30">
+                                <td class="px-6 py-3 text-gray-300">${new Date(p.created_at).toLocaleDateString()}</td>
+                                <td class="px-6 py-3 text-white">${esc(p.description || 'Payment')}</td>
+                                <td class="px-6 py-3 text-right text-white font-medium">$${(p.amount/100).toFixed(2)}</td>
+                                <td class="px-6 py-3 text-gray-400">${p.payment_method_brand ? esc(p.payment_method_brand) + ' •••• ' + esc(p.payment_method_last4) : '—'}</td>
+                                <td class="px-6 py-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-${sc[p.status]||'gray'}-500/20 text-${sc[p.status]||'gray'}-400">${(p.status||'').toUpperCase()}</span></td>
+                            </tr>`;
+                        }).join('') : '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">No payment history</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
+    }
+
+    if (invoices.length) {
+        html += `<div class="bg-dark-800 rounded-xl border border-dark-600 overflow-hidden">
+            <div class="px-6 py-4 border-b border-dark-600"><h3 class="text-sm font-bold text-white">Invoices</h3></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead><tr class="border-b border-dark-600"><th class="text-left px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Invoice</th><th class="text-left px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Date</th><th class="text-right px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Amount</th><th class="text-left px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase">Status</th><th class="text-left px-6 py-3 text-[11px] font-semibold text-gray-400 uppercase"></th></tr></thead>
+                    <tbody>
+                        ${invoices.map(inv => {
+                            const sc = { paid: 'green', open: 'yellow', draft: 'gray', void: 'red', uncollectible: 'red' };
+                            return `<tr class="border-b border-dark-700/50 hover:bg-dark-700/30">
+                                <td class="px-6 py-3 text-white font-mono text-xs">${esc(inv.invoice_number || inv.stripe_invoice_id || '-')}</td>
+                                <td class="px-6 py-3 text-gray-300">${new Date(inv.created_at).toLocaleDateString()}</td>
+                                <td class="px-6 py-3 text-right text-white font-medium">$${(inv.amount_paid/100).toFixed(2)}</td>
+                                <td class="px-6 py-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-${sc[inv.status]||'gray'}-500/20 text-${sc[inv.status]||'gray'}-400">${(inv.status||'').toUpperCase()}</span></td>
+                                <td class="px-6 py-3">${inv.invoice_pdf ? `<a href="${esc(inv.invoice_pdf)}" target="_blank" class="text-accent hover:text-accent-light text-xs">Download</a>` : ''}</td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
+    }
+
+    html += '</div>';
+    $('main-content').innerHTML = html;
+}
+
+async function startCheckout(planSlug) {
+    toast('Creating checkout session...', 'info');
+    const res = await api('/api/billing/checkout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ plan_slug: planSlug, interval: billingInterval })
+    });
+    if (res?.url) {
+        window.location.href = res.url;
+    } else {
+        toast(res?.detail || 'Failed to create checkout', 'error');
+    }
+}
+
+function showCancelSubscription() {
+    openModal(`<div class="space-y-4">
+        <h3 class="text-lg font-bold text-white">Cancel Subscription?</h3>
+        <p class="text-sm text-gray-400">Your subscription will remain active until the end of the current billing period. You will not be charged again.</p>
+        <div class="flex gap-2 justify-end">
+            <button onclick="closeModal()" class="px-4 py-2 rounded-lg text-sm font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 border border-dark-600 transition">Keep Subscription</button>
+            <button onclick="confirmCancelSubscription()" class="px-4 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition">Cancel Subscription</button>
+        </div>
+    </div>`);
+}
+
+async function confirmCancelSubscription() {
+    closeModal();
+    const res = await api('/api/billing/subscription/cancel', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ reason: 'User requested cancellation' })
+    });
+    if (res?.status) {
+        toast('Subscription will cancel at period end', 'success');
+        renderBilling();
+    } else {
+        toast('Failed to cancel subscription', 'error');
+    }
+}
+
+async function reactivateSubscription() {
+    const res = await api('/api/billing/subscription/reactivate', { method: 'POST' });
+    if (res?.status) {
+        toast('Subscription reactivated', 'success');
+        renderBilling();
+    } else {
+        toast('Failed to reactivate', 'error');
+    }
+}
+
+async function openCustomerPortal() {
+    const res = await api('/api/billing/customer/portal', { method: 'POST' });
+    if (res?.url) {
+        window.location.href = res.url;
+    } else {
+        toast('Failed to open billing portal', 'error');
+    }
 }
 </script>
 </body>
