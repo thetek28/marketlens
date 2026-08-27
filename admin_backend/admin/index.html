@@ -363,6 +363,23 @@ Jobs
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
 Audit Logs
 </div>
+<div class="nav-section">Billing</div>
+<div class="nav-item" data-section="billing-plans" onclick="navigate('billing-plans')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+Plans & Pricing
+</div>
+<div class="nav-item" data-section="billing-subs" onclick="navigate('billing-subs')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+Subscriptions
+</div>
+<div class="nav-item" data-section="billing-payments" onclick="navigate('billing-payments')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+Payments
+</div>
+<div class="nav-item" data-section="billing-revenue" onclick="navigate('billing-revenue')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+Revenue
+</div>
 <div class="nav-section">Infrastructure</div>
 <div class="nav-item" data-section="health" onclick="navigate('health')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
@@ -637,6 +654,87 @@ Settings
 </div>
 </div>
 
+<!-- BILLING PLANS -->
+<div id="section-billing-plans" class="section">
+<div class="card">
+<div class="card-header"><h2>Plans & Pricing</h2></div>
+<div class="card-body" id="billing-plans-body">
+<div id="billing-plans-grid" class="detail-grid"></div>
+</div>
+</div>
+</div>
+
+<!-- BILLING SUBSCRIPTIONS -->
+<div id="section-billing-subs" class="section">
+<div class="search-bar">
+<select class="input" id="subs-status-filter" style="max-width:160px" onchange="loadAdminBillingSubs()">
+<option value="">All Status</option>
+<option value="active">Active</option>
+<option value="canceled">Canceled</option>
+<option value="past_due">Past Due</option>
+<option value="trialing">Trialing</option>
+</select>
+</div>
+<div class="card">
+<div class="card-header"><h2>Subscriptions</h2></div>
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>Plan</th><th>Status</th><th>Amount</th><th>Period</th><th>Start</th><th>End</th><th>Actions</th></tr></thead>
+<tbody id="billing-subs-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="billing-subs-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- BILLING PAYMENTS -->
+<div id="section-billing-payments" class="section">
+<div class="search-bar">
+<select class="input" id="payments-status-filter" style="max-width:160px" onchange="loadAdminBillingPayments()">
+<option value="">All Status</option>
+<option value="succeeded">Succeeded</option>
+<option value="pending">Pending</option>
+<option value="failed">Failed</option>
+<option value="refunded">Refunded</option>
+</select>
+</div>
+<div class="card">
+<div class="card-header"><h2>Payments & Invoices</h2></div>
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Description</th><th>Stripe ID</th><th>Date</th><th>Actions</th></tr></thead>
+<tbody id="billing-payments-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="billing-payments-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- BILLING REVENUE -->
+<div id="section-billing-revenue" class="section">
+<div class="card">
+<div class="card-header"><h2>Revenue Dashboard</h2></div>
+<div class="card-body">
+<div id="revenue-stats-grid" class="detail-grid"></div>
+<div class="card" style="margin-top:20px">
+<div class="card-header"><h2>Recent Invoices</h2></div>
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>User</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+<tbody id="revenue-invoices-tbody"></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
 <!-- SETTINGS -->
 <div id="section-settings" class="section">
 <div class="card">
@@ -736,6 +834,12 @@ Settings
 </div>
 </div>
 
+<!-- ADMIN MODAL -->
+<div id="admin-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+<div class="modal" id="admin-modal-content"></div>
+</div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -828,6 +932,10 @@ else if(section==='jobs')loadJobs();
 else if(section==='audit')loadAudit();
 else if(section==='settings')loadSettings();
 else if(section==='credits')loadCredits();
+else if(section==='billing-plans')loadAdminBillingPlans();
+else if(section==='billing-subs')loadAdminBillingSubs();
+else if(section==='billing-payments')loadAdminBillingPayments();
+else if(section==='billing-revenue')loadAdminBillingRevenue();
 }
 
 // AUTH
@@ -1523,6 +1631,222 @@ if(!e.target.closest('.admin-menu'))document.getElementById('admin-dropdown').cl
 function searchUser(query){
 document.getElementById('users-search').value=query;
 loadUsers();
+}
+
+// MODAL HELPERS
+function openModal(id,content){
+const m=document.getElementById(id);
+const c=document.getElementById(id+'-content');
+if(c&&content)c.innerHTML=content;
+m.classList.add('active');
+}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+
+// BILLING FUNCTIONS
+function loadAdminBillingPlans(){
+const el=document.getElementById('billing-plans-grid');
+el.innerHTML='<div class="empty">Loading plans...</div>';
+api('/api/billing/admin/plans').then(d=>{
+const plans=d.plans||d||[];
+if(!plans.length){el.innerHTML='<div class="empty"><p>No plans configured</p></div>';return}
+el.innerHTML=plans.map(p=>`
+<div class="card" style="margin:0">
+<div class="card-header"><h3 style="font-size:18px;font-weight:700">${esc(p.display_name||p.name)}</h3></div>
+<div class="card-body">
+<div style="font-size:32px;font-weight:800;margin-bottom:8px">$${(p.price_monthly||0).toFixed(2)}<span style="font-size:14px;font-weight:400;color:var(--text-muted)">/mo</span></div>
+<div style="font-size:13px;color:var(--text-muted);margin-bottom:16px">$${(p.price_yearly||0).toFixed(2)}/yr</div>
+<div style="font-size:12px;line-height:1.8;color:var(--text-secondary)">
+<div>Credits: ${(p.credits_monthly||0).toLocaleString()}/mo</div>
+<div>Products: ${p.max_products||'Unlimited'}</div>
+<div>Watchlist: ${p.max_watchlist||'Unlimited'}</div>
+<div>Tracking: ${p.max_tracking||'Unlimited'}</div>
+<div>Team Seats: ${p.team_seats||1}</div>
+<div>API: ${p.api_access?'Yes':'No'}</div>
+<div>Priority Support: ${p.priority_support?'Yes':'No'}</div>
+</div>
+<div style="margin-top:16px;display:flex;gap:8px">
+<button onclick="editPlanModal('${p.name}')" class="btn btn-sm btn-secondary">Edit</button>
+<span class="badge badge-${p.is_active?'green':'gray'}" style="margin-left:auto">${p.is_active?'Active':'Inactive'}</span>
+</div>
+</div>
+</div>
+`).join('');
+}).catch(e=>{el.innerHTML=`<div class="empty"><p>Failed to load plans: ${esc(e.message)}</p></div>`});
+}
+
+function editPlanModal(planName){
+api('/api/billing/admin/plans').then(d=>{
+const plan=(d.plans||d||[]).find(p=>p.name===planName);
+if(!plan)return;
+let h=`<h2 style="margin-bottom:16px">Edit Plan: ${esc(plan.display_name||plan.name)}</h2>`;
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Display Name</label><input class="input" id="ep-display" value="${esc(plan.display_name||plan.name)}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Monthly Price</label><input class="input" id="ep-monthly" type="number" step="0.01" value="${plan.price_monthly||0}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Yearly Price</label><input class="input" id="ep-yearly" type="number" step="0.01" value="${plan.price_yearly||0}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Monthly Credits</label><input class="input" id="ep-credits" type="number" value="${plan.credits_monthly||0}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Max Products</label><input class="input" id="ep-products" type="number" value="${plan.max_products||0}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Max Watchlist</label><input class="input" id="ep-watchlist" type="number" value="${plan.max_watchlist||0}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Max Tracking</label><input class="input" id="ep-tracking" type="number" value="${plan.max_tracking||0}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Team Seats</label><input class="input" id="ep-seats" type="number" value="${plan.team_seats||1}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Stripe Price ID (Monthly)</label><input class="input" id="ep-stripe-m" value="${esc(plan.stripe_price_monthly||'')}">`;
+h+=`<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Stripe Price ID (Yearly)</label><input class="input" id="ep-stripe-y" value="${esc(plan.stripe_price_yearly||'')}">`;
+h+=`</div>`;
+h+=`<div style="margin-top:16px;display:flex;gap:8px">`;
+h+=`<button onclick="savePlan('${plan.name}')" class="btn btn-primary">Save</button>`;
+h+=`<button onclick="closeModal('admin-modal')" class="btn btn-secondary">Cancel</button>`;
+h+=`</div>`;
+openModal('admin-modal',h);
+}).catch(()=>{});
+}
+
+function savePlan(planName){
+const body={
+display_name:document.getElementById('ep-display').value,
+price_monthly:parseFloat(document.getElementById('ep-monthly').value)||0,
+price_yearly:parseFloat(document.getElementById('ep-yearly').value)||0,
+credits_monthly:parseInt(document.getElementById('ep-credits').value)||0,
+max_products:parseInt(document.getElementById('ep-products').value)||0,
+max_watchlist:parseInt(document.getElementById('ep-watchlist').value)||0,
+max_tracking:parseInt(document.getElementById('ep-tracking').value)||0,
+team_seats:parseInt(document.getElementById('ep-seats').value)||1,
+stripe_price_monthly:document.getElementById('ep-stripe-m').value||null,
+stripe_price_yearly:document.getElementById('ep-stripe-y').value||null
+};
+api('/api/billing/admin/plans/'+planName,{method:'PUT',body:JSON.stringify(body)}).then(()=>{
+closeModal('admin-modal');loadAdminBillingPlans();alert('Plan updated');
+}).catch(e=>alert('Error: '+e.message));
+}
+
+function loadAdminBillingSubs(page){
+page=page||1;
+const status=document.getElementById('subs-status-filter')?.value||'';
+api(`/api/billing/admin/subscriptions?page=${page}&per_page=20&status=${status}`).then(d=>{
+const subs=d.subscriptions||d||[];
+const tb=document.getElementById('billing-subs-tbody');
+if(!subs.length){tb.innerHTML='<tr><td colspan="8" class="empty">No subscriptions found</td></tr>';return}
+tb.innerHTML=subs.map(s=>{
+const st=s.status||'unknown';
+const badge=({active:'green',canceled:'red',past_due:'yellow',trialing:'blue'}[st]||'gray');
+return `<tr>
+<td><div style="font-weight:600">${esc(s.username||s.email||'N/A')}</div><div style="font-size:11px;color:var(--text-muted)">User #${s.user_id||'?'}</div></td>
+<td><span class="badge badge-blue">${esc(s.plan_name||'free')}</span></td>
+<td><span class="badge badge-${badge}">${st}</span></td>
+<td>$${((s.amount||0)/100).toFixed(2)}</td>
+<td>${s.interval||'month'}</td>
+<td>${fmtDate(s.current_period_start)}</td>
+<td>${fmtDate(s.current_period_end)}</td>
+<td><button onclick="viewSubModal('${s.id}')" class="btn btn-sm btn-secondary">View</button></td>
+</tr>`;
+}).join('');
+const pg=d.pagination;
+if(pg&&pg.total_pages>1){
+document.getElementById('billing-subs-pagination').innerHTML=Array.from({length:pg.total_pages},(_,i)=>`<button class="btn btn-sm ${i+1===page?'btn-primary':'btn-secondary'}" onclick="loadAdminBillingSubs(${i+1})">${i+1}</button>`).join(' ');
+}
+}).catch(e=>{document.getElementById('billing-subs-tbody').innerHTML=`<tr><td colspan="8" class="empty">${esc(e.message)}</td></tr>`});
+}
+
+function viewSubModal(subId){
+api('/api/billing/admin/subscriptions?per_page=100').then(d=>{
+const sub=(d.subscriptions||d||[]).find(s=>String(s.id)===String(subId));
+if(!sub)return;
+let h=`<h2 style="margin-bottom:16px">Subscription Details</h2>`;
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">`;
+h+=`<div><span style="color:var(--text-muted)">ID:</span> ${esc(sub.id)}</div>`;
+h+=`<div><span style="color:var(--text-muted)">User:</span> ${esc(sub.username||sub.email||'N/A')}</div>`;
+h+=`<div><span style="color:var(--text-muted)">Plan:</span> ${esc(sub.plan_name)}</div>`;
+h+=`<div><span style="color:var(--text-muted)">Status:</span> ${sub.status}</div>`;
+h+=`<div><span style="color:var(--text-muted)">Amount:</span> $${((sub.amount||0)/100).toFixed(2)}</div>`;
+h+=`<div><span style="color:var(--text-muted)">Interval:</span> ${sub.interval||'month'}</div>`;
+h+=`<div><span style="color:var(--text-muted)">Stripe Sub ID:</span> ${esc(sub.stripe_subscription_id||'N/A')}</div>`;
+h+=`<div><span style="color:var(--text-muted)">Period Start:</span> ${fmtDate(sub.current_period_start)}</div>`;
+h+=`<div><span style="color:var(--text-muted)">Period End:</span> ${fmtDate(sub.current_period_end)}</div>`;
+h+=`<div><span style="color:var(--text-muted)">Created:</span> ${fmtDate(sub.created_at)}</div>`;
+h+=`</div>`;
+h+=`<div style="margin-top:16px;display:flex;gap:8px">`;
+if(sub.status==='active')h+=`<button onclick="adminCancelSub('${sub.id}')" class="btn btn-sm btn-danger">Cancel</button>`;
+if(sub.status==='canceled')h+=`<button onclick="adminReactivateSub('${sub.id}')" class="btn btn-sm btn-primary">Reactivate</button>`;
+h+=`<button onclick="closeModal('admin-modal')" class="btn btn-sm btn-secondary">Close</button>`;
+h+=`</div>`;
+openModal('admin-modal',h);
+}).catch(()=>{});
+}
+
+function adminCancelSub(subId){
+if(!confirm('Cancel this subscription?'))return;
+api(`/api/billing/subscriptions/${subId}`,{method:'DELETE'}).then(()=>{
+closeModal('admin-modal');loadAdminBillingSubs();
+}).catch(e=>alert('Error: '+e.message));
+}
+
+function adminReactivateSub(subId){
+api(`/api/billing/subscriptions/${subId}/reactivate`,{method:'POST'}).then(()=>{
+closeModal('admin-modal');loadAdminBillingSubs();
+}).catch(e=>alert('Error: '+e.message));
+}
+
+function loadAdminBillingPayments(page){
+page=page||1;
+const status=document.getElementById('payments-status-filter')?.value||'';
+api(`/api/billing/admin/payments?page=${page}&per_page=20&status=${status}`).then(d=>{
+const payments=d.payments||d||[];
+const tb=document.getElementById('billing-payments-tbody');
+if(!payments.length){tb.innerHTML='<tr><td colspan="8" class="empty">No payments found</td></tr>';return}
+tb.innerHTML=payments.map(p=>{
+const st=p.status||'unknown';
+const badge=({succeeded:'green',pending:'yellow',failed:'red',refunded:'purple'}[st]||'gray');
+const isInv=p.type==='invoice';
+return `<tr>
+<td><div style="font-weight:600">${esc(p.username||p.email||'N/A')}</div><div style="font-size:11px;color:var(--text-muted)">User #${p.user_id||'?'}</div></td>
+<td><span class="badge badge-${isInv?'blue':'gray'}">${isInv?'Invoice':'Payment'}</span></td>
+<td>$${((p.amount||0)/100).toFixed(2)}</td>
+<td><span class="badge badge-${badge}">${st}</span></td>
+<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(p.description||'')}</td>
+<td style="font-size:11px;font-family:monospace">${esc((p.stripe_payment_id||p.stripe_invoice_id||'').substring(0,20))}</td>
+<td>${fmtDate(p.created_at)}</td>
+<td>${st==='succeeded'&&isInv?`<button onclick="adminRefundPayment('${p.id}')" class="btn btn-sm btn-danger">Refund</button>`:''}</td>
+</tr>`;
+}).join('');
+const pg=d.pagination;
+if(pg&&pg.total_pages>1){
+document.getElementById('billing-payments-pagination').innerHTML=Array.from({length:pg.total_pages},(_,i)=>`<button class="btn btn-sm ${i+1===page?'btn-primary':'btn-secondary'}" onclick="loadAdminBillingPayments(${i+1})">${i+1}</button>`).join(' ');
+}
+}).catch(e=>{document.getElementById('billing-payments-tbody').innerHTML=`<tr><td colspan="8" class="empty">${esc(e.message)}</td></tr>`});
+}
+
+function adminRefundPayment(paymentId){
+if(!confirm('Refund this payment?'))return;
+api('/api/billing/admin/refund',{method:'POST',body:JSON.stringify({payment_id:paymentId})}).then(()=>{
+loadAdminBillingPayments();
+}).catch(e=>alert('Error: '+e.message));
+}
+
+function loadAdminBillingRevenue(){
+api('/api/billing/admin/revenue').then(d=>{
+const stats=d.stats||d||{};
+const el=document.getElementById('revenue-stats-grid');
+el.innerHTML=`
+<div class="card" style="margin:0"><div class="card-body" style="text-align:center;padding:20px"><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Total Revenue</div><div style="font-size:28px;font-weight:800;color:var(--green)">$${((stats.total_revenue||0)/100).toFixed(2)}</div></div></div>
+<div class="card" style="margin:0"><div class="card-body" style="text-align:center;padding:20px"><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">This Month</div><div style="font-size:28px;font-weight:800;color:var(--blue)">$${((stats.current_month_revenue||0)/100).toFixed(2)}</div></div></div>
+<div class="card" style="margin:0"><div class="card-body" style="text-align:center;padding:20px"><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Active Subs</div><div style="font-size:28px;font-weight:800">${stats.active_subscriptions||0}</div></div></div>
+<div class="card" style="margin:0"><div class="card-body" style="text-align:center;padding:20px"><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Avg Revenue/User</div><div style="font-size:28px;font-weight:800;color:var(--purple)">$${((stats.avg_revenue_per_user||0)/100).toFixed(2)}</div></div></div>
+`;
+}).catch(()=>{});
+
+api('/api/billing/admin/invoices?per_page=10').then(d=>{
+const invoices=d.invoices||d||[];
+const tb=document.getElementById('revenue-invoices-tbody');
+if(!invoices.length){tb.innerHTML='<tr><td colspan="4" class="empty">No invoices</td></tr>';return}
+tb.innerHTML=invoices.map(inv=>{
+const st=inv.status||'unknown';
+const badge=({paid:'green',open:'yellow',void:'gray',uncollectible:'red'}[st]||'gray');
+return `<tr>
+<td>${esc(inv.username||inv.email||'N/A')}</td>
+<td>$${((inv.amount_paid||inv.amount_due||0)/100).toFixed(2)}</td>
+<td><span class="badge badge-${badge}">${st}</span></td>
+<td>${fmtDate(inv.created_at||inv.invoice_date)}</td>
+</tr>`;
+}).join('');
+}).catch(()=>{});
 }
 
 // INIT
