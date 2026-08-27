@@ -878,118 +878,216 @@
         .settings-row:nth-child(8) { animation-delay: 0.4s; }
 
         /* ==========================================
-           Responsive - Tablet
+           RESPONSIVE DESIGN - COMPLETE SYSTEM
+           ========================================== */
+
+        /* --- Mobile Header --- */
+        .mobile-header { display: none; }
+        .mobile-drawer-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 60;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .mobile-drawer-overlay.active { opacity: 1; pointer-events: auto; }
+        .mobile-drawer {
+            position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-width: 85vw;
+            background: #0f0f1a; z-index: 70; transform: translateX(-100%);
+            transition: transform 0.3s ease; display: flex; flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+        }
+        .mobile-drawer.active { transform: translateX(0); }
+        .mobile-nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            color: #9ca3af; font-size: 14px; transition: all 0.2s; border: none;
+            background: none; text-align: left; width: 100%; cursor: pointer;
+        }
+        .mobile-nav-item:hover, .mobile-nav-item.active {
+            background: rgba(59,130,246,0.1); color: #fff;
+        }
+        .mobile-nav-item.active { border-right: 3px solid #3b82f6; }
+
+        /* --- Mobile Bottom Nav --- */
+        .mobile-bottom-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            background: #0f0f1a; border-top: 1px solid rgba(255,255,255,0.08);
+            z-index: 50; padding: 4px 0; padding-bottom: env(safe-area-inset-bottom, 4px);
+            justify-content: space-around; align-items: center;
+        }
+        .mobile-bottom-item {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            padding: 6px 8px; color: #6b7280; font-size: 10px; font-weight: 500;
+            border: none; background: none; cursor: pointer; transition: color 0.2s;
+            border-radius: 8px; min-width: 48px; -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-bottom-item:active { transform: scale(0.95); }
+        .mobile-bottom-item.active { color: #3b82f6; }
+
+        /* --- Desktop Header --- */
+        .desktop-header { display: flex; }
+
+        /* ==========================================
+           BREAKPOINT: TABLET (max-width: 1024px)
            ========================================== */
         @media (max-width: 1024px) {
-            .settings-layout {
-                grid-template-columns: 200px 1fr;
-                gap: 1.5rem;
-                padding: 1rem;
-            }
+            .app-sidebar { width: 64px !important; }
+            .app-sidebar .nav-btn span { display: none; }
+            .app-sidebar .nav-btn { justify-content: center; padding-left: 0; padding-right: 0; }
+            .app-sidebar .nav-btn svg { margin: 0; }
+            .app-sidebar .px-3.pt-3 { display: none; }
 
-            .settings-nav {
-                padding: 0.75rem;
-            }
-
-            .settings-nav-item {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.75rem;
-            }
-
-            .settings-card {
-                padding: 1.25rem;
-            }
-
-            .ml-slider {
-                width: 100px;
-            }
+            .settings-layout { grid-template-columns: 200px 1fr; gap: 1.5rem; padding: 1rem; }
+            .settings-nav { padding: 0.75rem; }
+            .settings-nav-item { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+            .settings-card { padding: 1.25rem; }
+            .ml-slider { width: 100px; }
         }
 
         /* ==========================================
-           Responsive - Mobile
+           BREAKPOINT: MOBILE (max-width: 768px)
            ========================================== */
         @media (max-width: 768px) {
-            .settings-layout {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                padding: 0.75rem;
-            }
+            .mobile-header { display: flex; }
+            .desktop-header { display: none !important; }
+            .mobile-bottom-nav { display: flex; }
+            .app-sidebar { display: none !important; }
+            .app-footer { display: none !important; }
 
+            body { padding-bottom: 60px; }
+
+            #main-content { padding: 12px !important; }
+
+            .settings-layout { grid-template-columns: 1fr; gap: 1rem; padding: 0.75rem; }
             .settings-nav {
-                position: static;
-                display: flex;
-                overflow-x: auto;
-                gap: 0.25rem;
-                padding: 0.5rem;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
+                position: static; display: flex; overflow-x: auto; gap: 0.25rem;
+                padding: 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;
             }
-
-            .settings-nav::-webkit-scrollbar {
-                display: none;
-            }
-
+            .settings-nav::-webkit-scrollbar { display: none; }
             .settings-nav-item {
-                white-space: nowrap;
-                padding: 0.5rem 0.875rem;
-                font-size: 0.75rem;
-                flex-shrink: 0;
-                margin-bottom: 0;
+                white-space: nowrap; padding: 0.5rem 0.875rem; font-size: 0.75rem;
+                flex-shrink: 0; margin-bottom: 0;
+            }
+            .settings-nav-divider, .settings-nav-label { display: none; }
+            .settings-card { padding: 1rem; margin-bottom: 1rem; }
+            .settings-row { flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; }
+            .settings-row-control { margin-left: 0; align-self: flex-end; }
+            .ml-theme-card { padding: 0.75rem; }
+            .ml-theme-card-preview { height: 60px; }
+            .ml-select { min-width: 120px; width: 100%; }
+            .ml-slider { width: 100%; }
+
+            /* Responsive tables to cards */
+            .responsive-table { display: none; }
+            .responsive-cards { display: block !important; }
+
+            /* Responsive grids */
+            .responsive-grid { grid-template-columns: 1fr !important; }
+            .responsive-grid-2 { grid-template-columns: 1fr !important; }
+
+            /* Responsive KPI cards */
+            .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+            .kpi-card { padding: 10px !important; }
+            .kpi-card .text-2xl { font-size: 1.1rem !important; }
+            .kpi-card .text-lg { font-size: 0.85rem !important; }
+
+            /* Responsive modals */
+            .modal-backdrop .bg-dark-800 {
+                width: 95% !important; max-width: 95vw !important; max-height: 90vh;
+                margin: 5vh auto !important; border-radius: 12px !important;
             }
 
-            .settings-nav-divider,
-            .settings-nav-label {
-                display: none;
-            }
+            /* Responsive charts */
+            .chart-container { height: 200px !important; }
+            .chart-container canvas { max-height: 200px !important; }
 
-            .settings-card {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
+            /* Responsive billing */
+            .billing-plan-grid { grid-template-columns: 1fr !important; }
+            .billing-usage-grid { grid-template-columns: 1fr !important; }
 
-            .settings-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.75rem;
-                padding: 0.75rem;
-            }
+            /* Responsive action buttons */
+            .action-group { flex-direction: column; }
+            .action-group .btn { width: 100%; justify-content: center; }
 
-            .settings-row-control {
-                margin-left: 0;
-                align-self: flex-end;
-            }
+            /* Hide desktop-only elements */
+            .desktop-only { display: none !important; }
 
-            .ml-theme-card {
-                padding: 0.75rem;
-            }
+            /* Responsive filter bars */
+            .filter-bar { flex-wrap: wrap; gap: 8px; }
+            .filter-bar select, .filter-bar input { min-width: 0; flex: 1; }
 
-            .ml-theme-card-preview {
-                height: 60px;
-            }
+            /* Responsive pagination */
+            .pagination { flex-wrap: wrap; justify-content: center; }
+            .pagination .btn { min-width: 32px; }
 
-            .ml-select {
-                min-width: 120px;
-                width: 100%;
-            }
+            /* Responsive cards in general */
+            .card-grid-responsive { grid-template-columns: 1fr !important; }
 
-            .ml-slider {
-                width: 100%;
-            }
+            /* Research workspace */
+            .research-layout { flex-direction: column !important; }
+            .research-sidebar { width: 100% !important; max-height: 300px; overflow-y: auto; }
+
+            /* Dashboard layout */
+            .dashboard-grid { grid-template-columns: 1fr !important; }
+
+            /* Watchlist grid */
+            .watchlist-grid { grid-template-columns: 1fr !important; }
+
+            /* Product cards on mobile */
+            .product-row-desktop { display: none !important; }
+            .product-card-mobile { display: block !important; }
+
+            /* Responsive product row - stack vertically */
+            .product-row-responsive > div { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+            .product-row-responsive .shrink-0 { align-self: flex-end !important; }
+            .product-row-responsive .text-right { text-align: left !important; }
+
+            /* Analytics layout */
+            .analytics-grid { grid-template-columns: 1fr !important; }
+
+            /* Listing generator */
+            .listing-split { flex-direction: column !important; }
+            .listing-input-panel, .listing-output-panel { width: 100% !important; }
+            .listgen-modal { width: 95% !important; max-height: 90vh !important; }
+
+            /* History timeline */
+            .history-table { display: none !important; }
+            .history-timeline { display: block !important; }
+
+            /* Tracking cards */
+            .tracking-grid { grid-template-columns: 1fr !important; }
+
+            /* Notifications */
+            .notif-dropdown { width: 100% !important; left: 0 !important; right: 0 !important; }
+
+            /* Export dialog */
+            .export-dialog { width: 95% !important; }
+
+            /* Buttons - full width on mobile */
+            .btn-full-mobile { width: 100%; justify-content: center; }
+
+            /* Hide overflow text */
+            .truncate-mobile { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
         }
 
+        /* ==========================================
+           BREAKPOINT: SMALL MOBILE (max-width: 480px)
+           ========================================== */
         @media (max-width: 480px) {
-            .settings-layout {
-                padding: 0.5rem;
-            }
+            .settings-layout { padding: 0.5rem; }
+            .settings-card { padding: 0.875rem; border-radius: 0.75rem; }
+            .ml-theme-card-name { font-size: 0.75rem; }
 
-            .settings-card {
-                padding: 0.875rem;
-                border-radius: 0.75rem;
-            }
+            .kpi-grid { grid-template-columns: 1fr !important; }
 
-            .ml-theme-card-name {
-                font-size: 0.75rem;
-            }
+            .mobile-bottom-item { font-size: 9px; padding: 4px 6px; min-width: 42px; }
+            .mobile-bottom-item svg { width: 20px; height: 20px; }
+
+            .modal-backdrop .bg-dark-800 { width: 100% !important; margin: 0 !important; border-radius: 0 !important; max-height: 100vh; }
+        }
+
+        /* --- Responsive Drawers (watchlist, etc.) --- */
+        @media (max-width: 768px) {
+            .watchlist-drawer { width: 100% !important; }
+            .watchlist-grid { grid-template-columns: 1fr !important; }
+            .watchlist-kpi { padding: 0.75rem !important; }
         }
 
         /* Watchlist styles */
@@ -1201,6 +1299,14 @@
         .hist-timeline-item.yellow::before { border-color: #f59e0b; background: rgba(245,158,11,0.2); }
         @keyframes histPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
+        /* --- Responsive Analytics --- */
+        @media (max-width: 768px) {
+            .analytics-grid { grid-template-columns: 1fr !important; }
+            .analytics-chart { height: 200px !important; }
+            .tracking-grid { grid-template-columns: 1fr !important; }
+            .ideas-competition-matrix { grid-template-columns: 1fr !important; }
+        }
+
         /* ===== ANALYTICS TAB STYLES ===== */
         .ana-hero { background: linear-gradient(135deg, rgba(26,26,37,0.98), rgba(12,12,20,0.95)); border: 1px solid rgba(99,102,241,0.08); border-radius: 1rem; padding: 1.5rem; position: relative; overflow: hidden; }
         .ana-hero::before { content: ''; position: absolute; top: -50%; right: -20%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(99,102,241,0.06), transparent 70%); pointer-events: none; }
@@ -1306,8 +1412,28 @@
     </style>
 </head>
 <body class="text-gray-200 font-sans min-h-screen flex flex-col">
-    <!-- Header -->
-    <header class="bg-dark-800 border-b border-dark-600 px-4 py-2.5 flex items-center justify-between sticky top-0 z-50">
+    <!-- Mobile Header (hidden on desktop) -->
+    <header class="mobile-header bg-dark-800 border-b border-dark-600 px-3 py-2 flex items-center justify-between sticky top-0 z-50 md:hidden">
+        <div class="flex items-center gap-2">
+            <button onclick="toggleMobileDrawer()" class="p-2 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition" aria-label="Menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <img src="/static/favicon.svg" alt="" class="w-6 h-6">
+            <span class="text-sm font-bold text-white">MarketLens</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="showNotifications()" class="relative p-2 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition" title="Notifications">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                <span id="notif-badge-m" class="hidden absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center">0</span>
+            </button>
+            <button onclick="logout()" class="p-2 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition" title="Logout">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Desktop Header (hidden on mobile) -->
+    <header class="desktop-header bg-dark-800 border-b border-dark-600 px-4 py-2.5 items-center justify-between sticky top-0 z-50 hidden md:flex">
         <div class="flex items-center gap-2.5">
             <img src="/static/favicon.svg" alt="" class="w-7 h-7">
             <div class="flex flex-col">
@@ -1333,9 +1459,80 @@
         </div>
     </header>
 
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobile-drawer-overlay" class="mobile-drawer-overlay" onclick="toggleMobileDrawer()"></div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-drawer" class="mobile-drawer">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-dark-600">
+            <div class="flex items-center gap-2">
+                <img src="/static/favicon.svg" alt="" class="w-6 h-6">
+                <span class="text-sm font-bold text-white">MarketLens</span>
+            </div>
+            <button onclick="toggleMobileDrawer()" class="p-2 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition" aria-label="Close menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto py-2">
+            <button onclick="mobileNav('research')" class="mobile-nav-item w-full" data-tab="research">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span>Research</span>
+            </button>
+            <button onclick="mobileNav('dashboard')" class="mobile-nav-item w-full" data-tab="dashboard">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                <span>Dashboard</span>
+            </button>
+            <button onclick="mobileNav('ideas')" class="mobile-nav-item w-full" data-tab="ideas">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                <span>Product Ideas</span>
+            </button>
+            <button onclick="mobileNav('tracking')" class="mobile-nav-item w-full" data-tab="tracking">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                <span>Tracking</span>
+            </button>
+            <button onclick="mobileNav('watchlist')" class="mobile-nav-item w-full" data-tab="watchlist">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <span>Watchlist</span>
+            </button>
+            <button onclick="mobileNav('history')" class="mobile-nav-item w-full" data-tab="history">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>History</span>
+            </button>
+            <button onclick="mobileNav('analytics')" class="mobile-nav-item w-full" data-tab="analytics">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span>Analytics</span>
+            </button>
+            <div class="border-t border-dark-600 my-2"></div>
+            <button onclick="mobileNav('settings')" class="mobile-nav-item w-full" data-tab="settings">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>Settings</span>
+            </button>
+            <button onclick="mobileNav('billing')" class="mobile-nav-item w-full" data-tab="billing">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                <span>Billing</span>
+            </button>
+            <button onclick="mobileNav('help')" class="mobile-nav-item w-full" data-tab="help">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Help</span>
+            </button>
+        </div>
+        <div class="px-4 py-3 border-t border-dark-600">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-[10px] text-yellow-500">&#9733;</span>
+                <span class="text-xs font-medium text-gray-300" id="mobile-plan-name">Free Plan</span>
+            </div>
+            <div class="text-xs text-gray-400 mb-1"><span class="text-white font-semibold" id="mobile-credits-used">0</span> / <span id="mobile-credits-total">2,000</span> AI Credits</div>
+            <div class="w-full bg-dark-700 rounded-full h-1.5 mb-2"><div id="mobile-credits-bar" class="bg-yellow-500 h-1.5 rounded-full transition-all" style="width:0%"></div></div>
+            <button onclick="mobileNav('billing');toggleMobileDrawer()" class="w-full py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-400 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all flex items-center justify-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Manage Plan
+            </button>
+        </div>
+    </div>
+
     <div class="flex flex-1 overflow-hidden">
-        <!-- Sidebar -->
-        <nav class="w-52 bg-dark-800 border-r border-dark-600 flex flex-col py-3 shrink-0">
+        <!-- Sidebar (desktop only) -->
+        <nav class="app-sidebar w-52 bg-dark-800 border-r border-dark-600 flex flex-col py-3 shrink-0">
             <div class="flex-1 space-y-0.5 px-2">
                 <button onclick="showTab('research',this)" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition text-sm" title="Research"><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><span>Research</span></button>
                 <button onclick="showTab('dashboard',this)" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition text-sm" title="Dashboard"><svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg><span>Dashboard</span></button>
@@ -1361,11 +1558,35 @@
         </nav>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-5" id="main-content"></main>
+        <main class="flex-1 overflow-y-auto p-3 md:p-5" id="main-content"></main>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-dark-800 border-t border-dark-600 px-4 py-1.5 flex items-center justify-between text-[10px] text-gray-500">
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <button onclick="mobileNav('dashboard')" class="mobile-bottom-item" data-tab="dashboard">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <span>Home</span>
+        </button>
+        <button onclick="mobileNav('research')" class="mobile-bottom-item" data-tab="research">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span>Research</span>
+        </button>
+        <button onclick="mobileNav('ideas')" class="mobile-bottom-item" data-tab="ideas">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            <span>Ideas</span>
+        </button>
+        <button onclick="mobileNav('tracking')" class="mobile-bottom-item" data-tab="tracking">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            <span>Track</span>
+        </button>
+        <button onclick="toggleMobileDrawer()" class="mobile-bottom-item" data-tab="more">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <span>More</span>
+        </button>
+    </nav>
+
+    <!-- Footer (desktop only) -->
+    <footer class="app-footer bg-dark-800 border-t border-dark-600 px-4 py-1.5 items-center justify-between text-[10px] text-gray-500 hidden md:flex">
         <div id="footer-status">Ready</div>
         <div class="flex items-center gap-3">
             <span>Products: 0</span>
@@ -1799,6 +2020,7 @@ function updateUserCredits(usage) {
         const tierNames = { free: 'Free Plan', pro: 'Pro Plan', business: 'Business Plan' };
         planNameEl.textContent = tierNames[usage.tier] || usage.tier + ' Plan';
     }
+    updateMobileCredits(used, limit, planNameEl ? planNameEl.textContent : 'Free Plan');
 }
 
 async function api(url, opts = {}) {
@@ -1849,11 +2071,60 @@ function stopTimer() { clearInterval(timerInterval); $('timer').classList.add('h
    NAVIGATION
    ══════════════════════════════════════════════════════════════ */
 let currentTab = 'research';
+/* ══════════════════════════════════════════════════════════════
+   MOBILE NAVIGATION
+   ══════════════════════════════════════════════════════════════ */
+function toggleMobileDrawer() {
+    const overlay = document.getElementById('mobile-drawer-overlay');
+    const drawer = document.getElementById('mobile-drawer');
+    const isActive = drawer.classList.contains('active');
+    if (isActive) {
+        overlay.classList.remove('active');
+        drawer.classList.remove('active');
+        document.body.style.overflow = '';
+    } else {
+        overlay.classList.add('active');
+        drawer.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        updateMobileDrawerState();
+    }
+}
+function mobileNav(name) {
+    currentTab = name;
+    const sidebarBtn = document.querySelector(`.nav-btn[onclick*="'${name}'"]`);
+    showTab(name, sidebarBtn);
+    const drawer = document.getElementById('mobile-drawer');
+    if (drawer.classList.contains('active')) toggleMobileDrawer();
+    updateMobileBottomNav();
+}
+function updateMobileBottomNav() {
+    document.querySelectorAll('.mobile-bottom-item').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === currentTab);
+    });
+}
+function updateMobileDrawerState() {
+    document.querySelectorAll('.mobile-nav-item').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === currentTab);
+    });
+}
+function updateMobileCredits(used, total, planName) {
+    const pct = total > 0 ? Math.round((total - used) / total * 100) : 0;
+    const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    setEl('mobile-credits-used', used.toLocaleString());
+    setEl('mobile-credits-total', total.toLocaleString());
+    setEl('mobile-credits-pct', pct);
+    setEl('mobile-plan-name', planName || 'Free Plan');
+    const bar = document.getElementById('mobile-credits-bar');
+    if (bar) bar.style.width = pct + '%';
+}
+
 function showTab(name, el) {
     currentTab = name;
     document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('bg-dark-600','text-white'); b.classList.add('text-gray-400'); });
     const btn = el || document.querySelector(`[onclick*="'${name}'"]`);
     if (btn) { btn.classList.add('bg-dark-600','text-white'); btn.classList.remove('text-gray-400'); }
+    updateMobileBottomNav();
+    updateMobileDrawerState();
     loadCurrentTab();
 }
 function loadCurrentTab() {
@@ -1870,7 +2141,7 @@ function productRow(p, idx, extra='') {
     const margin = (p.estimated_margin_pct || 0).toFixed(1);
     const ai = aiPct(p.ai_score);
     const gated = p.is_gated || p.gated;
-    return `<div class="bg-dark-800 rounded-xl p-3 border border-dark-600 card-hover ${gated?'opacity-50':''} fade-in" style="animation-delay:${idx*30}ms">
+    return `<div class="bg-dark-800 rounded-xl p-3 border border-dark-600 card-hover ${gated?'opacity-50':''} fade-in product-row-responsive hidden md:block" style="animation-delay:${idx*30}ms">
         <div class="flex items-center gap-3">
             <div class="w-1.5 h-10 rounded-full ${tlColor(tl)}"></div>
             <div class="flex-1 min-w-0 cursor-pointer" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
@@ -1892,6 +2163,32 @@ function productRow(p, idx, extra='') {
             </div>
             ${extra}
         </div>
+    </div>`;
+}
+
+function productRowMobile(p, idx, extra='') {
+    const tl = p.traffic_light || 'RED';
+    const margin = (p.estimated_margin_pct || 0).toFixed(1);
+    const ai = aiPct(p.ai_score);
+    const gated = p.is_gated || p.gated;
+    return `<div class="bg-dark-800 rounded-xl p-3 border border-dark-600 card-hover ${gated?'opacity-50':''} fade-in md:hidden" style="animation-delay:${idx*30}ms">
+        <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex-1 min-w-0 cursor-pointer" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+                <div class="font-medium text-sm truncate hover:text-accent-light transition">${esc(p.name || p.asin)}</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">${esc(p.asin)} | ★${(p.rating||0).toFixed(1)} (${(p.review_count||0).toLocaleString()})</div>
+            </div>
+            <span class="badge ${tlColor(tl)} text-white text-[10px] shrink-0">${tl}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mb-2">
+            <div class="text-center"><div class="text-[10px] text-gray-500">Price</div><div class="text-sm font-semibold text-white">${gbp(p.amazon_price)}</div></div>
+            <div class="text-center"><div class="text-[10px] text-gray-500">Margin</div><div class="text-sm font-semibold ${parseFloat(margin)>=40?'text-green-400':parseFloat(margin)>=25?'text-yellow-400':'text-red-400'}">${margin}%</div></div>
+            <div class="text-center"><div class="text-[10px] text-gray-500">AI Score</div><div class="text-sm font-semibold text-blue-400">${ai}</div></div>
+        </div>
+        <div class="flex gap-2">
+            <a href="https://www.amazon.co.uk/dp/${esc(p.asin)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="flex-1 py-1.5 rounded-lg text-xs font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition text-center border border-dark-600">Amazon</a>
+            <button onclick="event.stopPropagation();excludeProduct('${esc(p.asin)}','${esc(p.name||p.asin)}')" class="flex-1 py-1.5 rounded-lg text-xs font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition text-center border border-dark-600">Listed</button>
+        </div>
+        ${extra}
     </div>`;
 }
 
@@ -8378,11 +8675,13 @@ function checkNotifications() {
     api('/api/user/notifications').then(d => {
         const notifs = d?.notifications || [];
         const unread = notifs.filter(n => !n.is_read).length;
-        const badge = document.getElementById('notif-badge');
-        if (badge) {
-            if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.classList.remove('hidden'); }
-            else { badge.classList.add('hidden'); }
-        }
+        ['notif-badge', 'notif-badge-m'].forEach(id => {
+            const badge = document.getElementById(id);
+            if (badge) {
+                if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.classList.remove('hidden'); }
+                else { badge.classList.add('hidden'); }
+            }
+        });
     }).catch(() => {});
 }
 
