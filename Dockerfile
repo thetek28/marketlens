@@ -2,29 +2,27 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ libffi-dev && \
-    rm -rf /var/lib/apt/lists/*
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+COPY online_backend/requirements.txt /app/requirements.txt
+COPY online_db/requirements.txt /app/db_requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt -r /app/db_requirements.txt
 
-COPY . .
+# Copy application code
+COPY online_backend/ /app/online_backend/
+COPY online_db/ /app/online_db/
 
-RUN mkdir -p data output && \
-    useradd -m -r -s /bin/bash marketlens && \
-    chown -R marketlens:marketlens /app
-
-USER marketlens
-
-ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
-ENV MLENS_DATA_DIR=/app/data
-ENV MLENS_OUTPUT_DIR=/app/output
-
+# Expose port
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"
 
-CMD ["python", "-m", "uvicorn", "web.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# Run
+CMD ["uvicorn", "online_backend.app:create_app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--factory"]
