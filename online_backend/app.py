@@ -360,19 +360,109 @@ def create_app() -> FastAPI:
             ws_clients.discard(ws)
 
     # ════════════════════════════════════════════════════════
-    # ANALYSIS STUBS (cloud has no live data collection)
+    # ANALYSIS - uses CollectionService sample catalog
     # ════════════════════════════════════════════════════════
+
+    import threading
+    import random
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    from services.collection_service import CollectionService
+    from services.analysis_service import AnalysisService
+    from analyzers.ai_analyzer import AIAnalyzer
+    from utils.config import Config as LocalConfig
+
+    _config = LocalConfig()
+    _ai = AIAnalyzer(_config)
+    _collection = CollectionService(_config)
+    _analysis = AnalysisService(_config, _ai)
+
+    _analysis_state = {"running": False, "cycle": 0, "products": []}
+
+    async def _broadcast(event_type: str, data=None):
+        msg = json.dumps({"type": event_type, "data": data, "timestamp": datetime.now().isoformat()})
+        dead = set()
+        for ws in ws_clients:
+            try:
+                await ws.send_text(msg)
+            except Exception:
+                dead.add(ws)
+        ws_clients -= dead
+
+    def _analysis_worker():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            while _analysis_state["running"]:
+                _analysis_state["cycle"] += 1
+                cycle = _analysis_state["cycle"]
+                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle}: Collecting..."}))
+
+                categories = ["Kitchen", "Electronics", "Beauty", "Home & Kitchen", "Sports", "Health"]
+                keywords = ["trending", "best seller", "new arrival"]
+                products = _collection.collect_cycle(categories=categories, keywords=keywords)
+                _analysis_state["products"] = products
+
+                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle}: Analyzing {len(products)} products..."}))
+
+                raw_data = {"amazon": products, "trends": [], "social": []}
+                ideas = _analysis.analyze(products=products, raw_data=raw_data)
+
+                for p in ideas:
+                    asin = p.get("asin", "")
+                    if asin:
+                        try:
+                            db._execute(
+                                """INSERT INTO products (asin, name, category, amazon_price, rating, review_count, ai_score, estimated_margin_pct, traffic_light)
+                                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                                   ON CONFLICT (asin) DO UPDATE SET
+                                     name=EXCLUDED.name, category=EXCLUDED.category,
+                                     amazon_price=EXCLUDED.amazon_price, rating=EXCLUDED.rating,
+                                     review_count=EXCLUDED.review_count, ai_score=EXCLUDED.ai_score,
+                                     estimated_margin_pct=EXCLUDED.estimated_margin_pct,
+                                     traffic_light=EXCLUDED.traffic_light, updated_at=CURRENT_TIMESTAMP""",
+                                (asin, p.get("name",""), p.get("category",""), p.get("amazon_price",0),
+                                 p.get("rating",0), p.get("review_count",0), p.get("ai_score",0),
+                                 p.get("estimated_margin_pct",0), p.get("traffic_light","RED"))
+                            )
+                        except Exception:
+                            pass
+
+                total = len(db.get_all_products_from_db())
+                loop.run_until_complete(_broadcast("cycle_complete", {"cycle": cycle, "products": total, "hidden_gems": 0}))
+                loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle} complete: {total} products"}))
+
+                for _ in range(30):
+                    if not _analysis_state["running"]:
+                        break
+                    time.sleep(1)
+
+            loop.run_until_complete(_broadcast("analysis_complete", {"total": len(db.get_all_products_from_db())}))
+        except Exception as e:
+            logger.error("Analysis worker error: %s", e)
+        finally:
+            _analysis_state["running"] = False
 
     @app.get("/api/analysis/status")
     async def analysis_status(user: str = Depends(get_current_user)):
-        return {"running": False, "cycle": 0, "total_products": len(db.get_all_products_from_db()), "hidden_gems": 0, "seen_asins": 0, "elapsed_seconds": 0, "categories": [], "keywords": []}
+        return {"running": _analysis_state["running"], "cycle": _analysis_state["cycle"],
+                "total_products": len(db.get_all_products_from_db()), "hidden_gems": 0,
+                "seen_asins": 0, "elapsed_seconds": 0,
+                "categories": ["Kitchen", "Electronics", "Beauty"], "keywords": ["trending"]}
 
     @app.post("/api/analysis/start")
     async def analysis_start(user: str = Depends(get_current_user)):
-        return {"status": "started", "message": "Cloud mode: using seeded data"}
+        if _analysis_state["running"]:
+            raise HTTPException(400, "Already running")
+        _analysis_state["running"] = True
+        t = threading.Thread(target=_analysis_worker, daemon=True)
+        t.start()
+        return {"status": "started"}
 
     @app.post("/api/analysis/stop")
     async def analysis_stop(user: str = Depends(get_current_user)):
+        _analysis_state["running"] = False
         return {"status": "stopped"}
 
     @app.post("/api/analysis/cycle")
