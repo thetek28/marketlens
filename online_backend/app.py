@@ -367,6 +367,7 @@ def create_app() -> FastAPI:
     import random
     import sys
     import string
+    import time
 
     _analysis_state = {"running": False, "cycle": 0, "products": [], "ws_clients": ws_clients}
 
