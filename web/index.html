@@ -1080,6 +1080,20 @@
 
             /* Hide overflow text */
             .truncate-mobile { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+
+            /* Tracking product cards - stack on mobile */
+            .track-product { flex-direction: column; align-items: flex-start !important; gap: 8px !important; }
+            .track-product > div { width: 100%; }
+
+            /* Dashboard tables - hide less important columns */
+            .dash-table th:nth-child(n+6), .dash-table td:nth-child(n+6) { display: none; }
+
+            /* Watchlist card layout */
+            .watchlist-card { flex-direction: column !important; }
+            .watchlist-card > div:last-child { width: 100%; justify-content: flex-start !important; }
+
+            /* Listing generator modal */
+            .listgen-modal { width: 100% !important; height: 100% !important; max-height: 100vh !important; border-radius: 0 !important; }
         }
 
         /* ==========================================
@@ -2485,7 +2499,7 @@ async function renderResearch() {
                     </h1>
                     <p class="text-xs text-gray-400 mt-1">Discover profitable products with AI-powered market intelligence</p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
                     <div class="flex items-center gap-1.5 text-[10px] text-gray-400">
                         <span class="w-1.5 h-1.5 rounded-full bg-green-500 pulse-dot"></span>
                         Live
@@ -2498,7 +2512,7 @@ async function renderResearch() {
 
         <div class="research-card p-4 mb-4">
             <div class="flex gap-3 items-end flex-wrap mb-3">
-                <div class="flex-1 min-w-[200px]">
+                <div class="flex-1 min-w-0" style="min-width:160px">
                     <label class="text-[10px] text-gray-400 block mb-1.5 font-semibold">Search Products</label>
                     <div class="relative">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -2506,7 +2520,7 @@ async function renderResearch() {
                         <button onclick="$('f-search').value='';searchProducts()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                     </div>
                 </div>
-                <div class="min-w-[180px]">
+                <div class="min-w-0" style="min-width:140px">
                     <label class="text-[10px] text-gray-400 block mb-1.5 font-semibold">ASIN Lookup</label>
                     <div class="flex gap-2">
                         <input id="asin-input" placeholder="B08N5WRWNW" class="flex-1">
@@ -2571,8 +2585,8 @@ async function renderResearch() {
                 <button onclick="applyResearchPreset('aipicks')" class="research-preset">🤖 AI Picks</button>
             </div>
 
-            <div class="flex items-center justify-between">
-                <div class="flex gap-2">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex gap-2 flex-wrap">
                     <button onclick="searchProducts()" class="px-5 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-accent to-blue-600 text-white hover:from-accent-dark hover:to-blue-700 transition shadow-lg shadow-accent/20 flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         SEARCH
@@ -3947,12 +3961,12 @@ async function renderTracking() {
         const avgAI = ais.length ? (ais.reduce((a,b) => a+b, 0) / ais.length) : 0;
         const lastUpdated = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
         $('main-content').innerHTML = `
-        <div class="flex items-start justify-between mb-6">
+        <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
             <div>
                 <h1 class="text-2xl font-bold text-white">Product Tracking</h1>
                 <p class="text-sm text-gray-400 mt-1">Monitor prices, rankings, sales signals, competition, and market changes in real time.</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
                 <div class="flex items-center gap-2 text-xs">
                     <span class="track-status ${statusRunning ? 'active' : 'paused'}"><span class="track-status-dot"></span>${statusRunning ? 'Live Monitoring' : 'Monitoring Paused'}</span>
                 </div>
@@ -3964,10 +3978,10 @@ async function renderTracking() {
         </div>
         ${renderTrackingKPIs(tracked, status)}
         <div class="track-card p-3 mb-4">
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2">
-                    <input type="text" id="track-add-input" placeholder="Add ASIN or URL to track..." class="text-xs py-1.5 px-3" style="width:260px" onkeydown="if(event.key==='Enter')addTrackingProduct(this.value)">
-                    <button onclick="addTrackingProduct(document.getElementById('track-add-input').value)" class="btn btn-accent text-[11px] px-3 py-1.5">ADD TO TRACKING</button>
+            <div class="flex items-center gap-3 flex-wrap">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <input type="text" id="track-add-input" placeholder="Add ASIN or URL to track..." class="text-xs py-1.5 px-3 flex-1 min-w-0" style="max-width:260px" onkeydown="if(event.key==='Enter')addTrackingProduct(this.value)">
+                    <button onclick="addTrackingProduct(document.getElementById('track-add-input').value)" class="btn btn-accent text-[11px] px-3 py-1.5 shrink-0">ADD TO TRACKING</button>
                 </div>
             </div>
         </div>
@@ -4053,9 +4067,9 @@ function renderTrackingFilters(products) {
         <div class="flex items-center gap-1.5 flex-wrap">
             ${filters.map(f => `<button onclick="trackingFilter='${f.id}';trackingPage=1;renderTracking()" class="track-filter ${trackingFilter===f.id?'active':''}">${f.label} <span class="opacity-60">${f.count}</span></button>`).join('')}
         </div>
-        <div class="flex items-center gap-2 ml-auto">
-            <input type="text" placeholder="Search products..." value="${esc(trackingSearch)}" oninput="trackingSearch=this.value;trackingPage=1;renderTracking()" class="text-[11px] py-1 px-2.5" style="width:180px">
-            <select onchange="trackingSort=this.value;renderTracking()" class="text-[11px] py-1 px-2" style="width:130px">
+        <div class="flex items-center gap-2 ml-auto flex-wrap">
+            <input type="text" placeholder="Search products..." value="${esc(trackingSearch)}" oninput="trackingSearch=this.value;trackingPage=1;renderTracking()" class="text-[11px] py-1 px-2.5 flex-1 min-w-[120px]" style="max-width:180px">
+            <select onchange="trackingSort=this.value;renderTracking()" class="text-[11px] py-1 px-2 flex-1 min-w-[100px]" style="max-width:130px">
                 <option value="recent" ${trackingSort==='recent'?'selected':''}>Most Recent</option>
                 <option value="price_desc" ${trackingSort==='price_desc'?'selected':''}>Price ↓</option>
                 <option value="price_asc" ${trackingSort==='price_asc'?'selected':''}>Price ↑</option>
@@ -4582,7 +4596,7 @@ function renderHistoryContent(status) {
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-wrap">
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-800/80 border border-dark-600">
                             <div class="w-2 h-2 rounded-full ${aiReady ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)]' : 'bg-gray-500'}" style="animation: ${aiReady ? 'histPulse 2s ease-in-out infinite' : 'none'}"></div>
                             <span class="text-xs font-semibold ${aiReady ? 'text-green-400' : 'text-gray-500'}">${totalProducts.toLocaleString()} Records</span>
@@ -4655,8 +4669,8 @@ function renderHistoryContent(status) {
                             {key:'saved',label:'★ Saved'}
                         ].map(f => `<button onclick="setHistoryTypeFilter('${f.key}')" class="hist-filter ${historyTypeFilter===f.key?'active':''}">${f.label}</button>`).join('')}
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="text" placeholder="Search by keyword, ASIN, category..." value="${esc(historySearch)}" oninput="historySearch=this.value;historyPage=1;rerenderHistory()" class="px-3 py-1.5 bg-dark-800 border border-dark-600 rounded-lg text-xs text-white placeholder-gray-500 focus:border-blue-500/40 focus:outline-none w-56">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <input type="text" placeholder="Search..." value="${esc(historySearch)}" oninput="historySearch=this.value;historyPage=1;rerenderHistory()" class="px-3 py-1.5 bg-dark-800 border border-dark-600 rounded-lg text-xs text-white placeholder-gray-500 focus:border-blue-500/40 focus:outline-none flex-1 min-w-[120px]" style="max-width:224px">
                         <select onchange="historySort=this.value;historyPage=1;rerenderHistory()" class="px-2 py-1.5 bg-dark-800 border border-dark-600 rounded-lg text-xs text-gray-300 focus:border-blue-500/40 focus:outline-none">
                             <option value="newest" ${historySort==='newest'?'selected':''}>Newest First</option>
                             <option value="oldest" ${historySort==='oldest'?'selected':''}>Oldest First</option>
@@ -4679,12 +4693,12 @@ function renderHistoryContent(status) {
             </div>
 
             <!-- BULK ACTION BAR -->
-            ${historySelected.size > 0 ? `<div class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+            ${historySelected.size > 0 ? `<div class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 flex-wrap">
                 <span class="text-xs font-semibold text-blue-400">${historySelected.size} selected</span>
                 <button onclick="bulkExportHistory()" class="px-3 py-1 rounded-lg bg-dark-800 border border-dark-600 text-gray-300 text-[11px] font-semibold hover:border-blue-500/30 transition-all">Export</button>
                 <button onclick="bulkTagHistory()" class="px-3 py-1 rounded-lg bg-dark-800 border border-dark-600 text-gray-300 text-[11px] font-semibold hover:border-blue-500/30 transition-all">Tag</button>
                 <button onclick="bulkDeleteHistory()" class="px-3 py-1 rounded-lg bg-dark-800 border border-dark-600 text-red-400 text-[11px] font-semibold hover:border-red-500/30 transition-all">Delete</button>
-                <button onclick="historySelected.clear();rerenderHistory()" class="px-3 py-1 rounded-lg bg-dark-800 border border-dark-600 text-gray-400 text-[11px] font-semibold hover:border-gray-500/30 transition-all ml-auto">Clear Selection</button>
+                <button onclick="historySelected.clear();rerenderHistory()" class="px-3 py-1 rounded-lg bg-dark-800 border border-dark-600 text-gray-400 text-[11px] font-semibold hover:border-gray-500/30 transition-all ml-auto">Clear</button>
             </div>` : ''}
 
             <!-- MAIN CONTENT -->
@@ -5447,7 +5461,7 @@ async function refreshWatchlist() {
 }
 
 async function renderWatchlist() {
-    $('main-content').innerHTML = `<div class="mb-6 flex items-center justify-between"><div><h1 class="text-2xl font-bold text-white">Watchlist</h1><p class="text-sm text-gray-400 mt-1">Products worth monitoring closely</p></div><div class="flex items-center gap-2"><span class="flex items-center gap-1.5 text-[10px] text-green-400"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Live</span><button onclick="refreshWatchlist()" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh</button><button onclick="exportWatchlist('csv')" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export</button><button onclick="showAddWatchlistModal()" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-accent text-white hover:bg-accent-dark transition flex items-center gap-1.5">+ Add</button></div></div>
+    $('main-content').innerHTML = `<div class="mb-6 flex items-center justify-between flex-wrap gap-3"><div><h1 class="text-2xl font-bold text-white">Watchlist</h1><p class="text-sm text-gray-400 mt-1">Products worth monitoring closely</p></div><div class="flex items-center gap-2 flex-wrap"><button onclick="refreshWatchlist()" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh</button><button onclick="exportWatchlist('csv')" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export</button><button onclick="showAddWatchlistModal()" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-accent text-white hover:bg-accent-dark transition flex items-center gap-1.5">+ Add</button></div></div>
         ${renderWatchlistSkeletons()}`;
 
     if (!watchlistData.length) {
@@ -5473,7 +5487,7 @@ async function renderWatchlist() {
     const pageProducts = filtered.slice(startIdx, startIdx + watchlistPerPage);
 
     $('main-content').innerHTML = `
-        <div class="mb-6 flex items-center justify-between"><div><h1 class="text-2xl font-bold text-white">Watchlist</h1><p class="text-sm text-gray-400 mt-1">Products worth monitoring closely</p></div><div class="flex items-center gap-2"><span class="flex items-center gap-1.5 text-[10px] text-green-400"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Live</span><button onclick="refreshWatchlist()" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh</button><button onclick="exportWatchlist('csv')" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export</button><button onclick="showAddWatchlistModal()" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-accent text-white hover:bg-accent-dark transition flex items-center gap-1.5">+ Add</button></div></div>
+        <div class="mb-6 flex items-center justify-between flex-wrap gap-3"><div><h1 class="text-2xl font-bold text-white">Watchlist</h1><p class="text-sm text-gray-400 mt-1">Products worth monitoring closely</p></div><div class="flex items-center gap-2 flex-wrap"><span class="flex items-center gap-1.5 text-[10px] text-green-400"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Live</span><button onclick="refreshWatchlist()" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh</button><button onclick="exportWatchlist('csv')" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export</button><button onclick="showAddWatchlistModal()" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-accent text-white hover:bg-accent-dark transition flex items-center gap-1.5">+ Add</button></div></div>
         ${renderWatchlistKPIs(allProducts)}
         ${renderWatchlistTabs(allProducts)}
         <div class="flex flex-col md:flex-row items-start md:items-center gap-3 mb-4">
@@ -5601,7 +5615,7 @@ function renderAnaContent(products, status) {
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-wrap">
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-800/80 border border-dark-600">
                             <div class="w-2 h-2 rounded-full ${aiReady ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)]' : 'bg-gray-500'}" style="animation: ${aiReady ? 'anaPulse 2s ease-in-out infinite' : 'none'}"></div>
                             <span class="text-xs font-semibold ${aiReady ? 'text-green-400' : 'text-gray-500'}">LIVE DATA</span>
@@ -6201,7 +6215,7 @@ function renderSettingsAccount(username, sub, isPro) {
                         <div class="settings-row-desc">Your public display name</div>
                     </div>
                     <div class="settings-row-control">
-                        <input type="text" value="${esc(username)}" class="ml-input" style="width:200px" onchange="markSettingsModified()">
+                        <input type="text" value="${esc(username)}" class="ml-input" style="width:100%;max-width:200px" onchange="markSettingsModified()">
                     </div>
                 </div>
                 <div class="settings-row">
@@ -6210,7 +6224,7 @@ function renderSettingsAccount(username, sub, isPro) {
                         <div class="settings-row-desc">Account email address</div>
                     </div>
                     <div class="settings-row-control">
-                        <input type="email" value="${esc(username)}@marketlens.io" class="ml-input" style="width:200px" onchange="markSettingsModified()">
+                        <input type="email" value="${esc(username)}@marketlens.io" class="ml-input" style="width:100%;max-width:200px" onchange="markSettingsModified()">
                     </div>
                 </div>
                 <div class="settings-row">
