@@ -32,7 +32,11 @@ class BillingService:
             stripe.api_key = self.stripe_secret
 
     def _conn(self):
-        return psycopg2.connect(self.database_url, sslmode="require")
+        conn = psycopg2.connect(self.database_url, sslmode="require")
+        with conn.cursor() as cur:
+            cur.execute("SET search_path TO public, marketlens")
+        conn.commit()
+        return conn
 
     def _exec(self, query, params=(), fetch="none"):
         conn = self._conn()

@@ -42,6 +42,9 @@ if not DATABASE_URL:
 def get_db():
     """Get database connection."""
     conn = psycopg2.connect(DATABASE_URL, sslmode="require")
+    with conn.cursor() as cur:
+        cur.execute("SET search_path TO public, marketlens")
+    conn.commit()
     return conn
 
 def db_execute(query, params=(), fetch="none"):
