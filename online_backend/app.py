@@ -341,6 +341,22 @@ def create_app() -> FastAPI:
         return {"categories": [], "keywords": [], "config": {}}
 
     # ════════════════════════════════════════════════════════
+    # FRONTEND
+    # ════════════════════════════════════════════════════════
+
+    _web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
+    _index_html = os.path.join(_web_dir, "index.html")
+
+    if os.path.exists(_index_html):
+        @app.get("/", response_class=HTMLResponse)
+        async def serve_frontend():
+            with open(_index_html, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read())
+
+        if os.path.isdir(os.path.join(_web_dir, "static")):
+            app.mount("/static", StaticFiles(directory=os.path.join(_web_dir, "static")), name="static")
+
+    # ════════════════════════════════════════════════════════
     # SHUTDOWN
     # ════════════════════════════════════════════════════════
 
