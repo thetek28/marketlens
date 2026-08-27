@@ -410,6 +410,13 @@ def create_app() -> FastAPI:
                 raw_data = {"amazon": products, "trends": [], "social": []}
                 ideas = _analysis.analyze(products=products, raw_data=raw_data)
 
+                # Generate fake ASINs for sample products
+                import string
+                for i, p in enumerate(ideas):
+                    if not p.get("asin") or not p["asin"].startswith("B0"):
+                        chars = string.ascii_uppercase + string.digits
+                        p["asin"] = "B0" + "".join(random.choices(chars, k=8))
+
                 for p in ideas:
                     asin = p.get("asin", "")
                     if asin:
@@ -427,8 +434,8 @@ def create_app() -> FastAPI:
                                  p.get("rating",0), p.get("review_count",0), p.get("ai_score",0),
                                  p.get("estimated_margin_pct",0), p.get("traffic_light","RED"))
                             )
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            logger.error("Failed to insert product %s: %s", asin, e)
 
                 total = len(db.get_all_products_from_db())
                 loop.run_until_complete(_broadcast("cycle_complete", {"cycle": cycle, "products": total, "hidden_gems": 0}))
