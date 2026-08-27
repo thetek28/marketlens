@@ -55,6 +55,7 @@ class BackendConfig:
                 "https://*.netlify.app",
                 "https://*.railway.app",
                 "https://*.onrender.com",
+                "https://marketlens-backend-v72p.onrender.com",
             ]
 
     @property

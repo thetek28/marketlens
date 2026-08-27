@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt -r /app/db_requirements.
 # Copy application code
 COPY online_backend/ /app/online_backend/
 COPY online_db/ /app/online_db/
+COPY web/ /app/web/
 
 # Expose port
 EXPOSE 8000
