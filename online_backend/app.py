@@ -402,7 +402,7 @@ def create_app() -> FastAPI:
 
                 categories = ["Kitchen", "Electronics", "Beauty", "Home & Kitchen", "Sports", "Health"]
                 keywords = ["trending", "best seller", "new arrival"]
-                products = _collection.collect_cycle(categories=categories, keywords=keywords)
+                products = _collection.collect_cycle(categories=categories, keywords=keywords, sources=["Amazon", "Google Trends"])
                 _analysis_state["products"] = products
 
                 loop.run_until_complete(_broadcast("status", {"message": f"Cycle {cycle}: Analyzing {len(products)} products..."}))
