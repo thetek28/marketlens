@@ -20,6 +20,9 @@ from pydantic import BaseModel
 
 from online_db.unified import UnifiedDB
 from online_backend.config import BackendConfig
+from online_backend.billing_routes import (
+    setup_billing_user_routes, setup_billing_webhook_route, setup_billing_admin_routes
+)
 
 logger = logging.getLogger(__name__)
 
@@ -762,6 +765,14 @@ def create_app() -> FastAPI:
     @app.get("/api/admin/backups")
     async def admin_backups(admin: dict = Depends(require_admin_role("super_admin"))):
         return {"backups": db._exec("SELECT * FROM admin_backups ORDER BY created_at DESC LIMIT 20", fetch="all")}
+
+    # ════════════════════════════════════════════════════════
+    # BILLING ROUTES (Stripe Integration)
+    # ════════════════════════════════════════════════════════
+
+    setup_billing_user_routes(app, get_current_user)
+    setup_billing_webhook_route(app)
+    setup_billing_admin_routes(app, get_admin_user, require_admin_role)
 
     # ════════════════════════════════════════════════════════
     # SEED ADMIN ON STARTUP
