@@ -594,8 +594,10 @@ def create_app() -> FastAPI:
         except Exception:
             return None
 
+    _admin_db_url = os.environ.get("DATABASE_URL", config.database_url)
+
     def admin_db_exec(query, params=(), fetch="none"):
-        conn = psycopg2.connect(config.database_url, sslmode="require")
+        conn = psycopg2.connect(_admin_db_url, sslmode="require")
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 cur.execute(query, params)
@@ -879,6 +881,27 @@ def create_app() -> FastAPI:
     @app.get("/api/admin/backups")
     async def admin_list_backups(admin: dict = Depends(require_admin_role("super_admin"))):
         return {"backups": admin_db_exec("SELECT * FROM admin_backups ORDER BY created_at DESC LIMIT 20", fetch="all")}
+
+    # ════════════════════════════════════════════════════════
+    # STARTUP - Ensure admin user exists
+    # ════════════════════════════════════════════════════════
+
+    @app.on_event("startup")
+    async def seed_admin():
+        try:
+            admin_pw = os.environ.get("ADMIN_PASSWORD", "admin123")
+            pw_hash = bcrypt.hashpw(admin_pw.encode(), bcrypt.gensalt()).decode()
+            admin_db_exec(
+                """INSERT INTO admin_users (username, email, password_hash, role, display_name)
+                   VALUES (%s, %s, %s, %s, %s)
+                   ON CONFLICT (username) DO UPDATE SET
+                     password_hash = EXCLUDED.password_hash,
+                     updated_at = CURRENT_TIMESTAMP""",
+                ("admin", "admin@marketlens.com", pw_hash, "super_admin", "Super Admin")
+            )
+            logger.info("Admin user seeded successfully")
+        except Exception as e:
+            logger.error("Failed to seed admin user: %s", e)
 
     # ════════════════════════════════════════════════════════
     # SHUTDOWN
