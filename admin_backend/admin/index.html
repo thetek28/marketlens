@@ -263,21 +263,136 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .notif-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:8px;display:flex;gap:12px;align-items:start}
 .notif-card .unread{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0}
 
-/* RESPONSIVE */
+/* RESPONSIVE DESIGN - COMPLETE SYSTEM */
+
+/* --- Tablet (max-width: 1024px) --- */
+@media(max-width:1024px){
+.sidebar{width:220px}
+.sidebar .nav-item span{font-size:0.7rem}
+.sidebar .nav-section{font-size:0.6rem}
+.stats-grid{grid-template-columns:repeat(2,1fr)}
+.main-scroll{padding:20px}
+.header-search{max-width:200px}
+}
+
+/* --- Mobile (max-width: 768px) --- */
 @media(max-width:768px){
-.sidebar{transform:translateX(-100%)}
+.sidebar{transform:translateX(-100%);width:260px;z-index:200}
 .sidebar.open{transform:translateX(0)}
+.sidebar-overlay.active{display:block;z-index:199}
 .main{margin-left:0}
 .hamburger{display:flex}
-.stats-grid{grid-template-columns:repeat(2,1fr)}
+.stats-grid{grid-template-columns:repeat(2,1fr);gap:8px}
 .header-search{display:none}
-.detail-grid{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:480px){
-.stats-grid{grid-template-columns:1fr 1fr}
-.detail-grid{grid-template-columns:1fr}
+.detail-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+.main-header{padding:0 12px;height:48px;gap:8px}
+.main-scroll{padding:12px}
 .card-body{padding:12px}
-.main-scroll{padding:16px}
+.card-header{padding:12px}
+.card-header h2{font-size:0.9rem}
+
+/* Tables → cards on mobile */
+.table-responsive thead{display:none}
+.table-responsive tbody tr{display:block;padding:12px;margin-bottom:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.table-responsive tbody td{display:flex;justify-content:space-between;padding:4px 0;border:none;font-size:0.8rem}
+.table-responsive tbody td::before{content:attr(data-label);font-weight:600;color:var(--text-muted);font-size:0.7rem}
+.table-responsive tbody td:last-child{border-top:1px solid var(--border);padding-top:8px;margin-top:4px}
+
+/* Dashboard 2-col → stack */
+.detail-grid-2col{grid-template-columns:1fr !important}
+#section-dashboard div[style*="grid-template-columns:1fr 1fr"],
+#section-user-detail div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}
+div[style*="display:grid"][style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}
+
+/* Forms responsive */
+.form-row{flex-wrap:wrap}
+.form-row .form-group{flex:1 1 100%;min-width:0}
+.form-group{margin-bottom:12px}
+
+/* Search bar responsive */
+.search-bar{flex-direction:column;gap:8px}
+.search-bar .input{width:100%}
+.search-bar select{width:100%}
+
+/* Modal responsive */
+.modal-overlay{padding:8px}
+.modal{width:100%;max-width:100%;max-height:90vh;margin:5vh auto;border-radius:12px}
+
+/* Plan cards */
+.plan-card{padding:12px}
+.plan-card h3{font-size:1rem}
+
+/* Billing admin grids */
+.billing-grid{grid-template-columns:1fr !important}
+
+/* Admin dropdown */
+.admin-dropdown{right:0;min-width:140px}
+.admin-btn span.name{display:none}
+
+/* Detail grid smaller */
+.detail-grid{gap:8px}
+.detail-item{padding:8px}
+.detail-item .k{font-size:0.65rem}
+.detail-item .v{font-size:0.8rem}
+
+/* Health items */
+.health-strip{flex-direction:column;gap:8px}
+.health-item{min-width:100%}
+
+/* Quick actions */
+.quick-actions{flex-direction:column}
+.quick-action-btn{width:100%;justify-content:center}
+
+/* Stat cards compact */
+.stat-card{padding:12px}
+.stat-card .value{font-size:1.2rem}
+.stat-card .label{font-size:0.65rem}
+
+/* Log entries */
+.log-entry{flex-direction:column;gap:4px}
+
+/* Tab bar horizontal scroll */
+.tab-bar{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+.tab-btn{white-space:nowrap;flex-shrink:0}
+
+/* Badge wrapping */
+.badge{white-space:nowrap}
+
+/* Pagination compact */
+.pagination{gap:4px}
+.pagination .btn{min-width:28px;padding:4px 8px;font-size:0.7rem}
+
+/* Empty states */
+.empty{padding:24px 16px}
+.empty p{font-size:0.85rem}
+
+/* Touch targets */
+button,.nav-item,.toggle{min-height:44px}
+.nav-item{padding:12px 16px}
+
+/* Sidebar footer */
+.sidebar-footer{padding:12px}
+.sidebar-footer .info .name{font-size:0.75rem}
+.sidebar-footer .info .role{font-size:0.65rem}
+
+/* User detail tabs */
+.detail-tabs{overflow-x:auto;flex-wrap:nowrap}
+
+/* Alert rows */
+.alert-row{padding:8px 12px}
+}
+
+/* --- Small Mobile (max-width: 480px) --- */
+@media(max-width:480px){
+.stats-grid{grid-template-columns:1fr}
+.detail-grid{grid-template-columns:1fr}
+.card-body{padding:10px}
+.main-scroll{padding:10px}
+.main-header{padding:0 8px}
+.stat-card .value{font-size:1rem}
+.modal{border-radius:8px;max-height:95vh;margin:2.5vh auto}
+.sidebar{width:85vw}
+.header-title{font-size:0.85rem}
 }
 </style>
 </head>
