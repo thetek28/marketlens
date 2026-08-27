@@ -10,23 +10,19 @@
 html,body{height:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
 .app{display:flex;height:100vh}
-
-/* ── Sidebar ── */
 .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .25s cubic-bezier(.4,0,.2,1)}
 .sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
 .sidebar-header .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
-.sidebar-header h1{font-size:16px;color:var(--text);white-space:nowrap}
+.sidebar-header h1{font-size:16px;color:var(--text)}
 .sidebar-header p{font-size:10px;color:var(--muted);margin-top:2px}
-.sidebar-nav{flex:1;padding:8px 0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s;white-space:nowrap;border-left:3px solid transparent}
+.sidebar-nav{flex:1;padding:8px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s;border-left:3px solid transparent}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
 .nav-item.active{background:rgba(99,102,241,.15);color:var(--accent2);border-left-color:var(--accent)}
 .nav-item .icon{width:20px;text-align:center;font-size:15px;flex-shrink:0}
 .sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
-
-/* ── Main ── */
-.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:margin .25s}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .main-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface)}
 .hamburger{display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .hamburger span{width:18px;height:2px;background:var(--text);border-radius:2px;transition:all .2s}
@@ -34,9 +30,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .hamburger.open span:nth-child(2){opacity:0}
 .hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(3px,-3px)}
 .main-header h2{font-size:18px;flex:1}
-.main-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 24px}
-
-/* ── Cards ── */
+.main-scroll{flex:1;overflow-y:auto;padding:20px 24px}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:20px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
 .stat-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
@@ -45,68 +39,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .card h3{font-size:15px}
-
-/* ── Buttons ── */
 .btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn:active{transform:scale(.97)}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
 .btn-danger{background:var(--red);color:#fff}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:var(--surface2)}
 .btn-sm{padding:5px 10px;font-size:12px}
-.btn-icon{width:32px;height:32px;padding:0;justify-content:center}
-
-/* ── Table ── */
-.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
-table{width:100%;border-collapse:collapse;min-width:600px}
+.btn-green{background:var(--green);color:#fff}
+.btn-yellow{background:var(--yellow);color:#000}
+.table-wrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
+table{width:100%;border-collapse:collapse;min-width:500px}
 th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
 th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;background:var(--surface);z-index:1}
 tr:hover td{background:var(--surface2)}
-
-/* ── Badges ── */
 .badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge-green{background:rgba(34,197,94,.15);color:var(--green)}
 .badge-red{background:rgba(239,68,68,.15);color:var(--red)}
 .badge-yellow{background:rgba(245,158,11,.15);color:var(--yellow)}
 .badge-blue{background:rgba(59,130,246,.15);color:var(--blue)}
 .badge-gray{background:rgba(148,163,184,.15);color:var(--muted)}
-
-/* ── Form ── */
-.input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;width:100%;transition:border-color .15s}
+.input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;width:100%}
 .input:focus{outline:none;border-color:var(--accent)}
 select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 .form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-.form-row{display:grid;gap:10px}
-.form-row-2{grid-template-columns:1fr 1fr}
+.form-row{display:grid;gap:10px;grid-template-columns:1fr 1fr}
 .search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .search-bar .input,.search-bar select{flex:1;min-width:120px}
-
-/* ── Pagination ── */
 .pagination{display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .pagination button{padding:6px 12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;cursor:pointer;font-size:12px}
 .pagination button.active{background:var(--accent);border-color:var(--accent)}
-
-/* ── Toggle ── */
 .toggle{position:relative;width:40px;height:22px;cursor:pointer;display:inline-block}
 .toggle input{opacity:0;width:0;height:0;position:absolute}
 .toggle .slider{position:absolute;inset:0;background:var(--surface2);border-radius:22px;transition:.2s}
 .toggle .slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s}
 .toggle input:checked+.slider{background:var(--accent)}
 .toggle input:checked+.slider:before{transform:translateX(18px);background:#fff}
-
-/* ── Toast ── */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;color:#fff;font-size:13px;z-index:9999;animation:slideUp .3s;max-width:90vw;text-align:center}
 .toast-success{background:var(--green)}.toast-error{background:var(--red)}.toast-info{background:var(--blue)}
 @keyframes slideUp{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
-
-/* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:200;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.active{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
 .modal h3{margin-bottom:16px;font-size:17px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
-
-/* ── Misc ── */
 .section{display:none}.section.active{display:block}
 .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
 .health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
@@ -114,52 +90,24 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .health-item .label{color:var(--muted);font-size:13px}
 .health-item .value{font-weight:600;font-size:14px}
 .log-entry{padding:10px 12px;border-left:3px solid var(--border);margin-bottom:8px;font-size:12px;background:var(--surface2);border-radius:0 6px 6px 0}
-.log-entry.action-create{border-color:var(--green)}.log-entry.action-delete{border-color:var(--red)}.log-entry.action-update{border-color:var(--yellow)}
-.notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;display:inline-block;margin-left:6px}
-.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
-.setting-row:last-child{border-bottom:none}
-.notif-card{padding:12px;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:6px;margin-bottom:8px}
-.notif-card:last-child{margin-bottom:0}
+.notif-card{padding:12px;background:var(--surface2);border-radius:6px;margin-bottom:8px}
 .plan-card{text-align:center;padding:20px 16px}
-
-/* ── Responsive ── */
-@media(max-width:1024px){
-  .stats-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
-  .form-row-2{grid-template-columns:1fr}
-}
-@media(max-width:768px){
-  .sidebar{transform:translateX(-100%)}
-  .sidebar.open{transform:translateX(0)}
-  .sidebar-overlay.active{display:block}
-  .main{margin-left:0}
-  .hamburger{display:flex}
-  .main-header{padding:12px 16px}
-  .main-scroll{padding:16px}
-  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .stat-card .value{font-size:20px}
-  .stat-card{padding:12px}
-  .card{padding:14px}
-  .search-bar{flex-direction:column}
-  .search-bar .input,.search-bar select{min-width:100%}
-  .modal{max-width:100%;margin:0 8px}
-  table{min-width:500px}
-  th,td{padding:8px 10px;font-size:12px}
-}
-@media(max-width:480px){
-  .stats-grid{grid-template-columns:1fr 1fr}
-  .stat-card .value{font-size:18px}
-  .health-grid{grid-template-columns:1fr}
-  .setting-row{flex-direction:column;align-items:flex-start}
-  .setting-row .input{width:100%;margin-top:6px}
-}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.detail-item{padding:12px;background:var(--surface2);border-radius:8px}
+.detail-item .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.detail-item .v{font-size:16px;font-weight:600}
+.usage-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:6px}
+.usage-bar .fill{height:100%;border-radius:3px;transition:width .3s}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;transition:all .15s}
+.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.sidebar-overlay.active{display:block}.main{margin-left:0}.hamburger{display:flex}.main-header{padding:12px 16px}.main-scroll{padding:16px}.stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card .value{font-size:20px}.stat-card{padding:12px}.card{padding:14px}.search-bar{flex-direction:column}.form-row{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr 1fr}.modal{max-width:100%}table{min-width:400px}th,td{padding:8px 10px;font-size:12px}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.health-grid{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
-  <!-- Sidebar overlay for mobile -->
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
-
-  <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="logo">M</div>
@@ -171,13 +119,13 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
       <div class="nav-item" data-section="plans" onclick="nav('plans')"><span class="icon">&#9733;</span> Plans</div>
       <div class="nav-item" data-section="subscriptions" onclick="nav('subscriptions')"><span class="icon">&#8635;</span> Subscriptions</div>
       <div class="nav-item" data-section="products" onclick="nav('products')"><span class="icon">&#9776;</span> Products</div>
-      <div class="nav-item" data-section="features" onclick="nav('features')"><span class="icon">&#9873;</span> Feature Flags</div>
+      <div class="nav-item" data-section="research" onclick="nav('research')"><span class="icon">&#128269;</span> Research</div>
+      <div class="nav-item" data-section="watchlist" onclick="nav('watchlist')"><span class="icon">&#9734;</span> Watchlists</div>
+      <div class="nav-item" data-section="features" onclick="nav('features')"><span class="icon">&#9873;</span> Features</div>
       <div class="nav-item" data-section="health" onclick="nav('health')"><span class="icon">&#9829;</span> Health</div>
       <div class="nav-item" data-section="jobs" onclick="nav('jobs')"><span class="icon">&#9881;</span> Jobs</div>
-      <div class="nav-item" data-section="audit" onclick="nav('audit')"><span class="icon">&#9776;</span> Audit Logs</div>
+      <div class="nav-item" data-section="audit" onclick="nav('audit')"><span class="icon">&#9776;</span> Audit</div>
       <div class="nav-item" data-section="settings" onclick="nav('settings')"><span class="icon">&#9881;</span> Settings</div>
-      <div class="nav-item" data-section="support" onclick="nav('support')"><span class="icon">&#9993;</span> Support</div>
-      <div class="nav-item" data-section="notifications" onclick="nav('notifications')"><span class="icon">&#9854;</span> Notifications <span id="notif-badge"></span></div>
     </nav>
     <div class="sidebar-footer">
       <div id="admin-info"></div>
@@ -185,15 +133,12 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
     </div>
   </aside>
 
-  <!-- Main -->
   <div class="main" id="main">
     <div class="main-header">
       <button class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
       <h2 id="page-title">Dashboard</h2>
-      <div id="header-actions"></div>
     </div>
     <div class="main-scroll" id="main-scroll">
-
       <!-- LOGIN -->
       <div id="login-screen">
         <div class="card" style="max-width:400px;margin:60px auto">
@@ -205,416 +150,232 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
       </div>
 
       <!-- DASHBOARD -->
-      <div id="section-dashboard" class="section">
-        <div class="stats-grid" id="dash-stats"></div>
-        <div class="card"><div class="card-header"><h3>Recent Jobs</h3></div>
-          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Created</th></tr></thead><tbody id="dash-jobs"></tbody></table></div>
-        </div>
-      </div>
+      <div id="section-dashboard" class="section"><div class="stats-grid" id="dash-stats"></div><div class="card"><h3 style="margin-bottom:12px">Recent Research Jobs</h3><div class="table-wrap"><table><thead><tr><th>User</th><th>Query</th><th>Status</th><th>Results</th><th>Credits</th><th>Time</th></tr></thead><tbody id="dash-research"></tbody></table></div></div></div>
 
       <!-- USERS -->
       <div id="section-users" class="section">
-        <div class="search-bar"><input class="input" id="user-search" placeholder="Search users..." oninput="debounce(loadUsers,300)()"><select class="input" style="max-width:150px" id="user-status-filter" onchange="loadUsers()"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Plan</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="users-table"></tbody></table></div></div>
+        <div class="search-bar"><input class="input" id="user-search" placeholder="Search users..." oninput="debounced(loadUsers)()"><select class="input" style="max-width:150px" id="user-status-filter" onchange="loadUsers()"><option value="">All</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Tier</th><th>Credits</th><th>Status</th><th>Actions</th></tr></thead><tbody id="users-table"></tbody></table></div></div>
         <div class="pagination" id="users-pagination"></div>
       </div>
 
-      <!-- PLANS -->
-      <div id="section-plans" class="section">
-        <div class="stats-grid" id="plans-grid"></div>
+      <!-- USER DETAIL (hidden by default) -->
+      <div id="section-user-detail" class="section">
+        <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
+          <button class="btn btn-ghost btn-sm" onclick="nav('users')">&#8592; Back</button>
+          <h3 id="user-detail-name"></h3>
+        </div>
+        <div class="tab-bar" id="user-detail-tabs"></div>
+        <div id="user-detail-content"></div>
       </div>
+
+      <!-- PLANS -->
+      <div id="section-plans" class="section"><div class="stats-grid" id="plans-grid"></div></div>
 
       <!-- SUBSCRIPTIONS -->
       <div id="section-subscriptions" class="section">
-        <div class="search-bar"><select class="input" style="max-width:150px" id="sub-status-filter" onchange="loadSubscriptions()"><option value="">All</option><option value="active">Active</option><option value="cancelled">Cancelled</option><option value="trial">Trial</option></select></div>
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Plan</th><th>Status</th><th>Credits</th><th>Created</th><th>Actions</th></tr></thead><tbody id="subs-table"></tbody></table></div></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Tier</th><th>Credits Used</th><th>Credits Limit</th><th>Research Used</th><th>Active</th><th>Actions</th></tr></thead><tbody id="subs-table"></tbody></table></div></div>
         <div class="pagination" id="subs-pagination"></div>
       </div>
 
       <!-- PRODUCTS -->
       <div id="section-products" class="section">
-        <div class="search-bar"><input class="input" id="product-search" placeholder="Search products..." oninput="debounce(loadProducts,300)()"></div>
+        <div class="search-bar"><input class="input" id="product-search" placeholder="Search..." oninput="debounced(loadProducts)()"></div>
         <div class="card"><div class="table-wrap"><table><thead><tr><th>ASIN</th><th>Name</th><th>Category</th><th>Price</th><th>Rating</th><th>AI</th><th>Traffic</th></tr></thead><tbody id="products-table"></tbody></table></div></div>
         <div class="pagination" id="products-pagination"></div>
       </div>
 
+      <!-- RESEARCH -->
+      <div id="section-research" class="section">
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Query</th><th>Market</th><th>Status</th><th>Results</th><th>AI</th><th>Credits</th><th>Time</th></tr></thead><tbody id="research-table"></tbody></table></div></div>
+        <div class="pagination" id="research-pagination"></div>
+      </div>
+
+      <!-- WATCHLIST -->
+      <div id="section-watchlist" class="section">
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>ASIN</th><th>Name</th><th>Price</th><th>AI</th><th>Traffic</th><th>Added</th></tr></thead><tbody id="watchlist-table"></tbody></table></div></div>
+        <div class="pagination" id="watchlist-pagination"></div>
+      </div>
+
       <!-- FEATURES -->
       <div id="section-features" class="section">
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>Flag</th><th>Description</th><th>Scope</th><th>Rollout</th><th>Enabled</th><th>Actions</th></tr></thead><tbody id="features-table"></tbody></table></div></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Flag</th><th>Description</th><th>Scope</th><th>Rollout</th><th>Enabled</th><th>Toggle</th></tr></thead><tbody id="features-table"></tbody></table></div></div>
       </div>
 
       <!-- HEALTH -->
-      <div id="section-health" class="section">
-        <div class="health-grid" id="health-grid"></div>
-        <div class="card" style="margin-top:16px"><h3 style="margin-bottom:12px">Recent Snapshots</h3>
-          <div class="table-wrap"><table><thead><tr><th>Time</th><th>CPU</th><th>Memory</th><th>Disk</th><th>DB</th></tr></thead><tbody id="health-history"></tbody></table></div>
-        </div>
-      </div>
+      <div id="section-health" class="section"><div class="health-grid" id="health-grid"></div></div>
 
       <!-- JOBS -->
       <div id="section-jobs" class="section">
-        <div class="search-bar"><select class="input" style="max-width:150px" id="job-status-filter" onchange="loadJobs()"><option value="">All</option><option value="running">Running</option><option value="queued">Queued</option><option value="completed">Completed</option><option value="failed">Failed</option></select></div>
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Error</th><th>Duration</th><th>Created</th></tr></thead><tbody id="jobs-table"></tbody></table></div></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Query</th><th>Status</th><th>Results</th><th>Credits</th><th>Duration</th><th>Created</th></tr></thead><tbody id="jobs-table"></tbody></table></div></div>
         <div class="pagination" id="jobs-pagination"></div>
       </div>
 
       <!-- AUDIT -->
       <div id="section-audit" class="section">
-        <div class="search-bar"><input class="input" id="audit-action-search" placeholder="Filter by action..." oninput="debounce(loadAudit,300)()"><input class="input" id="audit-email-search" placeholder="Filter by admin..." oninput="debounce(loadAudit,300)()"></div>
         <div class="card" id="audit-logs"></div>
         <div class="pagination" id="audit-pagination"></div>
       </div>
 
       <!-- SETTINGS -->
-      <div id="section-settings" class="section">
-        <div class="card" id="settings-list"></div>
-      </div>
-
-      <!-- SUPPORT -->
-      <div id="section-support" class="section">
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Subject</th><th>Status</th><th>Priority</th><th>Created</th></tr></thead><tbody id="support-table"></tbody></table></div></div>
-        <div class="pagination" id="support-pagination"></div>
-      </div>
-
-      <!-- NOTIFICATIONS -->
-      <div id="section-notifications" class="section">
-        <div id="notif-list"></div>
-      </div>
-
+      <div id="section-settings" class="section"><div class="card" id="settings-list"></div></div>
     </div>
   </div>
 </div>
 
-<!-- MODAL -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal" id="modal-content"></div>
-</div>
+<div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
 
 <script>
-const API = location.origin;
-let token = localStorage.getItem('admin_token');
-let adminData = null;
-let _debounceTimers = {};
+const API=location.origin;let token=localStorage.getItem('admin_token'),adminData=null;
+const _dt={};function debounced(fn,k){return()=>{clearTimeout(_dt[k]);_dt[k]=setTimeout(fn,300)}}
+async function api(p,o={}){const h={'Content-Type':'application/json',...o.headers};if(token)h['Authorization']='Bearer '+token;const r=await fetch(API+p,{...o,headers:h});if(r.status===401){logout();throw new Error('Unauthorized')}if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||r.statusText)}return r.json()}
+function toast(m,t='info'){const e=document.createElement('div');e.className='toast toast-'+t;e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),3000)}
+function fmtD(d){return d?new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'-'}
+function fmtDT(d){return d?new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'-'}
+function bCls(s){return s==='active'||s==='completed'||s==='running'?'badge-green':s==='failed'||s==='cancelled'?'badge-red':s==='queued'||s==='pending'?'badge-yellow':'badge-gray'}
+function showModal(h){document.getElementById('modal-content').innerHTML=h;document.getElementById('modal-overlay').classList.add('active')}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('active')}
+document.getElementById('modal-overlay').onclick=e=>{if(e.target===e.currentTarget)closeModal()};
+function gv(id){return document.getElementById(id).value}
+function gf(id){return parseFloat(document.getElementById(id).value)||0}
+function gi(id){return parseInt(document.getElementById(id).value)||0}
 
-function debounce(fn, ms) {
-  const key = fn.name;
-  return () => { clearTimeout(_debounceTimers[key]); _debounceTimers[key] = setTimeout(fn, ms); };
-}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-overlay').classList.toggle('active');document.getElementById('hamburger').classList.toggle('open')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('active');document.getElementById('hamburger').classList.remove('open')}
+function nav(n){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));const sec=document.getElementById('section-'+n);if(sec)sec.classList.add('active');const ni=document.querySelector(`.nav-item[data-section="${n}"]`);if(ni)ni.classList.add('active');const titles={dashboard:'Dashboard',users:'Users','user-detail':'User Detail',plans:'Plans',subscriptions:'Subscriptions',products:'Products',research:'Research',watchlist:'Watchlists',features:'Feature Flags',health:'Health',jobs:'Jobs',audit:'Audit Logs',settings:'Settings'};document.getElementById('page-title').textContent=titles[n]||n;closeSidebar();document.getElementById('main-scroll').scrollTop=0;const L={dashboard:loadDashboard,users:loadUsers,plans:loadPlans,subscriptions:loadSubscriptions,products:loadProducts,research:loadResearch,watchlist:loadWatchlist,features:loadFeatures,health:loadHealth,jobs:loadJobs,audit:loadAudit,settings:loadSettings};if(L[n])L[n]()}
 
-async function api(path, opts = {}) {
-  const headers = { 'Content-Type': 'application/json', ...opts.headers };
-  if (token) headers['Authorization'] = 'Bearer ' + token;
-  const res = await fetch(API + path, { ...opts, headers });
-  if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
-  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.detail || res.statusText); }
-  return res.json();
-}
-
-function toast(msg, type = 'info') {
-  const el = document.createElement('div');
-  el.className = 'toast toast-' + type;
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
-}
-
-function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'; }
-function fmtDT(d) { return d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'; }
-function badgeCls(s) { return s === 'active' || s === 'completed' || s === 'running' ? 'badge-green' : s === 'failed' || s === 'cancelled' || s === 'closed' ? 'badge-red' : s === 'queued' || s === 'pending' || s === 'open' ? 'badge-yellow' : 'badge-gray'; }
-
-function showModal(html) { document.getElementById('modal-content').innerHTML = html; document.getElementById('modal-overlay').classList.add('active'); }
-function closeModal() { document.getElementById('modal-overlay').classList.remove('active'); }
-document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
-
-// Sidebar
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebar-overlay').classList.toggle('active');
-  document.getElementById('hamburger').classList.toggle('open');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('active');
-  document.getElementById('hamburger').classList.remove('open');
-}
-
-function nav(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const sec = document.getElementById('section-' + name);
-  if (sec) sec.classList.add('active');
-  const navEl = document.querySelector(`.nav-item[data-section="${name}"]`);
-  if (navEl) navEl.classList.add('active');
-  const titles = { dashboard:'Dashboard', users:'Users', plans:'Plans', subscriptions:'Subscriptions', products:'Products', features:'Feature Flags', health:'Health', jobs:'Jobs', audit:'Audit Logs', settings:'Settings', support:'Support', notifications:'Notifications' };
-  document.getElementById('page-title').textContent = titles[name] || name;
-  closeSidebar();
-  document.getElementById('main-scroll').scrollTop = 0;
-  const loaders = { dashboard: loadDashboard, users: loadUsers, plans: loadPlans, subscriptions: loadSubscriptions, products: loadProducts, features: loadFeatures, health: loadHealth, jobs: loadJobs, audit: loadAudit, settings: loadSettings, support: loadSupport, notifications: loadNotifications };
-  if (loaders[name]) loaders[name]();
-}
-
-// AUTH
-async function doLogin() {
-  try {
-    const data = await api('/api/admin/auth/login', { method: 'POST', body: JSON.stringify({ username: document.getElementById('login-user').value, password: document.getElementById('login-pass').value }) });
-    token = data.token;
-    localStorage.setItem('admin_token', token);
-    adminData = data.admin;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-info').innerHTML = `<div style="font-weight:600">${data.admin.display_name || data.admin.username}</div><div style="font-size:11px;color:var(--muted)">${data.admin.role}</div>`;
-    nav('dashboard');
-  } catch (e) { toast(e.message, 'error'); }
-}
-document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-function logout() {
-  token = null;
-  localStorage.removeItem('admin_token');
-  document.getElementById('login-screen').style.display = 'block';
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('page-title').textContent = 'Admin Login';
-}
+async function doLogin(){try{const d=await api('/api/admin/auth/login',{method:'POST',body:JSON.stringify({username:gv('login-user'),password:gv('login-pass')})});token=d.token;localStorage.setItem('admin_token',token);adminData=d.admin;document.getElementById('login-screen').style.display='none';document.getElementById('admin-info').innerHTML=`<div style="font-weight:600">${d.admin.display_name||d.admin.username}</div><div style="font-size:11px;color:var(--muted)">${d.admin.role}</div>`;nav('dashboard')}catch(e){toast(e.message,'error')}}
+document.getElementById('login-pass').onkeydown=e=>{if(e.key==='Enter')doLogin()};
+function logout(){token=null;localStorage.removeItem('admin_token');document.getElementById('login-screen').style.display='block';document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('page-title').textContent='Admin Login'}
 
 // DASHBOARD
-async function loadDashboard() {
-  try {
-    const d = await api('/api/admin/dashboard');
-    document.getElementById('dash-stats').innerHTML = [
-      { l: 'Users', v: d.users.total, s: d.users.active + ' active' },
-      { l: 'Products', v: d.products.total },
-      { l: 'Subscriptions', v: d.subscriptions.total },
-      { l: 'MRR', v: '$' + (d.revenue.mrr || 0).toFixed(2) },
-      { l: 'Credits', v: d.credits.used + '/' + d.credits.limit },
-      { l: 'Jobs', v: d.jobs.running + ' running', s: d.jobs.total + ' total' },
-    ].map(s => `<div class="stat-card"><div class="label">${s.l}</div><div class="value">${s.v}</div>${s.s ? `<div class="sub">${s.s}</div>` : ''}</div>`).join('');
-    document.getElementById('dash-jobs').innerHTML = d.recent_jobs.map(j => `<tr><td>${j.id}</td><td>${j.job_type}</td><td><span class="badge ${badgeCls(j.status)}">${j.status}</span></td><td>${fmtDT(j.created_at)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">No recent jobs</td></tr>';
-  } catch (e) { toast(e.message, 'error'); }
-}
+async function loadDashboard(){try{const d=await api('/api/admin/dashboard');document.getElementById('dash-stats').innerHTML=[
+{l:'Users',v:d.users.total,s:d.users.active+' active'},{l:'Products',v:d.products.total,s:d.products.tracked+' tracked'},
+{l:'Research',v:d.research.total,s:d.research.running+' running'},{l:'Listings',v:d.listings.total},
+{l:'AI Credits Used',v:d.ai_usage.total_credits},{l:'MRR',v:'$'+(d.revenue.mrr||0).toFixed(2)}
+].map(s=>`<div class="stat-card"><div class="label">${s.l}</div><div class="value">${s.v}</div>${s.s?`<div class="sub">${s.s}</div>`:''}</div>`).join('');
+const r=await api('/api/admin/research?per_page=5');document.getElementById('dash-research').innerHTML=r.jobs.map(j=>`<tr><td>${j.username||'?'}</td><td>${(j.query||'').substring(0,30)}</td><td><span class="badge ${bCls(j.status)}">${j.status}</span></td><td>${j.result_count}</td><td>${j.ai_credits_cost}</td><td>${fmtDT(j.created_at)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No research yet</td></tr>'}catch(e){toast(e.message,'error')}}
 
 // USERS
-let userPage = 1;
-async function loadUsers(page) {
-  if (page) userPage = page;
-  const search = document.getElementById('user-search').value;
-  const status = document.getElementById('user-status-filter').value;
-  try {
-    const d = await api(`/api/admin/users?page=${userPage}&per_page=25&search=${encodeURIComponent(search)}&status=${status}`);
-    document.getElementById('users-table').innerHTML = d.users.map(u => `<tr>
-      <td>${u.id}</td><td>${u.username}</td><td>${u.email || '-'}</td><td>${u.plan_name || 'Free'}</td>
-      <td><span class="badge ${u.is_active ? 'badge-green' : 'badge-red'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
-      <td>${fmtDate(u.created_at)}</td>
-      <td><button class="btn btn-sm btn-ghost" onclick="userAction(${u.id},'${u.is_active ? 'suspend' : 'activate'}')">${u.is_active ? 'Suspend' : 'Activate'}</button></td>
-    </tr>`).join('') || '<tr><td colspan="7" class="empty">No users found</td></tr>';
-    renderPagination('users-pagination', d.total, 25, userPage, loadUsers);
-  } catch (e) { toast(e.message, 'error'); }
+let userPage=1;
+async function loadUsers(page){if(page)userPage=page;const s=gv('user-search'),st=gv('user-status-filter');try{const d=await api(`/api/admin/users?page=${userPage}&per_page=25&search=${encodeURIComponent(s)}&status=${st}`);
+document.getElementById('users-table').innerHTML=d.users.map(u=>`<tr><td>${u.id}</td><td><a href="#" onclick="showUserDetail(${u.id});return false" style="color:var(--accent2);text-decoration:none">${u.username}</a></td><td>${u.email||'-'}</td><td><span class="badge badge-blue">${u.tier||'free'}</span></td><td>${u.ai_credits_used||0}/${u.ai_credits_limit||0}</td><td><span class="badge ${u.is_active?'badge-green':'badge-red'}">${u.is_active?'Active':'Suspended'}</span></td><td><button class="btn btn-sm btn-ghost" onclick="showUserDetail(${u.id})">View</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No users</td></tr>';
+pag('users-pagination',d.total,25,userPage,loadUsers)}catch(e){toast(e.message,'error')}}
+
+// USER DETAIL
+let currentUserId=null;
+async function showUserDetail(uid){currentUserId=uid;nav('user-detail');try{const d=await api(`/api/admin/users/${uid}`);const u=d.user;const sub=d.subscription;const us=d.usage;const st=d.stats;
+document.getElementById('user-detail-name').textContent=u.username+' ('+u.email+')';
+const tabs=['overview','subscription','activity','security'];
+document.getElementById('user-detail-tabs').innerHTML=tabs.map(t=>`<button class="tab-btn ${t==='overview'?'active':''}" onclick="showUserTab('${t}',${uid})">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('');
+showUserTab('overview',uid)}catch(e){toast(e.message,'error')}}
+
+async function showUserTab(tab,uid){
+const d=await api(`/api/admin/users/${uid}`);
+const u=d.user;const sub=d.subscription;const us=d.usage;const st=d.stats;
+let html='';
+if(tab==='overview'){
+html=`<div class="detail-grid">
+<div class="detail-item"><div class="k">Status</div><div class="v"><span class="badge ${u.is_active?'badge-green':'badge-red'}">${u.is_active?'Active':'Suspended'}</span></div></div>
+<div class="detail-item"><div class="k">Plan</div><div class="v">${sub?sub.tier:'Free'}</div></div>
+<div class="detail-item"><div class="k">AI Credits</div><div class="v">${sub?sub.ai_credits_used:0}/${sub?sub.ai_credits_limit:0}</div><div class="usage-bar"><div class="fill" style="width:${sub?Math.min(100,sub.ai_credits_used/sub.ai_credits_limit*100):0}%;background:var(--accent)"></div></div></div>
+<div class="detail-item"><div class="k">Research</div><div class="v">${sub?sub.research_used:0}/${sub?sub.research_limit:0}</div><div class="usage-bar"><div class="fill" style="width:${sub?Math.min(100,sub.research_used/sub.research_limit*100):0}%;background:var(--blue)"></div></div></div>
+<div class="detail-item"><div class="k">Tracking</div><div class="v">${sub?sub.tracking_used:0}/${sub?sub.tracking_limit:0}</div><div class="usage-bar"><div class="fill" style="width:${sub?Math.min(100,sub.tracking_used/sub.tracking_limit*100):0}%;background:var(--green)"></div></div></div>
+<div class="detail-item"><div class="k">Listings</div><div class="v">${sub?sub.listing_gen_used:0}/${sub?sub.listing_gen_limit:0}</div><div class="usage-bar"><div class="fill" style="width:${sub?Math.min(100,sub.listing_gen_used/sub.listing_gen_limit*100):0}%;background:var(--yellow)"></div></div></div>
+<div class="detail-item"><div class="k">Products</div><div class="v">${st.products}</div></div>
+<div class="detail-item"><div class="k">Watchlist</div><div class="v">${st.watchlist}</div></div>
+<div class="detail-item"><div class="k">Tracking</div><div class="v">${st.tracking}</div></div>
+<div class="detail-item"><div class="k">Research Jobs</div><div class="v">${st.research}</div></div>
+<div class="detail-item"><div class="k">Listings</div><div class="v">${st.listings}</div></div>
+<div class="detail-item"><div class="k">Joined</div><div class="v">${fmtD(u.created_at)}</div></div>
+</div>
+<div class="card-header"><h3>Actions</h3></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-sm ${u.is_active?'btn-danger':'btn-green'}" onclick="userAction(${uid},'${u.is_active?'suspend':'activate'}')">${u.is_active?'Suspend':'Activate'} Account</button>
+<button class="btn btn-sm btn-primary" onclick="showCreditModal(${uid})">Adjust Credits</button>
+<button class="btn btn-sm btn-yellow" onclick="showPlanModal(${uid},'${sub?sub.tier:'free'}')">Change Plan</button>
+</div>`;
+} else if(tab==='subscription'){
+html=`<div class="card"><h3 style="margin-bottom:12px">Subscription Details</h3>
+<div class="detail-grid">
+<div class="detail-item"><div class="k">Tier</div><div class="v">${sub?sub.tier:'Free'}</div></div>
+<div class="detail-item"><div class="k">Status</div><div class="v"><span class="badge ${sub&&sub.is_active?'badge-green':'badge-red'}">${sub&&sub.is_active?'Active':'Inactive'}</span></div></div>
+<div class="detail-item"><div class="k">Billing Cycle</div><div class="v">${sub?sub.billing_cycle:'-'}</div></div>
+<div class="detail-item"><div class="k">Expiry</div><div class="v">${sub?fmtD(sub.expiry_date):'-'}</div></div>
+</div></div>`;
+} else if(tab==='activity'){
+const acts=d.recent_actions||[];const res=d.recent_research||[];
+html=`<div class="card"><h3 style="margin-bottom:12px">Recent Research</h3><div class="table-wrap"><table><thead><tr><th>Query</th><th>Status</th><th>Results</th><th>Time</th></tr></thead><tbody>${res.map(r=>`<tr><td>${(r.query||'').substring(0,40)}</td><td><span class="badge ${bCls(r.status)}">${r.status}</span></td><td>${r.result_count}</td><td>${fmtDT(r.created_at)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">No research yet</td></tr>'}</tbody></table></div></div>
+<div class="card"><h3 style="margin-bottom:12px">Admin Actions</h3>${acts.map(a=>`<div class="log-entry" style="border-color:${a.action.includes('suspend')?'var(--red)':a.action.includes('activate')?'var(--green)':'var(--blue)'}"><strong>${a.admin_username}</strong> - ${a.action} ${a.reason?'('+a.reason+')':''} <span style="color:var(--muted)">${fmtDT(a.created_at)}</span></div>`).join('')||'<div class="empty">No admin actions</div>'}</div>`;
+} else if(tab==='security'){
+html=`<div class="card"><h3 style="margin-bottom:12px">Security</h3>
+<div class="detail-grid">
+<div class="detail-item"><div class="k">Last Login</div><div class="v">${fmtDT(u.last_login)}</div></div>
+<div class="detail-item"><div class="k">Account Created</div><div class="v">${fmtD(u.created_at)}</div></div>
+</div></div>`;
 }
-async function userAction(userId, action) {
-  if (!confirm(`${action} user ${userId}?`)) return;
-  try { await api(`/api/admin/users/${userId}/action`, { method: 'POST', body: JSON.stringify({ action }) }); toast(`User ${action}d`, 'success'); loadUsers(); } catch (e) { toast(e.message, 'error'); }
-}
+document.getElementById('user-detail-content').innerHTML=html}
+
+async function userAction(uid,action){if(!confirm(action+' this user?'))return;try{await api(`/api/admin/users/${uid}/action`,{method:'POST',body:JSON.stringify({action})});toast('Done','success');showUserDetail(uid)}catch(e){toast(e.message,'error')}}
+function showCreditModal(uid){showModal(`<h3>Adjust AI Credits</h3><div class="form-group"><label>Amount (positive=add, negative=remove)</label><input class="input" id="credit-amount" type="number" value="100"></div><div class="form-group"><label>Reason</label><input class="input" id="credit-reason" value="Admin adjustment"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doCreditAdjust(${uid})">Apply</button></div>`)}
+async function doCreditAdjust(uid){const amt=gi('credit-amount');const reason=gv('credit-reason');const action=amt>=0?'add_credits':'remove_credits';try{await api(`/api/admin/users/${uid}/action`,{method:'POST',body:JSON.stringify({action,amount:Math.abs(amt),reason})});closeModal();toast('Credits updated','success');showUserDetail(uid)}catch(e){toast(e.message,'error')}}
+function showPlanModal(uid,currentTier){showModal(`<h3>Change Plan</h3><div class="form-group"><label>New Plan</label><select class="input" id="plan-select"><option value="free" ${currentTier==='free'?'selected':''}>Free</option><option value="pro" ${currentTier==='pro'?'selected':''}>Pro ($29.99/mo)</option><option value="business" ${currentTier==='business'?'selected':''}>Business ($79.99/mo)</option></select></div><div class="form-group"><label>Reason</label><input class="input" id="plan-reason" value="Plan change"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="doPlanChange(${uid})">Change Plan</button></div>`)}
+async function doPlanChange(uid){const tier=gv('plan-select');const reason=gv('plan-reason');const action=tier==='free'?'downgrade_plan':'upgrade_plan';try{await api(`/api/admin/users/${uid}/action`,{method:'POST',body:JSON.stringify({action,tier,reason})});closeModal();toast('Plan changed','success');showUserDetail(uid)}catch(e){toast(e.message,'error')}}
 
 // PLANS
-async function loadPlans() {
-  try {
-    const d = await api('/api/admin/plans');
-    document.getElementById('plans-grid').innerHTML = d.plans.map(p => `
-      <div class="stat-card plan-card">
-        <div style="font-size:17px;font-weight:700;margin-bottom:6px">${p.name}</div>
-        <div style="font-size:28px;font-weight:700;color:var(--accent2)">$${p.price_monthly}<span style="font-size:13px;color:var(--muted)">/mo</span></div>
-        <div style="margin:10px 0;font-size:12px;color:var(--muted);line-height:1.6">${p.ai_credits_monthly} AI credits<br>${p.research_limit} research/mo<br>${p.tracking_limit} tracking<br>${p.team_members} member${p.team_members > 1 ? 's' : ''}</div>
-        <button class="btn btn-sm btn-ghost" onclick="showPlanModal(${JSON.stringify(p).replace(/"/g, '&quot;')})">Edit</button>
-      </div>
-    `).join('');
-  } catch (e) { toast(e.message, 'error'); }
-}
-function showPlanModal(p) {
-  p = p || {};
-  showModal(`
-    <h3>${p.id ? 'Edit' : 'New'} Plan</h3>
-    <div class="form-group"><label>Name</label><input class="input" id="plan-name" value="${p.name || ''}"></div>
-    <div class="form-group"><label>Slug</label><input class="input" id="plan-slug" value="${p.slug || ''}"></div>
-    <div class="form-row form-row-2">
-      <div class="form-group"><label>Monthly ($)</label><input class="input" id="plan-monthly" type="number" step="0.01" value="${p.price_monthly || 0}"></div>
-      <div class="form-group"><label>Yearly ($)</label><input class="input" id="plan-yearly" type="number" step="0.01" value="${p.price_yearly || 0}"></div>
-      <div class="form-group"><label>AI Credits/mo</label><input class="input" id="plan-credits" type="number" value="${p.ai_credits_monthly || 50}"></div>
-      <div class="form-group"><label>Research Limit</label><input class="input" id="plan-research" type="number" value="${p.research_limit || 10}"></div>
-      <div class="form-group"><label>Tracking</label><input class="input" id="plan-tracking" type="number" value="${p.tracking_limit || 5}"></div>
-      <div class="form-group"><label>Team Members</label><input class="input" id="plan-team" type="number" value="${p.team_members || 1}"></div>
-    </div>
-    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="savePlan(${p.id || 'null'})">Save</button></div>
-  `);
-}
-async function savePlan(id) {
-  const body = { name: gv('plan-name'), slug: gv('plan-slug'), price_monthly: gf('plan-monthly'), price_yearly: gf('plan-yearly'), ai_credits_monthly: gi('plan-credits'), research_limit: gi('plan-research'), tracking_limit: gi('plan-tracking'), team_members: gi('plan-team') };
-  try { if (id) await api(`/api/admin/plans/${id}`, { method: 'PUT', body: JSON.stringify(body) }); else await api('/api/admin/plans', { method: 'POST', body: JSON.stringify(body) }); closeModal(); toast('Plan saved', 'success'); loadPlans(); } catch (e) { toast(e.message, 'error'); }
-}
-function gv(id) { return document.getElementById(id).value; }
-function gf(id) { return parseFloat(document.getElementById(id).value) || 0; }
-function gi(id) { return parseInt(document.getElementById(id).value) || 0; }
+async function loadPlans(){try{const d=await api('/api/admin/plans');document.getElementById('plans-grid').innerHTML=d.plans.map(p=>`<div class="stat-card plan-card"><div style="font-size:17px;font-weight:700;margin-bottom:6px">${p.name}</div><div style="font-size:28px;font-weight:700;color:var(--accent2)">$${p.price_monthly}<span style="font-size:13px;color:var(--muted)">/mo</span></div><div style="margin:10px 0;font-size:12px;color:var(--muted);line-height:1.6">${p.ai_credits_monthly} AI credits<br>${p.research_limit} research/mo<br>${p.tracking_limit} tracking<br>${p.team_members} member${p.team_members>1?'s':''}</div></div>`).join('')}catch(e){toast(e.message,'error')}}
 
 // SUBSCRIPTIONS
-let subPage = 1;
-async function loadSubscriptions(page) {
-  if (page) subPage = page;
-  const status = document.getElementById('sub-status-filter').value;
-  try {
-    const d = await api(`/api/admin/subscriptions?page=${subPage}&per_page=25&status=${status}`);
-    document.getElementById('subs-table').innerHTML = d.subscriptions.map(s => `<tr>
-      <td>${s.id}</td><td>${s.username || '#' + s.user_id}</td><td>${s.plan_name}</td>
-      <td><span class="badge ${badgeCls(s.status)}">${s.status}</span></td>
-      <td>${s.ai_credits_used || 0}/${s.ai_credits_limit || 0}</td><td>${fmtDate(s.created_at)}</td>
-      <td><button class="btn btn-sm btn-ghost" onclick="subAction(${s.id},'cancel')">Cancel</button> <button class="btn btn-sm btn-ghost" onclick="subAction(${s.id},'reactivate')">Reactivate</button></td>
-    </tr>`).join('') || '<tr><td colspan="7" class="empty">No subscriptions</td></tr>';
-    renderPagination('subs-pagination', d.total, 25, subPage, loadSubscriptions);
-  } catch (e) { toast(e.message, 'error'); }
-}
-async function subAction(id, action) {
-  if (!confirm(`${action} subscription ${id}?`)) return;
-  try { await api(`/api/admin/subscriptions/${id}/action`, { method: 'POST', body: JSON.stringify({ action }) }); toast('Done', 'success'); loadSubscriptions(); } catch (e) { toast(e.message, 'error'); }
-}
+let subPage=1;
+async function loadSubscriptions(page){if(page)subPage=page;try{const d=await api(`/api/admin/subscriptions?page=${subPage}&per_page=25`);
+document.getElementById('subs-table').innerHTML=d.subscriptions.map(s=>`<tr><td>${s.username||s.user_id}</td><td><span class="badge badge-blue">${s.tier}</span></td><td>${s.ai_credits_used||0}</td><td>${s.ai_credits_limit||0}</td><td>${s.research_used||0}/${s.research_limit||0}</td><td><span class="badge ${s.is_active?'badge-green':'badge-red'}">${s.is_active?'Active':'Inactive'}</span></td><td><button class="btn btn-sm btn-ghost" onclick="showUserDetail(${s.user_id})">View</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No subscriptions</td></tr>';
+pag('subs-pagination',d.total,25,subPage,loadSubscriptions)}catch(e){toast(e.message,'error')}}
 
 // PRODUCTS
-let productPage = 1;
-async function loadProducts(page) {
-  if (page) productPage = page;
-  const search = document.getElementById('product-search').value;
-  try {
-    const d = await api(`/api/admin/products?page=${productPage}&per_page=25&search=${encodeURIComponent(search)}`);
-    document.getElementById('products-table').innerHTML = d.products.map(p => `<tr>
-      <td style="font-family:monospace">${p.asin}</td><td>${(p.name || '').substring(0, 35)}</td><td>${p.category || '-'}</td>
-      <td>$${(p.amazon_price || 0).toFixed(2)}</td><td>${p.rating || 0} *</td><td>${((p.ai_score || 0) * 100).toFixed(0)}%</td>
-      <td><span class="badge badge-${p.traffic_light === 'GREEN' ? 'green' : p.traffic_light === 'YELLOW' ? 'yellow' : 'red'}">${p.traffic_light}</span></td>
-    </tr>`).join('') || '<tr><td colspan="7" class="empty">No products</td></tr>';
-    renderPagination('products-pagination', d.total, 25, productPage, loadProducts);
-  } catch (e) { toast(e.message, 'error'); }
-}
+let productPage=1;
+async function loadProducts(page){if(page)productPage=page;const s=gv('product-search');try{const d=await api(`/api/admin/products?page=${productPage}&per_page=25&search=${encodeURIComponent(s)}`);
+document.getElementById('products-table').innerHTML=d.products.map(p=>`<tr><td style="font-family:monospace">${p.asin}</td><td>${(p.name||'').substring(0,35)}</td><td>${p.category||'-'}</td><td>$${(p.amazon_price||0).toFixed(2)}</td><td>${p.rating||0}*</td><td>${((p.ai_score||0)*100).toFixed(0)}%</td><td><span class="badge badge-${p.traffic_light==='GREEN'?'green':p.traffic_light==='YELLOW'?'yellow':'red'}">${p.traffic_light}</span></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No products</td></tr>';
+pag('products-pagination',d.total,25,productPage,loadProducts)}catch(e){toast(e.message,'error')}}
+
+// RESEARCH
+let researchPage=1;
+async function loadResearch(page){if(page)researchPage=page;try{const d=await api(`/api/admin/research?page=${researchPage}&per_page=25`);
+document.getElementById('research-table').innerHTML=d.jobs.map(j=>`<tr><td>${j.username||'?'}</td><td>${(j.query||'').substring(0,30)}</td><td>${j.marketplace}</td><td><span class="badge ${bCls(j.status)}">${j.status}</span></td><td>${j.result_count}</td><td>${j.ai_analysis_used?'Yes':'No'}</td><td>${j.ai_credits_cost}</td><td>${fmtDT(j.created_at)}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">No research jobs</td></tr>';
+pag('research-pagination',d.total,25,researchPage,loadResearch)}catch(e){toast(e.message,'error')}}
+
+// WATCHLIST
+let watchPage=1;
+async function loadWatchlist(page){if(page)watchPage=page;try{const d=await api(`/api/admin/watchlist?page=${watchPage}&per_page=25`);
+document.getElementById('watchlist-table').innerHTML=d.items.map(w=>`<tr><td>${w.username||'?'}</td><td style="font-family:monospace">${w.asin}</td><td>${(w.product_name||'').substring(0,30)}</td><td>$${(w.amazon_price||0).toFixed(2)}</td><td>${((w.ai_score||0)*100).toFixed(0)}%</td><td><span class="badge badge-${w.traffic_light==='GREEN'?'green':w.traffic_light==='YELLOW'?'yellow':'red'}">${w.traffic_light}</span></td><td>${fmtDT(w.added_at)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No watchlist items</td></tr>';
+pag('watchlist-pagination',d.total,25,watchPage,loadWatchlist)}catch(e){toast(e.message,'error')}}
 
 // FEATURES
-async function loadFeatures() {
-  try {
-    const d = await api('/api/admin/features');
-    document.getElementById('features-table').innerHTML = d.features.map(f => `<tr>
-      <td><strong>${f.flag_name}</strong></td><td>${f.description || '-'}</td><td>${f.scope}</td>
-      <td>${f.rollout_percentage}%</td>
-      <td><label class="toggle"><input type="checkbox" ${f.is_enabled ? 'checked' : ''} onchange="toggleFeature(${f.id})"><span class="slider"></span></label></td>
-      <td><button class="btn btn-sm btn-ghost" onclick="toast('Edit coming soon','info')">Edit</button></td>
-    </tr>`).join('') || '<tr><td colspan="6" class="empty">No feature flags</td></tr>';
-  } catch (e) { toast(e.message, 'error'); }
-}
-async function toggleFeature(id) {
-  try { await api(`/api/admin/features/${id}/toggle`, { method: 'POST' }); toast('Toggled', 'success'); } catch (e) { toast(e.message, 'error'); }
-}
+async function loadFeatures(){try{const d=await api('/api/admin/features');document.getElementById('features-table').innerHTML=d.features.map(f=>`<tr><td><strong>${f.flag_name}</strong></td><td>${f.description||'-'}</td><td>${f.scope}</td><td>${f.rollout_percentage}%</td><td><label class="toggle"><input type="checkbox" ${f.is_enabled?'checked':''} onchange="toggleFeature(${f.id})"><span class="slider"></span></label></td><td>-</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No feature flags</td></tr>'}catch(e){toast(e.message,'error')}}
+async function toggleFeature(id){try{await api(`/api/admin/features/${id}/toggle`,{method:'POST'});toast('Toggled','success')}catch(e){toast(e.message,'error')}}
 
 // HEALTH
-async function loadHealth() {
-  try {
-    const d = await api('/api/admin/health');
-    document.getElementById('health-grid').innerHTML = [
-      { l: 'CPU', v: d.cpu + '%' }, { l: 'Memory', v: d.memory.percent + '%' }, { l: 'Disk', v: d.disk.percent + '%' },
-      { l: 'Database', v: d.database }, { l: 'Time', v: fmtDT(d.timestamp) }
-    ].map(h => `<div class="health-item"><span class="label">${h.l}</span><span class="value">${h.v}</span></div>`).join('');
-  } catch (e) { document.getElementById('health-grid').innerHTML = `<div class="health-item"><span class="label">Error</span><span class="value" style="color:var(--red)">${e.message}</span></div>`; }
-}
+async function loadHealth(){try{const d=await api('/api/admin/health');document.getElementById('health-grid').innerHTML=[{l:'CPU',v:d.cpu+'%'},{l:'Memory',v:d.memory.percent+'%'},{l:'Disk',v:d.disk.percent+'%'},{l:'Database',v:d.database},{l:'Time',v:fmtDT(d.timestamp)}].map(h=>`<div class="health-item"><span class="label">${h.l}</span><span class="value">${h.v}</span></div>`).join('')}catch(e){document.getElementById('health-grid').innerHTML=`<div class="health-item"><span class="label">Error</span><span class="value" style="color:var(--red)">${e.message}</span></div>`}}
 
 // JOBS
-let jobPage = 1;
-async function loadJobs(page) {
-  if (page) jobPage = page;
-  const status = document.getElementById('job-status-filter').value;
-  try {
-    const d = await api(`/api/admin/jobs?page=${jobPage}&per_page=25&status=${status}`);
-    document.getElementById('jobs-table').innerHTML = d.jobs.map(j => `<tr>
-      <td>${j.id}</td><td>${j.job_type}</td><td><span class="badge ${badgeCls(j.status)}">${j.status}</span></td>
-      <td>${j.error ? j.error.substring(0, 40) : '-'}</td><td>${j.duration_ms ? j.duration_ms + 'ms' : '-'}</td><td>${fmtDT(j.created_at)}</td>
-    </tr>`).join('') || '<tr><td colspan="6" class="empty">No jobs</td></tr>';
-    renderPagination('jobs-pagination', d.total, 25, jobPage, loadJobs);
-  } catch (e) { toast(e.message, 'error'); }
-}
+let jobPage=1;
+async function loadJobs(page){if(page)jobPage=page;try{const d=await api(`/api/admin/jobs?page=${jobPage}&per_page=25`);
+document.getElementById('jobs-table').innerHTML=d.jobs.map(j=>`<tr><td>${j.username||'?'}</td><td>${(j.query||'').substring(0,30)}</td><td><span class="badge ${bCls(j.status)}">${j.status}</span></td><td>${j.result_count}</td><td>${j.ai_credits_cost}</td><td>${j.duration_ms?j.duration_ms+'ms':'-'}</td><td>${fmtDT(j.created_at)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No jobs</td></tr>';
+pag('jobs-pagination',d.total,25,jobPage,loadJobs)}catch(e){toast(e.message,'error')}}
 
 // AUDIT
-let auditPage = 1;
-async function loadAudit(page) {
-  if (page) auditPage = page;
-  const action = document.getElementById('audit-action-search').value;
-  const email = document.getElementById('audit-email-search').value;
-  try {
-    const d = await api(`/api/admin/audit?page=${auditPage}&per_page=25&action=${encodeURIComponent(action)}&admin_email=${encodeURIComponent(email)}`);
-    document.getElementById('audit-logs').innerHTML = d.logs.map(l => `<div class="log-entry action-${l.action.includes('create') ? 'create' : l.action.includes('delete') ? 'delete' : 'update'}">
-      <strong>${l.admin_email}</strong> - ${l.action} - ${l.target_type} ${l.target_id} ${l.reason ? '(' + l.reason + ')' : ''} <span style="color:var(--muted)">${fmtDT(l.created_at)}</span>
-    </div>`).join('') || '<div class="empty">No audit logs</div>';
-    renderPagination('audit-pagination', d.total, 25, auditPage, loadAudit);
-  } catch (e) { toast(e.message, 'error'); }
-}
+let auditPage=1;
+async function loadAudit(page){if(page)auditPage=page;try{const d=await api(`/api/admin/audit?page=${auditPage}&per_page=25`);
+document.getElementById('audit-logs').innerHTML=d.logs.map(l=>`<div class="log-entry" style="border-color:${l.action.includes('suspend')?'var(--red)':l.action.includes('activate')||l.action.includes('upgrade')?'var(--green)':'var(--blue)'}"><strong>${l.admin_username}</strong> &rarr; ${l.target_username} - ${l.action} ${l.reason?'('+l.reason+')':''} <span style="color:var(--muted)">${fmtDT(l.created_at)}</span></div>`).join('')||'<div class="empty">No audit logs</div>';
+pag('audit-pagination',d.total,25,auditPage,loadAudit)}catch(e){toast(e.message,'error')}}
 
 // SETTINGS
-async function loadSettings() {
-  try {
-    const d = await api('/api/admin/settings');
-    document.getElementById('settings-list').innerHTML = d.settings.map(s => `<div class="setting-row">
-      <div style="flex:1;min-width:150px"><strong>${s.setting_key}</strong><div style="font-size:11px;color:var(--muted)">${s.description}</div></div>
-      <div style="display:flex;gap:8px;align-items:center;flex:1;min-width:200px">
-        <input class="input" value="${JSON.stringify(s.setting_value)}" id="setting-${s.setting_key}">
-        <button class="btn btn-sm btn-primary" onclick="saveSetting('${s.setting_key}')">Save</button>
-      </div>
-    </div>`).join('');
-  } catch (e) { toast(e.message, 'error'); }
-}
-async function saveSetting(key) {
-  try { await api(`/api/admin/settings/${key}`, { method: 'PUT', body: JSON.stringify({ setting_value: JSON.parse(document.getElementById('setting-' + key).value) }) }); toast('Saved', 'success'); } catch (e) { toast(e.message, 'error'); }
-}
+async function loadSettings(){try{const d=await api('/api/admin/settings');document.getElementById('settings-list').innerHTML=d.settings.map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:150px"><strong>${s.setting_key}</strong><div style="font-size:11px;color:var(--muted)">${s.description}</div></div><div style="display:flex;gap:8px;align-items:center;flex:1;min-width:200px"><input class="input" value="${JSON.stringify(s.setting_value)}" id="setting-${s.setting_key}"><button class="btn btn-sm btn-primary" onclick="saveSetting('${s.setting_key}')">Save</button></div></div>`).join('')}catch(e){toast(e.message,'error')}}
+async function saveSetting(k){try{await api(`/api/admin/settings/${k}`,{method:'PUT',body:JSON.stringify({setting_value:JSON.parse(gv('setting-'+k))})});toast('Saved','success')}catch(e){toast(e.message,'error')}}
 
-// SUPPORT
-let supportPage = 1;
-async function loadSupport(page) {
-  if (page) supportPage = page;
-  try {
-    const d = await api(`/api/admin/support?page=${supportPage}&per_page=25`);
-    document.getElementById('support-table').innerHTML = d.tickets.map(t => `<tr>
-      <td>${t.id}</td><td>${t.username || '#' + t.user_id}</td><td>${t.subject}</td>
-      <td><span class="badge ${badgeCls(t.status)}">${t.status}</span></td>
-      <td><span class="badge ${t.priority === 'urgent' ? 'badge-red' : t.priority === 'high' ? 'badge-yellow' : 'badge-gray'}">${t.priority}</span></td>
-      <td>${fmtDate(t.created_at)}</td>
-    </tr>`).join('') || '<tr><td colspan="6" class="empty">No tickets</td></tr>';
-    renderPagination('support-pagination', d.total, 25, supportPage, loadSupport);
-  } catch (e) { toast(e.message, 'error'); }
-}
+// PAGINATION
+function pag(id,total,per,cur,fn){const pages=Math.ceil(total/per);if(pages<=1){document.getElementById(id).innerHTML='';return}let h='';if(cur>1)h+=`<button onclick="${fn.name}(${cur-1})">Prev</button>`;for(let i=Math.max(1,cur-2);i<=Math.min(pages,cur+2);i++)h+=`<button class="${i===cur?'active':''}" onclick="${fn.name}(${i})">${i}</button>`;if(cur<pages)h+=`<button onclick="${fn.name}(${cur+1})">Next</button>`;document.getElementById(id).innerHTML=h}
 
-// NOTIFICATIONS
-async function loadNotifications() {
-  try {
-    const d = await api('/api/admin/notifications');
-    const unread = d.notifications.filter(n => !n.is_read).length;
-    document.getElementById('notif-badge').innerHTML = unread > 0 ? '<span class="notif-dot"></span>' : '';
-    document.getElementById('notif-list').innerHTML = d.notifications.map(n => `<div class="notif-card" style="${n.is_read ? 'opacity:.6' : ''}">
-      <div style="display:flex;justify-content:space-between;align-items:center"><strong>${n.title}</strong><span class="badge badge-${n.severity === 'error' || n.severity === 'critical' ? 'red' : n.severity === 'warning' ? 'yellow' : 'blue'}">${n.severity}</span></div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px">${n.message}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">${fmtDT(n.created_at)}</div>
-    </div>`).join('') || '<div class="empty">No notifications</div>';
-  } catch (e) { toast(e.message, 'error'); }
-}
-
-// PAGINATION HELPER
-function renderPagination(elId, total, perPage, current, fn) {
-  const pages = Math.ceil(total / perPage);
-  if (pages <= 1) { document.getElementById(elId).innerHTML = ''; return; }
-  let html = '';
-  if (current > 1) html += `<button onclick="${fn.name}(${current - 1})">Prev</button>`;
-  for (let i = Math.max(1, current - 2); i <= Math.min(pages, current + 2); i++) {
-    html += `<button class="${i === current ? 'active' : ''}" onclick="${fn.name}(${i})">${i}</button>`;
-  }
-  if (current < pages) html += `<button onclick="${fn.name}(${current + 1})">Next</button>`;
-  document.getElementById(elId).innerHTML = html;
-}
-
-// INIT
-if (token) {
-  api('/api/admin/auth/me').then(d => {
-    adminData = d;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-info').innerHTML = `<div style="font-weight:600">${d.display_name || d.username}</div><div style="font-size:11px;color:var(--muted)">${d.role}</div>`;
-    nav('dashboard');
-  }).catch(() => { token = null; localStorage.removeItem('admin_token'); });
-}
+if(token)api('/api/admin/auth/me').then(d=>{adminData=d;document.getElementById('login-screen').style.display='none';document.getElementById('admin-info').innerHTML=`<div style="font-weight:600">${d.display_name||d.username}</div><div style="font-size:11px;color:var(--muted)">${d.role}</div>`;nav('dashboard')}).catch(()=>{token=null;localStorage.removeItem('admin_token')});
 </script>
 </body>
 </html>

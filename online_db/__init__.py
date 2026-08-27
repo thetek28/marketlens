@@ -2,5 +2,6 @@
 
 from .manager import OnlineDatabaseManager
 from .config import DatabaseConfig
+from .unified import UnifiedDB
 
-__all__ = ["OnlineDatabaseManager", "DatabaseConfig"]
+__all__ = ["OnlineDatabaseManager", "DatabaseConfig", "UnifiedDB"]
