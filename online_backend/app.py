@@ -378,17 +378,18 @@ def create_app() -> FastAPI:
     _collection = CollectionService(_config)
     _analysis = AnalysisService(_config, _ai)
 
-    _analysis_state = {"running": False, "cycle": 0, "products": []}
+    _analysis_state = {"running": False, "cycle": 0, "products": [], "ws_clients": ws_clients}
 
     async def _broadcast(event_type: str, data=None):
         msg = json.dumps({"type": event_type, "data": data, "timestamp": datetime.now().isoformat()})
+        clients = _analysis_state["ws_clients"]
         dead = set()
-        for ws in ws_clients:
+        for ws in clients:
             try:
                 await ws.send_text(msg)
             except Exception:
                 dead.add(ws)
-        ws_clients -= dead
+        clients -= dead
 
     def _analysis_worker():
         loop = asyncio.new_event_loop()
@@ -472,6 +473,58 @@ def create_app() -> FastAPI:
     @app.post("/api/analysis/collect")
     async def analysis_collect(user: str = Depends(get_current_user)):
         return {"status": "ok", "products": 0}
+
+    # ════════════════════════════════════════════════════════
+    # STATUS & CHARTS (frontend expects these)
+    # ════════════════════════════════════════════════════════
+
+    _categories = ["Kitchen", "Electronics", "Beauty", "Home & Kitchen", "Sports", "Health"]
+    _keywords = ["trending", "best seller", "new arrival", "hot", "popular"]
+
+    @app.get("/api/status")
+    async def get_status(user: str = Depends(get_current_user)):
+        return {"running": _analysis_state["running"], "cycle": _analysis_state["cycle"],
+                "total_products": len(db.get_all_products_from_db()), "hidden_gems": 0,
+                "seen_asins": 0, "elapsed_seconds": 0,
+                "categories": _categories, "keywords": _keywords}
+
+    @app.get("/api/charts/data")
+    async def get_charts_data(user: str = Depends(get_current_user)):
+        products = db.get_all_products_from_db()[:20]
+        categories = {}
+        for p in products:
+            cat = p.get("category", "Unknown")
+            if cat not in categories: categories[cat] = {"count": 0, "margins": [], "ais": []}
+            categories[cat]["count"] += 1
+            categories[cat]["margins"].append(p.get("estimated_margin_pct", 0))
+            categories[cat]["ais"].append(p.get("ai_score", 0))
+        for cat in categories:
+            m, a = categories[cat]["margins"], categories[cat]["ais"]
+            categories[cat] = {"count": categories[cat]["count"], "avg_margin": round(sum(m)/len(m),1) if m else 0, "avg_ai": round(sum(a)/len(a)*100,1) if a else 0}
+        price_dist = {"under_20": 0, "20_50": 0, "50_100": 0, "over_100": 0}
+        for p in products:
+            pr = p.get("amazon_price", 0)
+            if pr < 20: price_dist["under_20"] += 1
+            elif pr < 50: price_dist["20_50"] += 1
+            elif pr < 100: price_dist["50_100"] += 1
+            else: price_dist["over_100"] += 1
+        traffic = {"GREEN": 0, "YELLOW": 0, "RED": 0}
+        for p in products: traffic[p.get("traffic_light", "RED")] = traffic.get(p.get("traffic_light", "RED"), 0) + 1
+        return {"categories": categories, "price_distribution": price_dist, "traffic_lights": traffic, "ai_distribution": {"low":0,"medium":0,"high":0,"very_high":0}, "total": len(products)}
+
+    @app.post("/api/categories")
+    async def update_categories(request: Request, user: str = Depends(get_current_user)):
+        body = await request.json()
+        global _categories
+        _categories = body.get("categories", _categories)
+        return {"categories": _categories}
+
+    @app.post("/api/keywords")
+    async def update_keywords(request: Request, user: str = Depends(get_current_user)):
+        body = await request.json()
+        global _keywords
+        _keywords = body.get("keywords", _keywords)
+        return {"keywords": _keywords}
 
     # ════════════════════════════════════════════════════════
     # FRONTEND
