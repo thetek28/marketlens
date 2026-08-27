@@ -24,6 +24,7 @@ COPY analyzers/ /app/analyzers/
 COPY data_collectors/ /app/data_collectors/
 COPY utils/ /app/utils/
 COPY database/ /app/database/
+COPY admin_backend/ /app/admin_backend/
 
 # Expose port
 EXPOSE 8000

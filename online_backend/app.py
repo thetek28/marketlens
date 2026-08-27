@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import bcrypt
+import psycopg2
+import psycopg2.extras
 from fastapi import FastAPI, HTTPException, Request, Depends, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
@@ -536,6 +538,7 @@ def create_app() -> FastAPI:
 
     _web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
     _index_html = os.path.join(_web_dir, "index.html")
+    _admin_html = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "admin_backend", "admin", "index.html")
 
     @app.get("/", response_class=HTMLResponse)
     async def serve_frontend():
@@ -545,8 +548,337 @@ def create_app() -> FastAPI:
         except FileNotFoundError:
             return HTMLResponse(content="<h1>Frontend not found</h1>", status_code=404)
 
+    @app.get("/admin", response_class=HTMLResponse)
+    @app.get("/admin/", response_class=HTMLResponse)
+    async def serve_admin():
+        try:
+            with open(_admin_html, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read())
+        except FileNotFoundError:
+            return HTMLResponse(content="<h1>Admin frontend not found</h1>", status_code=404)
+
     if os.path.isdir(os.path.join(_web_dir, "static")):
         app.mount("/static", StaticFiles(directory=os.path.join(_web_dir, "static")), name="static")
+
+    # ════════════════════════════════════════════════════════
+    # ADMIN API (inline)
+    # ════════════════════════════════════════════════════════
+
+    import hmac as _hmac
+    import base64 as _base64
+
+    ADMIN_JWT_SECRET = os.environ.get("MLENS_JWT_SECRET", config.jwt_secret)
+
+    def create_admin_token(admin_id, username, role):
+        payload = {"sub": username, "admin_id": admin_id, "role": role,
+                    "exp": (datetime.utcnow() + timedelta(hours=12)).isoformat(),
+                    "iat": datetime.utcnow().isoformat(), "is_admin": True}
+        header = _base64.urlsafe_b64encode(json.dumps({"alg":"HS256","typ":"JWT"}).encode()).decode().rstrip("=")
+        body = _base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+        sig = _base64.urlsafe_b64encode(_hmac.new(ADMIN_JWT_SECRET.encode(), f"{header}.{body}".encode(), "sha256").digest()).decode().rstrip("=")
+        return f"{header}.{body}.{sig}"
+
+    def decode_admin_token(token):
+        try:
+            parts = token.split(".")
+            if len(parts) != 3: return None
+            header, body, sig = parts
+            expected = _hmac.new(ADMIN_JWT_SECRET.encode(), f"{header}.{body}".encode(), "sha256").digest()
+            actual = _base64.urlsafe_b64decode(sig + "==")
+            if not _hmac.compare_digest(expected, actual): return None
+            body_padded = body + "=" * (4 - len(body) % 4)
+            payload = json.loads(_base64.urlsafe_b64decode(body_padded))
+            if datetime.fromisoformat(payload.get("exp", "2000-01-01")) < datetime.utcnow(): return None
+            if not payload.get("is_admin"): return None
+            return payload
+        except Exception:
+            return None
+
+    def admin_db_exec(query, params=(), fetch="none"):
+        conn = psycopg2.connect(config.database_url, sslmode="require")
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(query, params)
+                if fetch == "one":
+                    row = cur.fetchone(); conn.commit(); return dict(row) if row else None
+                elif fetch == "all":
+                    rows = cur.fetchall(); conn.commit(); return [dict(r) for r in rows]
+                else:
+                    conn.commit(); return cur.rowcount
+        except Exception:
+            conn.rollback(); raise
+        finally:
+            conn.close()
+
+    async def get_admin_user(request: Request):
+        token = None
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "): token = auth_header[7:]
+        if not token: token = request.cookies.get("mjl_admin_token")
+        if not token: raise HTTPException(401, "Not authenticated")
+        payload = decode_admin_token(token)
+        if not payload: raise HTTPException(401, "Invalid or expired token")
+        return payload
+
+    def require_admin_role(*roles):
+        async def checker(admin: dict = Depends(get_admin_user)):
+            if admin.get("role") not in roles and admin.get("role") != "super_admin":
+                raise HTTPException(403, "Insufficient permissions")
+            return admin
+        return checker
+
+    # Admin Auth
+    @app.post("/api/admin/auth/login")
+    async def admin_login(request: Request):
+        body = await request.json()
+        username = body.get("username", "")
+        password = body.get("password", "")
+        admin = admin_db_exec("SELECT * FROM admin_users WHERE username = %s AND is_active = TRUE", (username,), "one")
+        if not admin or not bcrypt.checkpw(password.encode(), admin["password_hash"].encode()):
+            raise HTTPException(401, "Invalid credentials")
+        admin_db_exec("UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = %s", (admin["id"],))
+        token = create_admin_token(admin["id"], admin["username"], admin["role"])
+        return {"token": token, "admin": {"id": admin["id"], "username": admin["username"],
+                "email": admin["email"], "role": admin["role"], "display_name": admin["display_name"]}}
+
+    @app.get("/api/admin/auth/me")
+    async def admin_me(admin: dict = Depends(get_admin_user)):
+        a = admin_db_exec("SELECT id, username, email, role, display_name, is_active, last_login, created_at FROM admin_users WHERE id = %s", (admin["admin_id"],), "one")
+        if not a: raise HTTPException(404, "Admin not found")
+        return a
+
+    @app.post("/api/admin/auth/logout")
+    async def admin_logout(admin: dict = Depends(get_admin_user)):
+        return {"status": "ok"}
+
+    # Admin Dashboard
+    @app.get("/api/admin/dashboard")
+    async def admin_dashboard(admin: dict = Depends(get_admin_user)):
+        users = admin_db_exec("SELECT COUNT(*) as total FROM users", fetch="one")
+        active_users = admin_db_exec("SELECT COUNT(*) as total FROM users WHERE is_active = 1", fetch="one")
+        products = admin_db_exec("SELECT COUNT(*) as total FROM products", fetch="one")
+        subscriptions = admin_db_exec("SELECT COUNT(*) as total FROM admin_subscriptions WHERE status = 'active'", fetch="one")
+        jobs_running = admin_db_exec("SELECT COUNT(*) as total FROM admin_jobs WHERE status = 'running'", fetch="one")
+        jobs_total = admin_db_exec("SELECT COUNT(*) as total FROM admin_jobs", fetch="one")
+        revenue = admin_db_exec("""SELECT COALESCE(SUM(CASE WHEN s.billing_cycle='monthly' THEN p.price_monthly
+            WHEN s.billing_cycle='yearly' THEN p.price_yearly/12 ELSE 0 END), 0) as mrr
+            FROM admin_subscriptions s JOIN admin_plans p ON s.plan_id = p.id WHERE s.status = 'active'""", fetch="one")
+        credits = admin_db_exec("""SELECT COALESCE(SUM(ai_credits_used), 0) as total_used,
+            COALESCE(SUM(ai_credits_limit), 0) as total_limit FROM admin_subscriptions WHERE status = 'active'""", fetch="one")
+        recent_jobs = admin_db_exec("SELECT id, job_type, status, created_at, duration_ms FROM admin_jobs ORDER BY created_at DESC LIMIT 5", fetch="all")
+        return {"users": {"total": users["total"], "active": active_users["total"]},
+                "products": {"total": products["total"]},
+                "subscriptions": {"total": subscriptions["total"]},
+                "revenue": {"mrr": revenue["mrr"]},
+                "credits": {"used": credits["total_used"], "limit": credits["total_limit"]},
+                "jobs": {"running": jobs_running["total"], "total": jobs_total["total"]},
+                "recent_jobs": recent_jobs}
+
+    # Admin Users
+    @app.get("/api/admin/users")
+    async def admin_list_users(page: int = 1, per_page: int = 25, search: str = "", status: str = "", admin: dict = Depends(get_admin_user)):
+        where, params = [], []
+        if search:
+            where.append("(u.username ILIKE %s OR u.email ILIKE %s)")
+            params.extend([f"%{search}%", f"%{search}%"])
+        if status:
+            where.append("u.is_active = %s")
+            params.append(1 if status == "active" else 0)
+        where_clause = " AND ".join(where) if where else "1=1"
+        total = admin_db_exec(f"SELECT COUNT(*) as total FROM users u WHERE {where_clause}", params, "one")["total"]
+        offset = (page - 1) * per_page
+        params.extend([per_page, offset])
+        users = admin_db_exec(f"""SELECT u.id, u.username, u.email, u.is_active, u.created_at,
+            s.status as sub_status, s.ai_credits_used, s.ai_credits_limit, p.name as plan_name
+            FROM users u LEFT JOIN admin_subscriptions s ON u.id = s.user_id AND s.status = 'active'
+            LEFT JOIN admin_plans p ON s.plan_id = p.id WHERE {where_clause}
+            ORDER BY u.id DESC LIMIT %s OFFSET %s""", params, "all")
+        return {"users": users, "total": total, "page": page, "per_page": per_page}
+
+    @app.post("/api/admin/users/{user_id}/action")
+    async def admin_user_action(user_id: int, request: Request, admin: dict = Depends(require_admin_role("super_admin", "admin", "support"))):
+        body = await request.json()
+        action = body.get("action", "")
+        if action == "suspend":
+            admin_db_exec("UPDATE users SET is_active = 0 WHERE id = %s", (user_id,))
+        elif action == "activate":
+            admin_db_exec("UPDATE users SET is_active = 1 WHERE id = %s", (user_id,))
+        else:
+            raise HTTPException(400, f"Unknown action: {action}")
+        return {"status": "ok", "action": action}
+
+    # Admin Plans
+    @app.get("/api/admin/plans")
+    async def admin_list_plans(admin: dict = Depends(get_admin_user)):
+        return {"plans": admin_db_exec("SELECT * FROM admin_plans ORDER BY price_monthly", fetch="all")}
+
+    @app.post("/api/admin/plans")
+    async def admin_create_plan(request: Request, admin: dict = Depends(require_admin_role("super_admin"))):
+        body = await request.json()
+        plan_id = admin_db_exec("""INSERT INTO admin_plans (name, slug, price_monthly, price_yearly, currency, ai_credits_monthly,
+            research_limit, tracking_limit, team_members) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",
+            (body.get("name",""), body.get("slug",""), body.get("price_monthly",0), body.get("price_yearly",0),
+             body.get("currency","USD"), body.get("ai_credits_monthly",50), body.get("research_limit",10),
+             body.get("tracking_limit",5), body.get("team_members",1)), "one")
+        return {"id": plan_id["id"]}
+
+    @app.put("/api/admin/plans/{plan_id}")
+    async def admin_update_plan(plan_id: int, request: Request, admin: dict = Depends(require_admin_role("super_admin"))):
+        body = await request.json()
+        admin_db_exec("""UPDATE admin_plans SET name=%s, slug=%s, price_monthly=%s, price_yearly=%s,
+            ai_credits_monthly=%s, research_limit=%s, tracking_limit=%s, team_members=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s""",
+            (body.get("name",""), body.get("slug",""), body.get("price_monthly",0), body.get("price_yearly",0),
+             body.get("ai_credits_monthly",50), body.get("research_limit",10), body.get("tracking_limit",5),
+             body.get("team_members",1), plan_id))
+        return {"message": "Plan updated"}
+
+    # Admin Subscriptions
+    @app.get("/api/admin/subscriptions")
+    async def admin_list_subs(page: int = 1, per_page: int = 25, status: str = "", admin: dict = Depends(get_admin_user)):
+        where, params = [], []
+        if status:
+            where.append("s.status = %s"); params.append(status)
+        where_clause = " AND ".join(where) if where else "1=1"
+        total = admin_db_exec(f"SELECT COUNT(*) as total FROM admin_subscriptions s WHERE {where_clause}", params, "one")["total"]
+        offset = (page - 1) * per_page
+        params.extend([per_page, offset])
+        subs = admin_db_exec(f"""SELECT s.*, p.name as plan_name, p.price_monthly, p.price_yearly, u.username, u.email
+            FROM admin_subscriptions s JOIN admin_plans p ON s.plan_id = p.id
+            LEFT JOIN users u ON s.user_id = u.id WHERE {where_clause}
+            ORDER BY s.created_at DESC LIMIT %s OFFSET %s""", params, "all")
+        return {"subscriptions": subs, "total": total, "page": page, "per_page": per_page}
+
+    @app.post("/api/admin/subscriptions/{sub_id}/action")
+    async def admin_sub_action(sub_id: int, request: Request, admin: dict = Depends(require_admin_role("super_admin"))):
+        body = await request.json()
+        action = body.get("action", "")
+        if action == "cancel":
+            admin_db_exec("UPDATE admin_subscriptions SET status='cancelled', cancelled_at=CURRENT_TIMESTAMP WHERE id=%s", (sub_id,))
+        elif action == "reactivate":
+            admin_db_exec("UPDATE admin_subscriptions SET status='active', cancelled_at=NULL WHERE id=%s", (sub_id,))
+        else:
+            raise HTTPException(400, f"Unknown action: {action}")
+        return {"status": "ok", "action": action}
+
+    # Admin Products
+    @app.get("/api/admin/products")
+    async def admin_list_products(page: int = 1, per_page: int = 25, search: str = "", admin: dict = Depends(get_admin_user)):
+        where, params = [], []
+        if search:
+            where.append("(asin ILIKE %s OR name ILIKE %s OR category ILIKE %s)")
+            params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
+        where_clause = " AND ".join(where) if where else "1=1"
+        total = admin_db_exec(f"SELECT COUNT(*) as total FROM products WHERE {where_clause}", params, "one")["total"]
+        offset = (page - 1) * per_page
+        params.extend([per_page, offset])
+        products = admin_db_exec(f"""SELECT id, asin, name, category, amazon_price, rating, review_count,
+            ai_score, traffic_light, created_at FROM products WHERE {where_clause}
+            ORDER BY created_at DESC LIMIT %s OFFSET %s""", params, "all")
+        return {"products": products, "total": total, "page": page, "per_page": per_page}
+
+    # Admin Features
+    @app.get("/api/admin/features")
+    async def admin_list_features(admin: dict = Depends(get_admin_user)):
+        return {"features": admin_db_exec("SELECT * FROM admin_feature_flags ORDER BY flag_name", fetch="all")}
+
+    @app.post("/api/admin/features")
+    async def admin_create_feature(request: Request, admin: dict = Depends(require_admin_role("super_admin"))):
+        body = await request.json()
+        fid = admin_db_exec("""INSERT INTO admin_feature_flags (flag_name, description, is_enabled, scope, scope_value, rollout_percentage, created_by)
+            VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id""",
+            (body.get("flag_name",""), body.get("description",""), body.get("is_enabled",False),
+             body.get("scope","global"), body.get("scope_value",""), body.get("rollout_percentage",100), admin["admin_id"]), "one")
+        return {"id": fid["id"]}
+
+    @app.post("/api/admin/features/{flag_id}/toggle")
+    async def admin_toggle_feature(flag_id: int, admin: dict = Depends(require_admin_role("super_admin"))):
+        f = admin_db_exec("SELECT is_enabled FROM admin_feature_flags WHERE id = %s", (flag_id,), "one")
+        if not f: raise HTTPException(404, "Not found")
+        admin_db_exec("UPDATE admin_feature_flags SET is_enabled=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s", (not f["is_enabled"], flag_id))
+        return {"is_enabled": not f["is_enabled"]}
+
+    # Admin Health
+    @app.get("/api/admin/health")
+    async def admin_health(admin: dict = Depends(get_admin_user)):
+        import psutil
+        cpu = psutil.cpu_percent(interval=1)
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage("/")
+        db_status = "connected"
+        try:
+            admin_db_exec("SELECT 1", fetch="one")
+        except Exception:
+            db_status = "error"
+        return {"cpu": cpu, "memory": {"total": mem.total, "used": mem.used, "percent": mem.percent},
+                "disk": {"total": disk.total, "used": disk.used, "percent": disk.percent},
+                "database": db_status, "timestamp": datetime.now().isoformat()}
+
+    # Admin Jobs
+    @app.get("/api/admin/jobs")
+    async def admin_list_jobs(page: int = 1, per_page: int = 25, status: str = "", admin: dict = Depends(get_admin_user)):
+        where, params = [], []
+        if status:
+            where.append("status = %s"); params.append(status)
+        where_clause = " AND ".join(where) if where else "1=1"
+        total = admin_db_exec(f"SELECT COUNT(*) as total FROM admin_jobs WHERE {where_clause}", params, "one")["total"]
+        offset = (page - 1) * per_page
+        params.extend([per_page, offset])
+        jobs = admin_db_exec(f"""SELECT id, job_type, status, user_id, error, started_at, completed_at, duration_ms, created_at
+            FROM admin_jobs WHERE {where_clause} ORDER BY created_at DESC LIMIT %s OFFSET %s""", params, "all")
+        return {"jobs": jobs, "total": total, "page": page, "per_page": per_page}
+
+    # Admin Audit
+    @app.get("/api/admin/audit")
+    async def admin_list_audit(page: int = 1, per_page: int = 25, action: str = "", admin_email: str = "", admin: dict = Depends(get_admin_user)):
+        where, params = [], []
+        if action:
+            where.append("action ILIKE %s"); params.append(f"%{action}%")
+        if admin_email:
+            where.append("admin_email ILIKE %s"); params.append(f"%{admin_email}%")
+        where_clause = " AND ".join(where) if where else "1=1"
+        total = admin_db_exec(f"SELECT COUNT(*) as total FROM admin_audit_logs WHERE {where_clause}", params, "one")["total"]
+        offset = (page - 1) * per_page
+        params.extend([per_page, offset])
+        logs = admin_db_exec(f"""SELECT id, admin_email, action, target_type, target_id, reason, created_at
+            FROM admin_audit_logs WHERE {where_clause} ORDER BY created_at DESC LIMIT %s OFFSET %s""", params, "all")
+        return {"logs": logs, "total": total, "page": page, "per_page": per_page}
+
+    # Admin Settings
+    @app.get("/api/admin/settings")
+    async def admin_list_settings(admin: dict = Depends(get_admin_user)):
+        return {"settings": admin_db_exec("SELECT * FROM admin_system_settings ORDER BY setting_type, setting_key", fetch="all")}
+
+    @app.put("/api/admin/settings/{setting_key}")
+    async def admin_update_setting(setting_key: str, request: Request, admin: dict = Depends(require_admin_role("super_admin"))):
+        body = await request.json()
+        admin_db_exec("UPDATE admin_system_settings SET setting_value=%s, updated_by=%s, updated_at=CURRENT_TIMESTAMP WHERE setting_key=%s",
+                      (json.dumps(body.get("setting_value")), admin["admin_id"], setting_key))
+        return {"message": "Setting updated"}
+
+    # Admin Notifications
+    @app.get("/api/admin/notifications")
+    async def admin_list_notifications(admin: dict = Depends(get_admin_user)):
+        return {"notifications": admin_db_exec("SELECT * FROM admin_notifications WHERE admin_id=%s ORDER BY created_at DESC LIMIT 50", (admin["admin_id"],), "all")}
+
+    # Admin Support
+    @app.get("/api/admin/support")
+    async def admin_list_support(page: int = 1, per_page: int = 25, status: str = "", admin: dict = Depends(get_admin_user)):
+        where, params = [], []
+        if status:
+            where.append("status = %s"); params.append(status)
+        where_clause = " AND ".join(where) if where else "1=1"
+        total = admin_db_exec(f"SELECT COUNT(*) as total FROM admin_support_tickets WHERE {where_clause}", params, "one")["total"]
+        offset = (page - 1) * per_page
+        params.extend([per_page, offset])
+        tickets = admin_db_exec(f"""SELECT t.*, u.username, u.email FROM admin_support_tickets t
+            LEFT JOIN users u ON t.user_id = u.id WHERE {where_clause}
+            ORDER BY created_at DESC LIMIT %s OFFSET %s""", params, "all")
+        return {"tickets": tickets, "total": total, "page": page, "per_page": per_page}
+
+    # Admin Backups
+    @app.get("/api/admin/backups")
+    async def admin_list_backups(admin: dict = Depends(require_admin_role("super_admin"))):
+        return {"backups": admin_db_exec("SELECT * FROM admin_backups ORDER BY created_at DESC LIMIT 20", fetch="all")}
 
     # ════════════════════════════════════════════════════════
     # SHUTDOWN
