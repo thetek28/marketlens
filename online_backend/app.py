@@ -347,24 +347,16 @@ def create_app() -> FastAPI:
     _web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
     _index_html = os.path.join(_web_dir, "index.html")
 
-    @app.get("/api/debug/paths")
-    async def debug_paths():
-        return {
-            "file": __file__,
-            "web_dir": _web_dir,
-            "index_html": _index_html,
-            "exists": os.path.exists(_index_html),
-            "web_dir_exists": os.path.isdir(_web_dir),
-        }
-
-    if os.path.exists(_index_html):
-        @app.get("/", response_class=HTMLResponse)
-        async def serve_frontend():
+    @app.get("/", response_class=HTMLResponse)
+    async def serve_frontend():
+        try:
             with open(_index_html, "r", encoding="utf-8") as f:
                 return HTMLResponse(content=f.read())
+        except FileNotFoundError:
+            return HTMLResponse(content="<h1>Frontend not found</h1>", status_code=404)
 
-        if os.path.isdir(os.path.join(_web_dir, "static")):
-            app.mount("/static", StaticFiles(directory=os.path.join(_web_dir, "static")), name="static")
+    if os.path.isdir(os.path.join(_web_dir, "static")):
+        app.mount("/static", StaticFiles(directory=os.path.join(_web_dir, "static")), name="static")
 
     # ════════════════════════════════════════════════════════
     # SHUTDOWN

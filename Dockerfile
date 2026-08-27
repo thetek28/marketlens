@@ -27,4 +27,4 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"
 
 # Run
-CMD ["uvicorn", "online_backend.app:create_app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--factory"]
+CMD ["uvicorn", "online_backend.app:create_app", "--host", "0.0.0.0", "--port", "8000", "--factory"]
