@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "marketlens"
+version = "1.0.0"
+description = "AI-Powered Amazon Product Research"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+authors = [
+    {name = "MarketLens"}
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks integration tests",
+]
+filterwarnings = [
+    "ignore::ResourceWarning",
+    "ignore:unclosed database:ResourceWarning",
+]
+
+[tool.coverage.run]
+source = ["analyzers", "calculators", "database", "security", "utils"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.",
+    "pass",
+    "raise NotImplementedError",
+]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # function call in default argument (common in GUI)
+    "B905",   # zip without strict= (py310+)
+    "SIM108", # ternary operator (readability)
+    "UP015",  # redundant open modes
+    "UP006",  # use builtin types (List -> list) — too many files
+    "UP035",  # deprecated typing imports — too many files
+    "UP045",  # Optional[X] -> X | None — too many files
+    "RUF012", # mutable class defaults — intentional for constants
+    "SIM105", # contextlib.suppress — style preference
+    "SIM102", # collapsible if — style preference
+    "SIM103", # needless bool — style preference
+    "SIM101", # duplicate isinstance — style preference
+    "SIM116", # dict lookup — style preference
+    "RUF005", # collection concatenation — style preference
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B", "SIM"]       # relax rules in tests
+"apply_icon.py" = ["E", "B"]   # build script, not runtime
+"build_exe.py" = ["E", "B"]    # build script, not runtime
+"charts/generator.py" = ["F401"]   # optional dep try/except imports
+"exports/master_excel.py" = ["F401"]  # optional dep try/except imports
+"utils/exports.py" = ["F401"]    # optional dep try/except imports
+"gui/*" = ["F841"]              # GUI code, unused vars common
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

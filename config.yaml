@@ -1,0 +1,26 @@
+# Amazon Product Idea Generator AI Configuration
+
+# Profitability settings
+min_profit_margin: 30.0
+max_competition: 50
+min_demand_score: 0.3
+min_review_count: 10
+
+# Category filter
+ungated_only: false
+
+# Output
+output_dir: output
+log_level: INFO
+
+# Data sources to enable
+data_sources:
+  google_trends: true
+  amazon: true
+  social_media: true
+
+# Product categories to analyze (optional)
+categories: []
+
+# Seed keywords (optional)
+keywords: []

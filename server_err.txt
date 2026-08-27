@@ -1,0 +1,172 @@
+INFO:     Started server process [4732]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\logging\__init__.py", line 1155, in emit
+    self.flush()
+    ~~~~~~~~~~^^
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\logging\__init__.py", line 1137, in flush
+    self.stream.flush()
+    ~~~~~~~~~~~~~~~~~^^
+OSError: [Errno 22] Invalid argument
+Call stack:
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\click\core.py", line 1569, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\click\core.py", line 1490, in main
+    rv = self.invoke(ctx)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\click\core.py", line 1353, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\click\core.py", line 907, in invoke
+    return callback(*args, **kwargs)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\main.py", line 440, in main
+    run(
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\main.py", line 621, in run
+    server.run()
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\server.py", line 77, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\runners.py", line 205, in run
+    return runner.run(main)
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\runners.py", line 128, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 2056, in _run_once
+    handle._run()
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\routing.py", line 1281, in handle
+    await super().handle(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\routing.py", line 280, in handle
+    await self.app(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\routing.py", line 158, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\routing.py", line 145, in app
+    await response(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\responses.py", line 166, in __call__
+    await send({"type": "http.response.start", "status": self.status_code, "headers": self.raw_headers})
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 39, in sender
+    await send(message)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 39, in sender
+    await send(message)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\middleware\errors.py", line 161, in _send
+    await send(message)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 485, in send
+    self.access_logger.info(
+Message: '%s - "%s %s HTTP/%s" %d'
+Arguments: ('127.0.0.1:16981', 'GET', '/', '1.1', 200)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\logging\__init__.py", line 1155, in emit
+    self.flush()
+    ~~~~~~~~~~^^
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\logging\__init__.py", line 1137, in flush
+    self.stream.flush()
+    ~~~~~~~~~~~~~~~~~^^
+OSError: [Errno 22] Invalid argument
+Call stack:
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\click\core.py", line 1569, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\click\core.py", line 1490, in main
+    rv = self.invoke(ctx)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\click\core.py", line 1353, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\click\core.py", line 907, in invoke
+    return callback(*args, **kwargs)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\main.py", line 440, in main
+    run(
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\main.py", line 621, in run
+    server.run()
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\server.py", line 77, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\runners.py", line 205, in run
+    return runner.run(main)
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\runners.py", line 128, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\base_events.py", line 2056, in _run_once
+    handle._run()
+  File "C:\Users\royde\AppData\Local\Programs\Python\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\routing.py", line 1281, in handle
+    await super().handle(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\routing.py", line 280, in handle
+    await self.app(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\routing.py", line 158, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\fastapi\routing.py", line 145, in app
+    await response(scope, receive, send)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\responses.py", line 166, in __call__
+    await send({"type": "http.response.start", "status": self.status_code, "headers": self.raw_headers})
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 39, in sender
+    await send(message)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\_exception_handler.py", line 39, in sender
+    await send(message)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\starlette\middleware\errors.py", line 161, in _send
+    await send(message)
+  File "D:\Codex\AI Amazon\amazon-product-ai\venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 485, in send
+    self.access_logger.info(
+Message: '%s - "%s %s HTTP/%s" %d'
+Arguments: ('127.0.0.1:50377', 'POST', '/api/auth/login', '1.1', 200)

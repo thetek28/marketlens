@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  marketlens:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - marketlens-data:/app/data
+      - marketlens-output:/app/output
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+      - MLENS_JWT_SECRET=${MLENS_JWT_SECRET:?Set MLENS_JWT_SECRET in .env}
+      - MLENS_DATA_DIR=/app/data
+      - MLENS_OUTPUT_DIR=/app/output
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+volumes:
+  marketlens-data:
+  marketlens-output:
