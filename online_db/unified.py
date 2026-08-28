@@ -214,6 +214,18 @@ class UnifiedDB:
     }
 
     def get_subscription(self, user_id: int) -> Optional[Dict]:
+        row = self._exec(
+            """SELECT bs.*, ap.name as plan_name, ap.slug as tier, ap.ai_credits_monthly as ai_credits_limit,
+                      ap.research_limit, ap.tracking_limit, ap.supplier_search_limit,
+                      ap.listing_gen_limit, ap.export_limit, ap.features
+               FROM billing_subscriptions bs
+               LEFT JOIN admin_plans ap ON bs.plan_id = ap.id
+               WHERE bs.user_id = %s AND bs.status IN ('active','trialing')
+               ORDER BY bs.created_at DESC LIMIT 1""",
+            (user_id,), "one"
+        )
+        if row:
+            return row
         return self._exec(
             "SELECT * FROM subscriptions WHERE user_id = %s AND is_active = 1 ORDER BY created_at DESC LIMIT 1",
             (user_id,), "one"
@@ -235,26 +247,22 @@ class UnifiedDB:
         self.create_subscription(user_id, tier, days)
 
     def change_plan(self, user_id: int, new_tier: str):
-        """Change plan and update limits."""
-        limits = self.TIER_LIMITS.get(new_tier, self.TIER_LIMITS["free"])
+        """Change plan and update limits. For billing users, delegates to BillingService."""
         sub = self.get_subscription(user_id)
         if not sub:
             self.create_subscription(user_id, new_tier)
             return
-        # Reset used counts on upgrade, keep on downgrade
-        reset_credits = sub["ai_credits_used"] if new_tier in ("free",) and sub["tier"] in ("pro", "business") else 0
+        if sub.get("stripe_subscription_id"):
+            return
+        limits = self.TIER_LIMITS.get(new_tier, self.TIER_LIMITS["free"])
         self._exec(
             """UPDATE subscriptions SET tier=%s, ai_credits_limit=%s, research_limit=%s,
                tracking_limit=%s, supplier_search_limit=%s, listing_gen_limit=%s, export_limit=%s,
-               ai_credits_used = CASE WHEN %s = 'upgrade' THEN 0 ELSE ai_credits_used END,
-               research_used = CASE WHEN %s = 'upgrade' THEN 0 ELSE research_used END,
-               tracking_used = CASE WHEN %s = 'upgrade' THEN 0 ELSE tracking_used END,
-               supplier_search_used = CASE WHEN %s = 'upgrade' THEN 0 ELSE supplier_search_used END,
-               listing_gen_used = CASE WHEN %s = 'upgrade' THEN 0 ELSE listing_gen_used END
+               ai_credits_used = 0, research_used = 0, tracking_used = 0,
+               supplier_search_used = 0, listing_gen_used = 0
                WHERE user_id = %s AND is_active = 1""",
             (new_tier, limits["ai_credits"], limits["research"], limits["tracking"],
-             limits["suppliers"], limits["listings"], limits["exports"],
-             "upgrade", "upgrade", "upgrade", "upgrade", "upgrade", user_id)
+             limits["suppliers"], limits["listings"], limits["exports"], user_id)
         )
 
     def adjust_credits(self, user_id: int, amount: int, reason: str = "") -> Dict:
@@ -262,11 +270,14 @@ class UnifiedDB:
         sub = self.get_subscription(user_id)
         if not sub:
             return {"error": "No active subscription"}
-        old = sub["ai_credits_used"]
+        old = sub.get("ai_credits_used", 0)
         new_used = max(0, old - amount) if amount > 0 else old + abs(amount)
-        # Ensure we don't exceed limit
-        new_used = min(new_used, sub["ai_credits_limit"])
-        self._exec("UPDATE subscriptions SET ai_credits_used = %s WHERE id = %s", (new_used, sub["id"]))
+        limit = sub.get("ai_credits_limit", 50)
+        new_used = min(new_used, limit)
+        if sub.get("stripe_subscription_id"):
+            self._exec("UPDATE billing_subscriptions SET ai_credits_used = %s WHERE id = %s", (new_used, sub["id"]))
+        else:
+            self._exec("UPDATE subscriptions SET ai_credits_used = %s WHERE id = %s", (new_used, sub["id"]))
         return {"previous": old, "new": new_used, "amount": amount, "reason": reason}
 
     def check_credits(self, user_id: int, cost: int = 1) -> bool:
@@ -274,17 +285,22 @@ class UnifiedDB:
         sub = self.get_subscription(user_id)
         if not sub:
             return False
-        return (sub["ai_credits_limit"] - sub["ai_credits_used"]) >= cost
+        return (sub.get("ai_credits_limit", 0) - sub.get("ai_credits_used", 0)) >= cost
 
     def consume_credit(self, user_id: int, action_type: str, cost: int = 1, description: str = "") -> bool:
         """Consume AI credits. Returns True if successful."""
         sub = self.get_subscription(user_id)
         if not sub:
             return False
-        remaining = sub["ai_credits_limit"] - sub["ai_credits_used"]
+        remaining = sub.get("ai_credits_limit", 0) - sub.get("ai_credits_used", 0)
         if remaining < cost:
             return False
-        self._exec("UPDATE subscriptions SET ai_credits_used = ai_credits_used + %s WHERE id = %s", (cost, sub["id"]))
+        if sub.get("stripe_subscription_id"):
+            self._exec("UPDATE billing_subscriptions SET ai_credits_used = ai_credits_used + %s WHERE id = %s",
+                       (cost, sub["id"]))
+        else:
+            self._exec("UPDATE subscriptions SET ai_credits_used = ai_credits_used + %s WHERE id = %s",
+                       (cost, sub["id"]))
         self._exec(
             "INSERT INTO ai_usage_log (user_id, action_type, credits_cost, description) VALUES (%s, %s, %s, %s)",
             (user_id, action_type, cost, description)
@@ -302,7 +318,11 @@ class UnifiedDB:
             return False
         if (sub[col_limit] - sub[col_used]) < cost:
             return False
-        self._exec(f"UPDATE subscriptions SET {col_used} = {col_used} + %s WHERE id = %s", (cost, sub["id"]))
+        if sub.get("stripe_subscription_id"):
+            table = "billing_subscriptions"
+        else:
+            table = "subscriptions"
+        self._exec(f"UPDATE {table} SET {col_used} = {col_used} + %s WHERE id = %s", (cost, sub["id"]))
         return True
 
     def get_user_usage(self, user_id: int) -> Dict:
@@ -326,8 +346,14 @@ class UnifiedDB:
             "listings": sub.get("listing_gen_used", 0),
             "exports": sub.get("export_used", 0),
         }
-        remaining = {k: limits[k] - used[k] for k in limits}
-        return {"tier": sub["tier"], "limits": limits, "used": used, "remaining": remaining}
+        remaining = {k: max(0, limits[k] - used[k]) for k in limits}
+        return {
+            "tier": sub.get("tier", "free"),
+            "plan": sub.get("plan_name", "Free"),
+            "limits": limits,
+            "used": used,
+            "remaining": remaining
+        }
 
     # ════════════════════════════════════════════════════════════
     # PRODUCTS (user-owned)
@@ -544,10 +570,12 @@ class UnifiedDB:
         research_running = self._exec("SELECT COUNT(*) as c FROM research_jobs WHERE status = 'running'", (), "one")["c"]
         listings = self._exec("SELECT COUNT(*) as c FROM listing_versions", (), "one")["c"]
         ai_usage = self._exec("SELECT COALESCE(SUM(credits_cost), 0) as c FROM ai_usage_log", (), "one")["c"]
-        # MRR from active subscriptions
+        # MRR from active billing subscriptions
         mrr = self._exec("""
-            SELECT COALESCE(SUM(CASE WHEN tier='pro' THEN 29.99 WHEN tier='business' THEN 79.99 ELSE 0 END), 0) as c
-            FROM subscriptions WHERE is_active = 1
+            SELECT COALESCE(SUM(CASE WHEN ap.slug='pro' THEN 29.99 WHEN ap.slug='business' THEN 79.99 ELSE 0 END), 0) as c
+            FROM billing_subscriptions bs
+            LEFT JOIN admin_plans ap ON bs.plan_id = ap.id
+            WHERE bs.status IN ('active','trialing')
         """, (), "one")["c"]
         return {
             "users": {"total": users, "active": active},

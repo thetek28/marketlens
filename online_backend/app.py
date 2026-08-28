@@ -659,20 +659,23 @@ def create_app() -> FastAPI:
 
     @app.get("/api/admin/plans")
     async def admin_plans(admin: dict = Depends(get_admin_user)):
-        return {"plans": db._exec("SELECT * FROM admin_plans ORDER BY price_monthly", fetch="all")}
+        return {"plans": db._exec("SELECT * FROM admin_plans ORDER BY price_monthly", (), "all")}
 
     @app.get("/api/admin/subscriptions")
     async def admin_subscriptions(page: int = 1, per_page: int = 25, status: str = "", admin: dict = Depends(get_admin_user)):
         where, params = [], []
-        if status: where.append("s.is_active = %s"); params.append(1 if status == "active" else 0)
+        if status: where.append("bs.status = %s"); params.append(status)
         wc = " AND ".join(where) if where else "1=1"
-        total = db._exec(f"SELECT COUNT(*) as c FROM subscriptions s WHERE {wc}", params, "one")["c"]
+        total = db._exec(f"SELECT COUNT(*) as c FROM billing_subscriptions bs WHERE {wc}", params, "one")["c"]
         offset = (page - 1) * per_page
         params.extend([per_page, offset])
         subs = db._exec(f"""
-            SELECT s.*, u.username, u.email FROM subscriptions s
-            LEFT JOIN users u ON s.user_id = u.id WHERE {wc}
-            ORDER BY s.created_at DESC LIMIT %s OFFSET %s
+            SELECT bs.*, u.username, u.email, ap.name as plan_name, ap.slug as plan_slug
+            FROM billing_subscriptions bs
+            LEFT JOIN users u ON bs.user_id = u.id
+            LEFT JOIN admin_plans ap ON bs.plan_id = ap.id
+            WHERE {wc}
+            ORDER BY bs.created_at DESC LIMIT %s OFFSET %s
         """, tuple(params), "all")
         return {"subscriptions": subs, "total": total, "page": page, "per_page": per_page}
 
