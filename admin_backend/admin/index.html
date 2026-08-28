@@ -394,6 +394,211 @@ button,.nav-item,.toggle{min-height:44px}
 .sidebar{width:85vw}
 .header-title{font-size:0.85rem}
 }
+
+/* ==========================================
+   FLUID TYPOGRAPHY
+   ========================================== */
+h1{font-size:clamp(1.25rem,2.5vw,1.75rem)}
+h2{font-size:clamp(1rem,2vw,1.375rem)}
+h3{font-size:clamp(0.875rem,1.5vw,1.125rem)}
+
+/* Prevent horizontal overflow */
+html,body{overflow-x:hidden;max-width:100vw}
+*{box-sizing:border-box}
+img{max-width:100%;height:auto}
+
+/* ==========================================
+   RESPONSIVE MODALS - MOBILE BOTTOM SHEET
+   ========================================== */
+@media(max-width:640px){
+.modal-overlay{padding:0!important}
+.modal{position:fixed!important;bottom:0!important;top:auto!important;left:0!important;right:0!important;width:100%!important;max-width:100%!important;max-height:90vh!important;border-radius:1rem 1rem 0 0!important;margin:0!important;overflow-y:auto;animation:modalSlideUp .3s ease-out}
+@keyframes modalSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal .modal-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:8px auto 16px}
+}
+
+/* ==========================================
+   RESPONSIVE FILTERS - MOBILE
+   ========================================== */
+@media(max-width:768px){
+.search-bar{flex-direction:column!important}
+.search-bar .input,.search-bar select{width:100%!important}
+.filter-group{flex-wrap:wrap}
+.filter-group select{min-width:0;flex:1}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN TABLES - CARD CONVERSION
+   ========================================== */
+@media(max-width:768px){
+.table-responsive thead{display:none!important}
+.table-responsive tbody tr{display:block!important;padding:12px!important;margin-bottom:8px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface)}
+.table-responsive tbody td{display:flex!important;justify-content:space-between!important;align-items:center;padding:6px 0!important;border:none!important;font-size:13px!important}
+.table-responsive tbody td::before{content:attr(data-label);font-weight:600;color:var(--text2);font-size:11px}
+.table-responsive tbody td:last-child{border-top:1px solid var(--border)!important;padding-top:8px!important;margin-top:4px}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN DETAIL PAGES
+   ========================================== */
+@media(max-width:768px){
+.detail-grid{grid-template-columns:1fr!important}
+.detail-grid-2col{grid-template-columns:1fr!important}
+.detail-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
+.detail-tabs .tab-btn{flex-shrink:0}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN USER DETAIL - MOBILE FULL SCREEN
+   ========================================== */
+@media(max-width:768px){
+.user-detail-drawer{position:fixed!important;inset:0!important;width:100%!important;border-radius:0!important;z-index:200}
+.user-detail-section{padding:12px!important}
+.user-detail-section.collapsed .user-detail-content{display:none}
+.user-detail-toggle{cursor:pointer;padding:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN GRANT MODAL
+   ========================================== */
+@media(max-width:768px){
+.grant-modal .form-row{flex-direction:column!important}
+.grant-modal .form-group{width:100%!important;flex:1 1 100%!important}
+.grant-modal .action-group{flex-direction:column!important}
+.grant-modal .action-group .btn{width:100%!important}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN CONFIRMATION DIALOGS
+   ========================================== */
+@media(max-width:640px){
+.confirm-dialog{padding:1rem!important}
+.confirm-dialog .action-group{flex-direction:column!important;gap:8px!important}
+.confirm-dialog .action-group .btn{width:100%!important}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN LOG VIEWER
+   ========================================== */
+@media(max-width:768px){
+.log-entry{flex-direction:column!important;gap:8px!important}
+.log-entry .log-timestamp{width:100%!important}
+.log-entry .log-message{width:100%!important;word-break:break-word}
+.log-detail-view{position:fixed!important;inset:0!important;width:100%!important;border-radius:0!important;z-index:200;overflow-y:auto}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN SERVER MONITORING
+   ========================================== */
+@media(max-width:768px){
+.health-strip{flex-direction:column!important}
+.health-item{min-width:100%!important}
+.server-charts{grid-template-columns:1fr!important}
+.server-chart{height:200px!important}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN ANALYTICS
+   ========================================== */
+@media(max-width:768px){
+.analytics-grid{grid-template-columns:1fr!important}
+.analytics-chart{height:200px!important}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN PAGINATION
+   ========================================== */
+@media(max-width:480px){
+.pagination .btn{min-width:28px;padding:4px 8px;font-size:0.7rem}
+.pagination .page-btn:not(.active):not(:first-child):not(:last-child){display:none}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN NOTIFICATION PANEL
+   ========================================== */
+@media(max-width:768px){
+.notif-panel{position:fixed!important;top:56px!important;left:0!important;right:0!important;width:100%!important;max-height:calc(100vh - 56px - 60px);overflow-y:auto;border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN PROFILE MENU
+   ========================================== */
+@media(max-width:768px){
+.admin-dropdown{position:fixed!important;bottom:60px;right:0;left:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0;width:100%!important;max-height:70vh;overflow-y:auto}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN ACTIONS
+   ========================================== */
+@media(max-width:768px){
+.quick-actions{flex-direction:column!important}
+.quick-action-btn{width:100%!important}
+.action-row{flex-wrap:wrap;gap:8px}
+.action-row .btn{flex:1;min-width:calc(50% - 4px)}
+}
+
+/* ==========================================
+   RESPONSIVE ADMIN SUBSCRIPTION MANAGEMENT
+   ========================================== */
+@media(max-width:768px){
+.plan-card{padding:12px!important}
+.plan-card h3{font-size:1rem!important}
+.plan-card .features{font-size:0.75rem}
+.billing-grid{grid-template-columns:1fr!important}
+}
+
+/* ==========================================
+   RESPONSIVE TOOLTIPS - TAP TO SHOW
+   ========================================== */
+.tooltip-mobile{position:relative}
+.tooltip-mobile::after{content:attr(data-tooltip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--text);padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;border:1px solid var(--border);z-index:100;max-width:200px;white-space:normal}
+@media(hover:none)and(pointer:coarse){.tooltip-mobile:active::after{opacity:1}}
+@media(hover:hover){.tooltip-mobile:hover::after{opacity:1}}
+
+/* ==========================================
+   RESPONSIVE DATE PICKERS
+   ========================================== */
+@media(max-width:768px){
+input[type="date"],input[type="datetime-local"]{font-size:16px!important}
+}
+
+/* ==========================================
+   RESPONSIVE SELECT DROPDOWNS
+   ========================================== */
+@media(max-width:768px){
+select{font-size:16px!important;min-height:44px}
+}
+
+/* ==========================================
+   REDUCE MOTION
+   ========================================== */
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* ==========================================
+   LANDSCAPE MOBILE
+   ========================================== */
+@media(max-height:500px)and(orientation:landscape){
+.sidebar{max-height:100vh;overflow-y:auto}
+.main-scroll{padding:12px}
+}
+
+/* ==========================================
+   SAFE AREA - IOS NOTCH
+   ========================================== */
+@supports(padding:env(safe-area-inset-top)){
+.main-header{padding-top:env(safe-area-inset-top)}
+}
+
+/* ==========================================
+   PRINT STYLES
+   ========================================== */
+@media print{
+.sidebar,.hamburger{display:none!important}
+.main{margin-left:0!important}
+body{background:white!important;color:black!important}
+}
 </style>
 </head>
 <body>

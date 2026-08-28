@@ -1096,7 +1096,7 @@
             .listgen-modal { width: 100% !important; height: 100% !important; max-height: 100vh !important; border-radius: 0 !important; }
 
             /* Research & watchlist drawers - full width on mobile */
-            .research-drawer, .watchlist-drawer { width: 100% !important; }
+            .research-drawer, .watchlist-drawer, .track-drawer, .ideas-drawer, .hist-drawer, .ana-drawer, .product-drawer { width: 100% !important; border-radius: 0 !important; }
 
             /* Upgrade modal plan cards - stack */
             .grid-cols-1.md\\:grid-cols-2 { grid-template-columns: 1fr !important; }
@@ -1527,7 +1527,327 @@
         .prod-action-item:hover { background: rgba(251,146,60,0.08); color: #fb923c; }
         .prod-action-item svg { width: 14px; height: 14px; opacity: 0.7; }
         .prod-action-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0.25rem 0; }
-    </style>
+
+        /* ==========================================
+           FLUID TYPOGRAPHY & SPACING
+           ========================================== */
+        h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
+        h2 { font-size: clamp(1rem, 2vw, 1.375rem); }
+        h3 { font-size: clamp(0.875rem, 1.5vw, 1.125rem); }
+
+        /* Prevent horizontal overflow globally */
+        html, body { overflow-x: hidden; max-width: 100vw; }
+        * { box-sizing: border-box; }
+
+        /* Responsive images */
+        img { max-width: 100%; height: auto; }
+
+        /* Mobile-first responsive container */
+        .content-container { width: 100%; max-width: 1600px; margin: 0 auto; padding: 0 clamp(12px, 2vw, 32px); }
+
+        /* ==========================================
+           RESPONSIVE CHARTS
+           ========================================== */
+        .chart-container { position: relative; width: 100%; }
+        .chart-container canvas { width: 100% !important; height: auto !important; }
+
+        /* ==========================================
+           RESPONSIVE MODALS - MOBILE BOTTOM SHEET
+           ========================================== */
+        @media (max-width: 640px) {
+            .modal-backdrop .bg-dark-800 {
+                position: fixed !important; bottom: 0 !important; top: auto !important;
+                left: 0 !important; right: 0 !important;
+                width: 100% !important; max-width: 100% !important;
+                max-height: 90vh !important; border-radius: 1rem 1rem 0 0 !important;
+                margin: 0 !important; overflow-y: auto;
+                animation: slideUp 0.3s ease-out;
+            }
+            @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+            .modal-backdrop .bg-dark-800 .modal-handle {
+                width: 40px; height: 4px; background: rgba(255,255,255,0.2);
+                border-radius: 2px; margin: 8px auto 16px;
+            }
+        }
+
+        /* ==========================================
+           RESPONSIVE FILTER DRAWER - MOBILE
+           ========================================== */
+        .filter-drawer-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 55;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .filter-drawer-overlay.active { opacity: 1; pointer-events: auto; }
+        .filter-drawer {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+            background: #12121a; border-radius: 1rem 1rem 0 0;
+            transform: translateY(100%); transition: transform 0.3s ease;
+            max-height: 80vh; overflow-y: auto; padding: 1rem;
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+        }
+        .filter-drawer.active { transform: translateY(0); }
+
+        /* ==========================================
+           RESPONSIVE AI CHAT - MOBILE
+           ========================================== */
+        @media (max-width: 768px) {
+            .ai-chat-layout { flex-direction: column !important; }
+            .ai-chat-sidebar { width: 100% !important; max-height: 200px; border-left: none !important; border-top: 1px solid rgba(255,255,255,0.06) !important; }
+            .ai-chat-input { position: fixed; bottom: 60px; left: 0; right: 0; z-index: 40; background: #0f0f1a; border-top: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+        }
+
+        /* ==========================================
+           RESPONSIVE LOGIN PAGE
+           ========================================== */
+        @media (max-width: 640px) {
+            .login-container { padding: 1rem !important; width: 100% !important; max-width: 100% !important; }
+            .login-card { padding: 1.5rem !important; border-radius: 1rem !important; }
+        }
+
+        /* ==========================================
+           RESPONSIVE TOOLTIPS - TAP TO SHOW
+           ========================================== */
+        .tooltip-mobile { position: relative; }
+        .tooltip-mobile::after {
+            content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
+            transform: translateX(-50%); background: #1a1a25; color: #e5e7eb;
+            padding: 6px 10px; border-radius: 6px; font-size: 0.7rem;
+            white-space: nowrap; pointer-events: none; opacity: 0;
+            transition: opacity 0.2s; border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100; max-width: 200px; white-space: normal;
+        }
+        @media (hover: none) and (pointer: coarse) {
+            .tooltip-mobile:active::after { opacity: 1; }
+        }
+        @media (hover: hover) {
+            .tooltip-mobile:hover::after { opacity: 1; }
+        }
+
+        /* ==========================================
+           RESPONSIVE PAGINATION - MOBILE COMPACT
+           ========================================== */
+        @media (max-width: 480px) {
+            .pagination .btn { min-width: 28px; padding: 4px 8px; font-size: 0.7rem; }
+            .pagination .page-btn:not(.active):not(:first-child):not(:last-child) { display: none; }
+            .pagination .page-btn.active { display: inline-flex; }
+            .pagination .page-btn.active ~ .page-btn { display: none; }
+        }
+
+        /* ==========================================
+           RESPONSIVE SEARCH - MOBILE
+           ========================================== */
+        @media (max-width: 768px) {
+            .search-mobile-expand { position: relative; }
+            .search-mobile-expand input { width: 100%; }
+            .search-results-mobile .search-result-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        }
+
+        /* ==========================================
+           RESPONSIVE NOTIFICATION PANEL - MOBILE
+           ========================================== */
+        @media (max-width: 768px) {
+            .notif-dropdown {
+                position: fixed !important; top: 48px !important; left: 0 !important;
+                right: 0 !important; width: 100% !important; max-height: calc(100vh - 48px - 60px);
+                overflow-y: auto; border-radius: 0 0 1rem 1rem;
+            }
+        }
+
+        /* ==========================================
+           RESPONSIVE PROFILE MENU - MOBILE
+           ========================================== */
+        @media (max-width: 768px) {
+            .profile-dropdown {
+                position: fixed !important; bottom: 60px; left: 0; right: 0;
+                border-radius: 1rem 1rem 0 0; max-height: 70vh; overflow-y: auto;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+            }
+        }
+
+        /* ==========================================
+           RESPONSIVE LOADING STATES - MOBILE SKELETON
+           ========================================== */
+        .skeleton-card { background: linear-gradient(90deg, #1a1a25 25%, #242430 50%, #1a1a25 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 0.75rem; }
+        .skeleton-line { height: 12px; border-radius: 6px; background: linear-gradient(90deg, #1a1a25 25%, #242430 50%, #1a1a25 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .skeleton-line-sm { height: 8px; width: 60%; }
+        .skeleton-line-lg { height: 16px; width: 80%; }
+        @media (max-width: 768px) {
+            .skeleton-table { display: none !important; }
+            .skeleton-cards { display: block !important; }
+        }
+        @media (min-width: 769px) {
+            .skeleton-cards { display: none !important; }
+        }
+
+        /* ==========================================
+           RESPONSIVE EMPTY STATES
+           ========================================== */
+        .empty-state { text-align: center; padding: clamp(1.5rem, 4vw, 3rem); }
+        .empty-state-icon { width: clamp(48px, 8vw, 72px); height: clamp(48px, 8vw, 72px); margin: 0 auto 1rem; opacity: 0.5; }
+        .empty-state-title { font-size: clamp(1rem, 2vw, 1.25rem); font-weight: 600; margin-bottom: 0.5rem; }
+        .empty-state-desc { font-size: clamp(0.75rem, 1.5vw, 0.875rem); color: #9ca3af; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; }
+
+        /* ==========================================
+           RESPONSIVE ERROR STATES
+           ========================================== */
+        .error-state { padding: clamp(1rem, 3vw, 2rem); text-align: center; }
+        .error-state-msg { font-size: clamp(0.75rem, 1.5vw, 0.875rem); color: #f87171; word-break: break-word; max-width: 100%; }
+
+        /* ==========================================
+           RESPONSIVE CONFIRMATION DIALOGS
+           ========================================== */
+        @media (max-width: 640px) {
+            .confirm-dialog { padding: 1rem !important; }
+            .confirm-dialog .action-group { flex-direction: column !important; gap: 8px !important; }
+            .confirm-dialog .action-group .btn { width: 100% !important; }
+        }
+
+        /* ==========================================
+           RESPONSIVE TABLES - CARD CONVERSION
+           ========================================== */
+        .responsive-table-card thead { display: none !important; }
+        .responsive-table-card tbody tr {
+            display: block !important; padding: 12px !important; margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.06); border-radius: 0.75rem;
+            background: rgba(18,18,26,0.95);
+        }
+        .responsive-table-card tbody td {
+            display: flex !important; justify-content: space-between !important;
+            align-items: center; padding: 6px 0 !important; border: none !important;
+            font-size: 0.8rem !important;
+        }
+        .responsive-table-card tbody td::before {
+            content: attr(data-label); font-weight: 600; color: #9ca3af; font-size: 0.7rem;
+        }
+        .responsive-table-card tbody td:last-child { border-top: 1px solid rgba(255,255,255,0.06) !important; padding-top: 8px !important; margin-top: 4px; }
+
+        /* ==========================================
+           RESPONSIVE ACTION BARS - STICKY MOBILE
+           ========================================== */
+        @media (max-width: 768px) {
+            .sticky-action-bar {
+                position: fixed; bottom: 60px; left: 0; right: 0;
+                background: rgba(15,15,26,0.95); backdrop-filter: blur(12px);
+                border-top: 1px solid rgba(255,255,255,0.08);
+                padding: 8px 12px; z-index: 40;
+                display: flex; gap: 8px; justify-content: center;
+                padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+            }
+            .sticky-action-bar .btn { flex: 1; }
+        }
+
+        /* ==========================================
+           RESPONSIVE PRODUCT COMPARISON
+           ========================================== */
+        @media (max-width: 768px) {
+            .comparison-grid { grid-template-columns: 1fr !important; }
+            .comparison-vs { display: none !important; }
+            .comparison-mobile-label { display: block !important; text-align: center; font-weight: 700; color: #60a5fa; padding: 8px; }
+        }
+        @media (min-width: 769px) {
+            .comparison-mobile-label { display: none !important; }
+        }
+
+        /* ==========================================
+           RESPONSIVE EXPORT MENU
+           ========================================== */
+        @media (max-width: 640px) {
+            .export-menu { position: fixed !important; bottom: 60px; left: 0; right: 0; border-radius: 1rem 1rem 0 0; width: 100% !important; }
+        }
+
+        /* ==========================================
+           RESPONSIVE AI LISTING GENERATOR - MOBILE TABS
+           ========================================== */
+        @media (max-width: 768px) {
+            .listing-gen-tabs { display: flex !important; overflow-x: auto; gap: 4px; padding: 4px; -webkit-overflow-scrolling: touch; }
+            .listing-gen-tab { flex-shrink: 0; padding: 6px 12px; font-size: 0.7rem; }
+            .listing-gen-panel { display: none; }
+            .listing-gen-panel.active { display: block !important; }
+        }
+
+        /* ==========================================
+           RESPONSIVE DRAWERS - FULL SCREEN ON MOBILE
+           ========================================== */
+        @media (max-width: 768px) {
+            .research-drawer, .watchlist-drawer, .product-drawer, .track-drawer, .ideas-drawer, .hist-drawer, .ana-drawer {
+                width: 100% !important; border-radius: 0 !important;
+            }
+        }
+
+        /* ==========================================
+           RESPONSIVE CONTEXT MENU - BOTTOM SHEET
+           ========================================== */
+        @media (max-width: 640px) {
+            .context-menu {
+                position: fixed !important; bottom: 0; left: 0; right: 0;
+                border-radius: 1rem 1rem 0 0; width: 100% !important;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+            }
+            .context-menu-backdrop { z-index: 79; }
+        }
+
+        /* ==========================================
+           RESPONSIVE DATE PICKERS
+           ========================================== */
+        @media (max-width: 768px) {
+            input[type="date"], input[type="datetime-local"] { font-size: 16px !important; }
+        }
+
+        /* ==========================================
+           RESPONSIVE SELECT DROPDOWNS
+           ========================================== */
+        @media (max-width: 768px) {
+            select { font-size: 16px !important; min-height: 44px; }
+        }
+
+        /* ==========================================
+           REDUCE MOTION ON MOBILE
+           ========================================== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
+
+        /* ==========================================
+           LANDSCAPE MOBILE SUPPORT
+           ========================================== */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .mobile-bottom-nav { padding: 2px 0; }
+            .mobile-bottom-item { padding: 2px 6px; font-size: 9px; }
+            .mobile-bottom-item svg { width: 18px; height: 18px; }
+            body { padding-bottom: 44px; }
+        }
+
+        /* ==========================================
+           TABLET LARGE SCREENS (768-1024)
+           ========================================== */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr) !important; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        /* ==========================================
+           LARGE DESKTOP (1440+)
+           ========================================== */
+        @media (min-width: 1440px) {
+            .content-container { padding: 0 2rem; }
+        }
+
+        /* ==========================================
+           SAFE AREA SUPPORT - IOS NOTCH
+           ========================================== */
+        @supports (padding: env(safe-area-inset-top)) {
+            .mobile-header { padding-top: env(safe-area-inset-top); }
+            .mobile-bottom-nav { padding-bottom: env(safe-area-inset-bottom, 0px); }
+        }
+
+        /* ==========================================
+           PRINT STYLES
+           ========================================== */
+        @media print {
+            .mobile-header, .mobile-bottom-nav, .app-sidebar, .desktop-header { display: none !important; }
+            body { background: white !important; color: black !important; padding: 0 !important; }
+            .card-hover, .dash-card, .research-card { border: 1px solid #ccc !important; background: white !important; }
+        }
 </head>
 <body class="text-gray-200 font-sans min-h-screen flex flex-col">
     <!-- Mobile Header (hidden on desktop) -->
