@@ -1255,6 +1255,109 @@
         .research-action:hover { background: rgba(59,130,246,0.1); color: #60a5fa; border-color: rgba(59,130,246,0.2); }
         .research-filter-group { background: rgba(26,26,37,0.4); border: 1px solid rgba(255,255,255,0.04); border-radius: 0.5rem; padding: 0.75rem; }
         .research-filter-label { font-size: 0.625rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 0.5rem; }
+
+        /* ==========================================
+           RESEARCH TAB — RESPONSIVE REDESIGN
+           ========================================== */
+
+        /* --- Mobile Research Header --- */
+        .research-mobile-header { display: none; background: linear-gradient(145deg, rgba(18,18,26,0.95), rgba(26,26,37,0.9)); border-bottom: 1px solid rgba(59,130,246,0.08); padding: 10px 12px; position: sticky; top: 48px; z-index: 30; backdrop-filter: blur(12px); }
+        .research-mobile-search { display: flex; gap: 8px; align-items: center; }
+        .research-mobile-search input { flex: 1; background: rgba(26,26,37,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.5rem; padding: 10px 12px 10px 36px; font-size: 0.85rem; color: #e5e7eb; outline: none; }
+        .research-mobile-search input:focus { border-color: #3b82f6; }
+        .research-mobile-search .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6b7280; pointer-events: none; }
+        .research-mobile-controls { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        .research-mobile-controls::-webkit-scrollbar { display: none; }
+        .research-mobile-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 0.5rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: rgba(26,26,37,0.6); color: #9ca3af; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+        .research-mobile-btn:active { transform: scale(0.95); }
+        .research-mobile-btn.active { background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.3); }
+
+        /* --- Filter Chips --- */
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; }
+        .filter-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 0.65rem; font-weight: 600; background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+        .filter-chip-remove { cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
+        .filter-chip-remove:hover { opacity: 1; }
+
+        /* --- Mobile Product Card --- */
+        .research-product-mobile { background: linear-gradient(145deg, rgba(18,18,26,0.95), rgba(26,26,37,0.9)); border: 1px solid rgba(59,130,246,0.06); border-radius: 0.75rem; padding: 12px; transition: all 0.25s ease; position: relative; overflow: hidden; }
+        .research-product-mobile:active { transform: scale(0.98); }
+        .research-product-mobile .product-mobile-top { display: flex; gap: 10px; }
+        .research-product-mobile .product-mobile-img { width: 56px; height: 56px; border-radius: 0.5rem; background: rgba(26,26,37,0.8); border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+        .research-product-mobile .product-mobile-img img { width: 100%; height: 100%; object-fit: contain; }
+        .research-product-mobile .product-mobile-info { flex: 1; min-width: 0; }
+        .research-product-mobile .product-mobile-name { font-size: 0.8rem; font-weight: 600; color: #e5e7eb; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .research-product-mobile .product-mobile-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+        .research-product-mobile .product-mobile-meta span { font-size: 0.65rem; color: #9ca3af; }
+        .research-product-mobile .product-mobile-score { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+        .research-product-mobile .product-mobile-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+        .research-product-mobile .product-mobile-metric { text-align: center; padding: 6px 4px; background: rgba(26,26,37,0.5); border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.03); }
+        .research-product-mobile .product-mobile-metric-label { font-size: 0.55rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        .research-product-mobile .product-mobile-metric-value { font-size: 0.75rem; font-weight: 700; margin-top: 2px; }
+        .research-product-mobile .product-mobile-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.04); }
+        .research-product-mobile .product-mobile-actions .btn { flex: 1; padding: 8px; font-size: 0.7rem; border-radius: 0.5rem; font-weight: 600; }
+        .research-product-mobile .product-mobile-actions .btn-ghost { background: rgba(26,26,37,0.6); color: #9ca3af; border: 1px solid rgba(255,255,255,0.06); }
+        .research-product-mobile .product-mobile-actions .btn-accent { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+
+        /* --- Mobile Action Menu --- */
+        .research-action-menu { position: fixed; bottom: 60px; left: 0; right: 0; background: linear-gradient(180deg, #12121a, #0f0f18); border-radius: 1rem 1rem 0 0; padding: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 45; transform: translateY(100%); transition: transform 0.3s ease; box-shadow: 0 -4px 20px rgba(0,0,0,0.5); }
+        .research-action-menu.active { transform: translateY(0); }
+        .research-action-menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 44; }
+        .research-action-menu .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .research-action-menu .action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; border-radius: 0.75rem; background: rgba(26,26,37,0.6); border: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: all 0.2s; font-size: 0.65rem; color: #9ca3af; }
+        .research-action-menu .action-item:active { background: rgba(59,130,246,0.1); transform: scale(0.95); }
+        .research-action-menu .action-item svg { width: 20px; height: 20px; color: #60a5fa; }
+
+        /* --- Mobile Filter Drawer --- */
+        .research-filter-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: #12121a; border-radius: 1rem 1rem 0 0; z-index: 65; transform: translateY(100%); transition: transform 0.3s ease; max-height: 85vh; overflow-y: auto; padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+        .research-filter-drawer.active { transform: translateY(0); }
+        .research-filter-drawer-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 0 auto 12px; }
+        .research-filter-drawer-title { font-size: 0.9rem; font-weight: 700; color: #e5e7eb; margin-bottom: 16px; }
+        .research-filter-drawer-group { margin-bottom: 16px; }
+        .research-filter-drawer-label { font-size: 0.7rem; font-weight: 600; color: #9ca3af; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .research-filter-drawer-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .research-filter-drawer-actions .btn { flex: 1; }
+
+        /* --- Research Responsive Breakpoints --- */
+        @media (max-width: 768px) {
+            .research-mobile-header { display: block; }
+            .research-header { display: none !important; }
+            .research-card { display: none !important; }
+            #main-content > .flex.items-center.justify-between.mb-3 { display: none !important; }
+
+            /* Mobile product cards */
+            .research-product { display: none !important; }
+            .research-product-mobile { display: block !important; }
+
+            /* Mobile results layout */
+            #research-results { display: flex; flex-direction: column; gap: 8px; }
+
+            /* Mobile pagination */
+            #research-pagination { flex-direction: column; gap: 8px; text-align: center; }
+            #research-pages { justify-content: center; }
+
+            /* Mobile insight panel */
+            .research-insight { padding: 10px !important; font-size: 0.75rem; }
+
+            /* Mobile drawer - full screen */
+            .research-drawer { width: 100% !important; border-radius: 0 !important; }
+
+            /* Mobile filter preset scroll */
+            .research-preset { flex-shrink: 0; }
+        }
+
+        @media (min-width: 769px) {
+            .research-product-mobile { display: none !important; }
+            .research-mobile-header { display: none !important; }
+            .research-action-menu { display: none !important; }
+            .research-filter-drawer { display: none !important; }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            /* Tablet: compact product rows */
+            .research-product .flex.items-center.gap-4 { gap: 12px; }
+            .research-metric { min-width: 50px !important; }
+            .research-metric-value { font-size: 0.75rem; }
+        }
         /* Dashboard */
         .dash-kpi { background: linear-gradient(145deg, rgba(18,18,26,0.95), rgba(26,26,37,0.9)); border: 1px solid rgba(59,130,246,0.06); border-radius: 0.75rem; padding: 1rem 1.25rem; backdrop-filter: blur(12px); transition: all 0.25s ease; position: relative; overflow: hidden; }
         .dash-kpi:hover { border-color: rgba(59,130,246,0.15); box-shadow: 0 4px 20px rgba(0,0,0,0.2); transform: translateY(-1px); }
@@ -2760,59 +2863,105 @@ function researchProductRow(p, idx) {
     const profit = (p.amazon_price || 0) - (p.estimated_supplier_cost || 0);
     const oppStatus = ai >= 70 && margin >= 30 ? '🟢 Strong Opportunity' : ai >= 50 && margin >= 20 ? '🟡 Moderate' : '🔴 Weak';
     const oppColor = ai >= 70 && margin >= 30 ? 'text-green-400' : ai >= 50 && margin >= 20 ? 'text-yellow-400' : 'text-red-400';
-    return `<div class="research-product ${edgeClass} p-4 cursor-pointer fade-in ${gated?'opacity-50':''}" style="animation-delay:${idx*30}ms" onclick='showResearchDrawer(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
-        <div class="flex items-center gap-4">
-            <div class="w-14 h-14 bg-dark-700 rounded-lg flex items-center justify-center shrink-0 overflow-hidden border border-dark-600 relative">
-                ${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<svg class=\\'w-6 h-6 text-gray-600\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\\'/></svg>'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
-                ${p.is_amazons_choice ? '<span class="absolute -top-0.5 -right-0.5 px-1 py-0.5 rounded text-[7px] font-bold bg-orange-500 text-white leading-none">AC</span>' : ''}
+    const pJson = JSON.stringify(p).replace(/'/g,"&#39;");
+    return `<div class="${gated?'opacity-50':''}" style="animation-delay:${idx*30}ms">
+        <!-- Desktop Product Row -->
+        <div class="research-product ${edgeClass} p-4 cursor-pointer fade-in hidden md:block" onclick='showResearchDrawer(${pJson})'>
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-dark-700 rounded-lg flex items-center justify-center shrink-0 overflow-hidden border border-dark-600 relative">
+                    ${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<svg class=\\'w-6 h-6 text-gray-600\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\\'/></svg>'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
+                    ${p.is_amazons_choice ? '<span class="absolute -top-0.5 -right-0.5 px-1 py-0.5 rounded text-[7px] font-bold bg-orange-500 text-white leading-none">AC</span>' : ''}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-semibold text-sm text-white truncate hover:text-accent-light transition">${esc(p.name || p.asin)}</div>
+                    <div class="flex items-center gap-2 mt-1 flex-wrap">
+                        <span class="text-[11px] text-gray-400">${esc(p.asin)}</span>
+                        <span class="text-gray-600">|</span>
+                        <span class="text-[11px] text-gray-400">${esc(p.category||'')}</span>
+                        <span class="text-gray-600">|</span>
+                        <span class="text-[11px] text-gray-400">${esc(p.brand_name||'')}</span>
+                        <span class="text-[11px] text-yellow-400 flex items-center gap-0.5"><svg class="w-3 h-3 fill-yellow-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${(p.rating||0).toFixed(1)}</span>
+                        <span class="text-[11px] text-gray-400">(${(p.review_count||0).toLocaleString()})</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                        ${p.is_amazons_choice ? '<span class="research-badge bg-orange-500/20 text-orange-400 border border-orange-500/30">AMAZON\'S CHOICE</span>' : ''}
+                        ${p.is_best_seller ? '<span class="research-badge bg-red-500/20 text-red-400 border border-red-500/30">BEST SELLER</span>' : ''}
+                        ${ai >= 80 ? '<span class="research-badge bg-purple-500/20 text-purple-400 border border-purple-500/30">🔥 HOT</span>' : ''}
+                        ${tl === 'GREEN' ? '<span class="research-badge bg-green-500/20 text-green-400 border border-green-500/30">📈 TRENDING</span>' : ''}
+                        <span class="research-badge ${tlBadge}">${tl}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 shrink-0">
+                    <div class="research-metric min-w-[60px]">
+                        <div class="research-metric-label flex items-center gap-1 justify-end"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>Price</div>
+                        <div class="research-metric-value text-white">&pound;${price}</div>
+                        <div class="text-[9px] text-green-400">Cost &pound;${supplierCost}</div>
+                    </div>
+                    <div class="research-metric min-w-[60px]">
+                        <div class="research-metric-label flex items-center gap-1 justify-end"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Margin</div>
+                        <div class="research-metric-value ${marginClass}">${margin.toFixed(1)}%</div>
+                        <div class="text-[9px] ${marginClass}">${marginLabel}</div>
+                    </div>
+                    <div class="flex flex-col items-center min-w-[44px]">
+                        <div class="text-[9px] text-gray-500 mb-0.5">AI</div>
+                        ${aiScoreCircle(p.ai_score)}
+                    </div>
+                    <div class="research-metric min-w-[55px]">
+                        <div class="research-metric-label flex items-center gap-1 justify-end"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>Reviews</div>
+                        <div class="research-metric-value text-white">${(p.review_count||0).toLocaleString()}</div>
+                    </div>
+                    <div class="flex items-center shrink-0">${miniSparkline(sparkData, tl === 'GREEN' ? '#22c55e' : tl === 'YELLOW' ? '#f59e0b' : '#ef4444')}</div>
+                    <div class="flex items-center shrink-0">
+                        <span class="text-[10px] font-semibold ${oppColor}">${oppStatus}</span>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        <button onclick="event.stopPropagation();showResearchDrawer(${pJson})" title="View Details" class="research-action hover:text-blue-400 hover:border-blue-500/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                        <a href="https://www.amazon.co.uk/dp/${esc(p.asin)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="View on Amazon" class="research-action hover:text-orange-400 hover:border-orange-500/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+                        <button onclick="event.stopPropagation();excludeProduct('${esc(p.asin)}','${esc(p.name||p.asin)}')" title="Add to listed products" class="research-action hover:text-green-400 hover:border-green-500/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></button>
+                    </div>
+                </div>
             </div>
-            <div class="flex-1 min-w-0">
-                <div class="font-semibold text-sm text-white truncate hover:text-accent-light transition">${esc(p.name || p.asin)}</div>
-                <div class="flex items-center gap-2 mt-1 flex-wrap">
-                    <span class="text-[11px] text-gray-400">${esc(p.asin)}</span>
-                    <span class="text-gray-600">|</span>
-                    <span class="text-[11px] text-gray-400">${esc(p.category||'')}</span>
-                    <span class="text-gray-600">|</span>
-                    <span class="text-[11px] text-gray-400">${esc(p.brand_name||'')}</span>
-                    <span class="text-[11px] text-yellow-400 flex items-center gap-0.5"><svg class="w-3 h-3 fill-yellow-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${(p.rating||0).toFixed(1)}</span>
-                    <span class="text-[11px] text-gray-400">(${(p.review_count||0).toLocaleString()})</span>
+        </div>
+
+        <!-- Mobile Product Card -->
+        <div class="research-product-mobile ${edgeClass} cursor-pointer fade-in md:hidden" onclick='showResearchDrawer(${pJson})' style="animation-delay:${idx*30}ms">
+            <div class="product-mobile-top">
+                <div class="product-mobile-img">
+                    ${p.image_url ? `<img src="${esc(p.image_url)}" alt="" onerror="this.style.display='none'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
                 </div>
-                <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                    ${p.is_amazons_choice ? '<span class="research-badge bg-orange-500/20 text-orange-400 border border-orange-500/30">AMAZON\'S CHOICE</span>' : ''}
-                    ${p.is_best_seller ? '<span class="research-badge bg-red-500/20 text-red-400 border border-red-500/30">BEST SELLER</span>' : ''}
-                    ${ai >= 80 ? '<span class="research-badge bg-purple-500/20 text-purple-400 border border-purple-500/30">🔥 HOT</span>' : ''}
-                    ${tl === 'GREEN' ? '<span class="research-badge bg-green-500/20 text-green-400 border border-green-500/30">📈 TRENDING</span>' : ''}
-                    <span class="research-badge ${tlBadge}">${tl}</span>
+                <div class="product-mobile-info">
+                    <div class="product-mobile-name">${esc(p.name || p.asin)}</div>
+                    <div class="product-mobile-meta">
+                        <span>${esc(p.asin)}</span>
+                        <span>·</span>
+                        <span>${esc(p.category||'')}</span>
+                        <span class="text-yellow-400">★ ${(p.rating||0).toFixed(1)}</span>
+                        <span>(${(p.review_count||0).toLocaleString()})</span>
+                    </div>
+                    <div class="product-mobile-score">
+                        ${aiScoreCircle(p.ai_score)}
+                        <span class="text-[10px] font-semibold ${oppColor}">${oppStatus}</span>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-center gap-4 shrink-0">
-                <div class="research-metric min-w-[60px]">
-                    <div class="research-metric-label flex items-center gap-1 justify-end"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>Price</div>
-                    <div class="research-metric-value text-white">&pound;${price}</div>
-                    <div class="text-[9px] text-green-400">Cost &pound;${supplierCost}</div>
+            <div class="product-mobile-metrics">
+                <div class="product-mobile-metric">
+                    <div class="product-mobile-metric-label">Price</div>
+                    <div class="product-mobile-metric-value text-white">&pound;${price}</div>
                 </div>
-                <div class="research-metric min-w-[60px]">
-                    <div class="research-metric-label flex items-center gap-1 justify-end"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Margin</div>
-                    <div class="research-metric-value ${marginClass}">${margin.toFixed(1)}%</div>
-                    <div class="text-[9px] ${marginClass}">${marginLabel}</div>
+                <div class="product-mobile-metric">
+                    <div class="product-mobile-metric-label">Margin</div>
+                    <div class="product-mobile-metric-value ${marginClass}">${margin.toFixed(1)}%</div>
                 </div>
-                <div class="flex flex-col items-center min-w-[44px]">
-                    <div class="text-[9px] text-gray-500 mb-0.5">AI</div>
-                    ${aiScoreCircle(p.ai_score)}
+                <div class="product-mobile-metric">
+                    <div class="product-mobile-metric-label">Reviews</div>
+                    <div class="product-mobile-metric-value text-white">${(p.review_count||0).toLocaleString()}</div>
                 </div>
-                <div class="research-metric min-w-[55px]">
-                    <div class="research-metric-label flex items-center gap-1 justify-end"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>Reviews</div>
-                    <div class="research-metric-value text-white">${(p.review_count||0).toLocaleString()}</div>
-                </div>
-                <div class="flex items-center shrink-0">${miniSparkline(sparkData, tl === 'GREEN' ? '#22c55e' : tl === 'YELLOW' ? '#f59e0b' : '#ef4444')}</div>
-                <div class="flex items-center shrink-0">
-                    <span class="text-[10px] font-semibold ${oppColor}">${oppStatus}</span>
-                </div>
-                <div class="flex gap-1 shrink-0">
-                    <button onclick="event.stopPropagation();showResearchDrawer(${JSON.stringify(p).replace(/'/g,"&#39;")})" title="View Details" class="research-action hover:text-blue-400 hover:border-blue-500/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
-                    <a href="https://www.amazon.co.uk/dp/${esc(p.asin)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="View on Amazon" class="research-action hover:text-orange-400 hover:border-orange-500/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
-                    <button onclick="event.stopPropagation();excludeProduct('${esc(p.asin)}','${esc(p.name||p.asin)}')" title="Add to listed products" class="research-action hover:text-green-400 hover:border-green-500/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></button>
-                </div>
+            </div>
+            <div class="product-mobile-actions">
+                <button class="btn btn-accent" onclick="event.stopPropagation();showResearchDrawer(${pJson})">Analyze</button>
+                <button class="btn btn-ghost" onclick="event.stopPropagation();window.open('https://www.amazon.co.uk/dp/${esc(p.asin)}','_blank')">Amazon</button>
+                <button class="btn btn-ghost" onclick="event.stopPropagation();openResearchActionMenu(${pJson})">More</button>
             </div>
         </div>
     </div>`;
@@ -2824,6 +2973,28 @@ async function renderResearch() {
     const now = new Date();
     const lastUpdated = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     $('main-content').innerHTML = `
+        <!-- Mobile Research Header -->
+        <div class="research-mobile-header">
+            <div class="research-mobile-search" style="position:relative">
+                <svg class="search-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="f-search-m" placeholder="Search products, ASINs, keywords..." onkeyup="if(event.key==='Enter'){document.getElementById('f-search').value=this.value;searchProducts()}">
+                <button onclick="document.getElementById('f-search').value=document.getElementById('f-search-m').value;searchProducts()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:0.5rem;padding:8px 14px;font-size:0.75rem;font-weight:600;cursor:pointer">Search</button>
+            </div>
+            <div class="research-mobile-controls">
+                <button onclick="openResearchFilterDrawer()" class="research-mobile-btn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    Filters
+                </button>
+                <button onclick="applyResearchPreset('hot')" class="research-mobile-btn active" id="mp-hot">Hot</button>
+                <button onclick="applyResearchPreset('margin')" class="research-mobile-btn" id="mp-margin">Margin</button>
+                <button onclick="applyResearchPreset('trending')" class="research-mobile-btn" id="mp-trending">Trending</button>
+                <button onclick="applyResearchPreset('lowcomp')" class="research-mobile-btn" id="mp-lowcomp">Low Comp</button>
+                <button onclick="applyResearchPreset('best')" class="research-mobile-btn" id="mp-best">Best</button>
+                <button onclick="applyResearchPreset('aipicks')" class="research-mobile-btn" id="mp-aipicks">AI Picks</button>
+            </div>
+            <div id="research-filter-chips-m" class="filter-chips"></div>
+        </div>
+
         <div class="research-header mb-5">
             <div class="flex items-center justify-between">
                 <div>
@@ -2974,7 +3145,87 @@ async function renderResearch() {
         </div>
 
         <div id="research-drawer-backdrop" class="research-drawer-backdrop" style="display:none" onclick="closeResearchDrawer()"></div>
-        <div id="research-drawer" class="research-drawer"></div>`;
+        <div id="research-drawer" class="research-drawer"></div>
+
+        <!-- Mobile Filter Drawer -->
+        <div id="research-filter-drawer-overlay" class="research-filter-drawer-overlay" style="display:none" onclick="closeResearchFilterDrawer()"></div>
+        <div id="research-filter-drawer" class="research-filter-drawer">
+            <div class="research-filter-drawer-handle"></div>
+            <div class="research-filter-drawer-title">Research Filters</div>
+            <div class="research-filter-drawer-group">
+                <div class="research-filter-drawer-label">Category</div>
+                <select id="f-cat-m" class="w-full" style="background:rgba(26,26,37,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;padding:10px;font-size:0.8rem;color:#e5e7eb"><option value="">All Categories</option></select>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="research-filter-drawer-group">
+                    <div class="research-filter-drawer-label">Min Price</div>
+                    <input id="f-min-price-m" type="number" value="10" style="width:100%;background:rgba(26,26,37,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;padding:10px;font-size:0.8rem;color:#e5e7eb">
+                </div>
+                <div class="research-filter-drawer-group">
+                    <div class="research-filter-drawer-label">Max Price</div>
+                    <input id="f-max-price-m" type="number" value="100" style="width:100%;background:rgba(26,26,37,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;padding:10px;font-size:0.8rem;color:#e5e7eb">
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="research-filter-drawer-group">
+                    <div class="research-filter-drawer-label">Min Margin %</div>
+                    <input id="f-min-margin-m" type="number" value="25" style="width:100%;background:rgba(26,26,37,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;padding:10px;font-size:0.8rem;color:#e5e7eb">
+                </div>
+                <div class="research-filter-drawer-group">
+                    <div class="research-filter-drawer-label">Min Rating</div>
+                    <input id="f-min-rating-m" type="number" value="3.5" step="0.1" style="width:100%;background:rgba(26,26,37,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;padding:10px;font-size:0.8rem;color:#e5e7eb">
+                </div>
+            </div>
+            <div class="research-filter-drawer-group">
+                <div class="research-filter-drawer-label">Min Reviews</div>
+                <input id="f-min-rev-m" type="number" value="50" style="width:100%;background:rgba(26,26,37,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;padding:10px;font-size:0.8rem;color:#e5e7eb">
+            </div>
+            <div class="research-filter-drawer-group">
+                <div class="research-filter-drawer-label">Sort By</div>
+                <select id="f-sort-m" style="width:100%;background:rgba(26,26,37,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;padding:10px;font-size:0.8rem;color:#e5e7eb">
+                    <option value="ai_score">AI Score</option>
+                    <option value="estimated_margin_pct">Margin</option>
+                    <option value="review_count">Reviews</option>
+                    <option value="amazon_price">Price</option>
+                </select>
+            </div>
+            <div class="research-filter-drawer-actions">
+                <button onclick="resetMobileFilters()" style="flex:1;padding:12px;border-radius:0.5rem;font-size:0.8rem;font-weight:600;background:rgba(26,26,37,0.6);color:#9ca3af;border:1px solid rgba(255,255,255,0.08);cursor:pointer">Reset</button>
+                <button onclick="applyMobileFilters()" style="flex:2;padding:12px;border-radius:0.5rem;font-size:0.8rem;font-weight:600;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;cursor:pointer">Apply Filters</button>
+            </div>
+        </div>
+
+        <!-- Mobile Action Menu -->
+        <div id="research-action-menu-overlay" class="research-action-menu-overlay" style="display:none" onclick="closeResearchActionMenu()"></div>
+        <div id="research-action-menu" class="research-action-menu">
+            <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 12px"></div>
+            <div class="action-grid">
+                <div class="action-item" onclick="researchActionAnalyze()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    <span>Analyze</span>
+                </div>
+                <div class="action-item" onclick="researchActionTrack()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <span>Track</span>
+                </div>
+                <div class="action-item" onclick="researchActionAmazon()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    <span>Amazon</span>
+                </div>
+                <div class="action-item" onclick="researchActionSuppliers()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    <span>Suppliers</span>
+                </div>
+                <div class="action-item" onclick="researchActionListing()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    <span>Listing</span>
+                </div>
+                <div class="action-item" onclick="researchActionExclude()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Listed</span>
+                </div>
+            </div>
+        </div>`;
     $('view-list').classList.add('bg-dark-600', 'text-white');
     searchProducts();
 }
@@ -3299,6 +3550,99 @@ function renderResearchInsight(products) {
 function exportResearchResults() {
     toast('Exporting research results...', 'info');
 }
+
+/* ══════════════════════════════════════════════════════════════
+   RESEARCH MOBILE — FILTER DRAWER, ACTION MENU, FILTER CHIPS
+   ══════════════════════════════════════════════════════════════ */
+let researchFilterDrawerOpen = false;
+let researchActionMenuOpen = false;
+let researchActionProduct = null;
+
+function openResearchFilterDrawer() {
+    const overlay = $('research-filter-drawer-overlay');
+    const drawer = $('research-filter-drawer');
+    if (!overlay || !drawer) return;
+    const cats = $('f-cat');
+    const catsM = $('f-cat-m');
+    if (cats && catsM) { catsM.innerHTML = cats.innerHTML; catsM.value = cats.value; }
+    $('f-min-price-m').value = $('f-min-price')?.value || 10;
+    $('f-max-price-m').value = $('f-max-price')?.value || 100;
+    $('f-min-margin-m').value = $('f-min-margin')?.value || 25;
+    $('f-min-rating-m').value = $('f-min-rating')?.value || 3.5;
+    $('f-min-rev-m').value = $('f-min-rev')?.value || 50;
+    overlay.style.display = 'block';
+    drawer.classList.add('active');
+    researchFilterDrawerOpen = true;
+}
+function closeResearchFilterDrawer() {
+    const overlay = $('research-filter-drawer-overlay');
+    const drawer = $('research-filter-drawer');
+    if (overlay) overlay.style.display = 'none';
+    if (drawer) drawer.classList.remove('active');
+    researchFilterDrawerOpen = false;
+}
+function applyMobileFilters() {
+    $('f-cat').value = $('f-cat-m').value;
+    $('f-min-price').value = $('f-min-price-m').value;
+    $('f-max-price').value = $('f-max-price-m').value;
+    $('f-min-margin').value = $('f-min-margin-m').value;
+    $('f-min-rating').value = $('f-min-rating-m').value;
+    $('f-min-rev').value = $('f-min-rev-m').value;
+    $('f-sort').value = $('f-sort-m').value;
+    currentPage = 1;
+    closeResearchFilterDrawer();
+    searchProducts();
+    updateFilterChips();
+}
+function resetMobileFilters() {
+    $('f-min-price-m').value = 10; $('f-max-price-m').value = 100;
+    $('f-min-margin-m').value = 25; $('f-min-rating-m').value = 3.5;
+    $('f-min-rev-m').value = 50; $('f-sort-m').value = 'ai_score';
+    $('f-cat-m').value = '';
+}
+function updateFilterChips() {
+    const chips = [];
+    const cat = $('f-cat')?.value;
+    const minP = $('f-min-price')?.value;
+    const maxP = $('f-max-price')?.value;
+    const minM = $('f-min-margin')?.value;
+    const minR = $('f-min-rating')?.value;
+    const minRev = $('f-min-rev')?.value;
+    if (cat) chips.push({label: cat, clear: "()=>$('f-cat').value=''"});
+    if (minP && minP !== '10') chips.push({label: `Price > £${minP}`, clear: "()=>$('f-min-price').value=10"});
+    if (maxP && maxP !== '100') chips.push({label: `Price < £${maxP}`, clear: "()=>$('f-max-price').value=100"});
+    if (minM && minM !== '25') chips.push({label: `Margin > ${minM}%`, clear: "()=>$('f-min-margin').value=25"});
+    if (minR && minR !== '3.5') chips.push({label: `Rating > ${minR}`, clear: "()=>$('f-min-rating').value=3.5"});
+    if (minRev && minRev !== '50') chips.push({label: `Reviews > ${minRev}`, clear: "()=>$('f-min-rev').value=50"});
+    const html = chips.map(c => `<span class="filter-chip">${c.label} <span class="filter-chip-remove" onclick="${c.clear};searchProducts();updateFilterChips()">✕</span></span>`).join('');
+    const el1 = $('research-filter-chips-m');
+    if (el1) el1.innerHTML = html;
+    const el2 = document.querySelector('.filter-chips');
+    if (el2 && el2 !== el1) el2.innerHTML = html;
+}
+
+function openResearchActionMenu(p) {
+    researchActionProduct = p;
+    const overlay = $('research-action-menu-overlay');
+    const menu = $('research-action-menu');
+    if (overlay) overlay.style.display = 'block';
+    if (menu) menu.classList.add('active');
+    researchActionMenuOpen = true;
+}
+function closeResearchActionMenu() {
+    const overlay = $('research-action-menu-overlay');
+    const menu = $('research-action-menu');
+    if (overlay) overlay.style.display = 'none';
+    if (menu) menu.classList.remove('active');
+    researchActionMenuOpen = false;
+    researchActionProduct = null;
+}
+function researchActionAnalyze() { if (researchActionProduct) { showResearchDrawer(researchActionProduct); closeResearchActionMenu(); } }
+function researchActionTrack() { if (researchActionProduct) { excludeProduct(researchActionProduct.asin, researchActionProduct.name || researchActionProduct.asin); closeResearchActionMenu(); } }
+function researchActionAmazon() { if (researchActionProduct) { window.open(`https://www.amazon.co.uk/dp/${researchActionProduct.asin}`, '_blank'); closeResearchActionMenu(); } }
+function researchActionSuppliers() { if (researchActionProduct) { showResearchDrawer(researchActionProduct); closeResearchActionMenu(); } }
+function researchActionListing() { if (researchActionProduct) { showResearchDrawer(researchActionProduct); closeResearchActionMenu(); } }
+function researchActionExclude() { if (researchActionProduct) { excludeProduct(researchActionProduct.asin, researchActionProduct.name || researchActionProduct.asin); closeResearchActionMenu(); } }
 
 /* ══════════════════════════════════════════════════════════════
    TAB: DASHBOARD
