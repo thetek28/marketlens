@@ -23,6 +23,9 @@ from online_backend.config import BackendConfig
 from online_backend.billing_routes import (
     setup_billing_user_routes, setup_billing_webhook_route, setup_billing_admin_routes
 )
+from online_backend.services.identity_service import ProductIdentityService, ProductRecord
+from online_backend.services.scoring_engine import OpportunityScoringEngine, ScoreInputs
+from online_backend.services.intelligence_service import ProductIntelligenceService
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +115,12 @@ def create_app() -> FastAPI:
     db_url = DATABASE_URL or config.database_url
     db = UnifiedDB(db_url)
 
-    app = FastAPI(title="MarketLens Cloud", version="4.0.0")
+    app = FastAPI(title="MarketLens Cloud", version="5.0.0")
+
+    # Initialize Product Intelligence Services
+    identity_service = ProductIdentityService(db)
+    scoring_engine = OpportunityScoringEngine(db)
+    intelligence_service = ProductIntelligenceService(db)
 
     app.add_middleware(
         CORSMiddleware,
@@ -231,10 +239,21 @@ def create_app() -> FastAPI:
 
     @app.get("/api/products/{asin}")
     async def get_product(asin: str, user: dict = Depends(get_current_user)):
-        products = db.get_all_products_from_db()
-        p = next((x for x in products if x.get("asin") == asin), None)
+        p = db._exec("SELECT * FROM products WHERE asin = %s", (asin,), "one")
         if not p: raise HTTPException(404, "Product not found")
-        return p
+        product_dict = dict(p) if not isinstance(p, dict) else p
+        # Parse score_breakdown
+        if isinstance(product_dict.get("score_breakdown"), str):
+            try:
+                product_dict["score_breakdown"] = json.loads(product_dict["score_breakdown"])
+            except:
+                product_dict["score_breakdown"] = {}
+        # Add recommendation
+        from online_backend.services.scoring_engine import get_recommendation
+        rec_label, rec_color = get_recommendation(product_dict.get("opportunity_score", 0))
+        product_dict["recommendation"] = rec_label
+        product_dict["recommendation_color"] = rec_color
+        return product_dict
 
     # ════════════════════════════════════════════════════════
     # USER WATCHLIST
@@ -522,16 +541,32 @@ def create_app() -> FastAPI:
             try:
                 while _analysis_state["running"]:
                     _analysis_state["cycle"] += 1
-                    chars = string.ascii_uppercase + string.digits
                     for sp in SAMPLE_PRODUCTS:
                         if not _analysis_state["running"]: break
-                        asin = "B0" + "".join(random.choices(chars, k=8))
                         try:
-                            db._exec(
-                                """INSERT INTO products (asin, name, category, amazon_price, rating, review_count, ai_score, estimated_margin_pct, traffic_light)
-                                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (asin) DO NOTHING""",
-                                (asin, sp["name"], sp["category"], sp["price"], sp["rating"], sp["reviews"], sp["ai"]/100.0, sp["margin"], sp["tl"])
+                            # Use identity service for proper upsert (no duplicate ASINs)
+                            record = ProductRecord(
+                                asin="B0" + "".join(random.choices(string.ascii_uppercase + string.digits, k=8)),
+                                name=sp["name"],
+                                category=sp["category"],
+                                marketplace="US",
+                                price=sp["price"],
+                                rating=sp["rating"],
+                                review_count=sp["reviews"],
+                                source_name="demo_worker",
                             )
+                            # Upsert uses ON CONFLICT — same product name gets same canonical ASIN
+                            identity_service.upsert_product(record)
+
+                            # Calculate opportunity score using structured engine
+                            score_inputs = ScoreInputs(
+                                price=sp["price"],
+                                rating=sp["rating"],
+                                review_count=sp["reviews"],
+                                category=sp["category"],
+                                marketplace="US",
+                            )
+                            score_result = scoring_engine.calculate_score(score_inputs)
                         except Exception as e:
                             logger.error("Insert failed: %s", e)
                     for _ in range(60):
@@ -556,6 +591,392 @@ def create_app() -> FastAPI:
     @app.post("/api/analysis/collect")
     async def analysis_collect(user: dict = Depends(get_current_user)):
         return {"status": "ok", "products": 0}
+
+    # ════════════════════════════════════════════════════════
+    # PRODUCT INTELLIGENCE — RESEARCH SEARCH
+    # ════════════════════════════════════════════════════════
+
+    @app.get("/api/research/search")
+    async def research_search(
+        q: str = "",
+        category: str = "",
+        marketplace: str = "",
+        min_price: float = 0,
+        max_price: float = 0,
+        min_rating: float = 0,
+        min_reviews: int = 0,
+        min_opportunity: float = 0,
+        sort: str = "opportunity",
+        page: int = 1,
+        per_page: int = 20,
+        user: dict = Depends(get_current_user)
+    ):
+        """Server-side filtered search with dedup. Returns canonical products only."""
+        where_clauses = ["1=1"]
+        params = []
+
+        if q:
+            where_clauses.append("(p.name ILIKE %s OR p.asin ILIKE %s OR p.brand ILIKE %s)")
+            params.extend([f"%{q}%", f"%{q}%", f"%{q}%"])
+        if category:
+            where_clauses.append("p.category = %s")
+            params.append(category)
+        if marketplace:
+            where_clauses.append("p.marketplace = %s")
+            params.append(marketplace)
+        if min_price > 0:
+            where_clauses.append("p.amazon_price >= %s")
+            params.append(min_price)
+        if max_price > 0:
+            where_clauses.append("p.amazon_price <= %s")
+            params.append(max_price)
+        if min_rating > 0:
+            where_clauses.append("p.rating >= %s")
+            params.append(min_rating)
+        if min_reviews > 0:
+            where_clauses.append("p.review_count >= %s")
+            params.append(min_reviews)
+        if min_opportunity > 0:
+            where_clauses.append("p.opportunity_score >= %s")
+            params.append(min_opportunity)
+
+        where_sql = " AND ".join(where_clauses)
+
+        sort_map = {
+            "opportunity": "p.opportunity_score DESC NULLS LAST",
+            "demand": "p.review_count DESC NULLS LAST",
+            "price_low": "p.amazon_price ASC NULLS LAST",
+            "price_high": "p.amazon_price DESC NULLS LAST",
+            "rating": "p.rating DESC NULLS LAST",
+            "reviews": "p.review_count DESC NULLS LAST",
+            "newest": "p.last_observed_at DESC NULLS LAST",
+            "relevance": "p.opportunity_score DESC NULLS LAST",
+        }
+        order_sql = sort_map.get(sort, "p.opportunity_score DESC NULLS LAST")
+
+        # Count total unique products
+        count_sql = f"SELECT COUNT(*) as total FROM products p WHERE {where_sql}"
+        total_result = db._exec(count_sql, tuple(params), "one")
+        total = total_result["total"] if total_result else 0
+
+        # Fetch page
+        offset = (page - 1) * per_page
+        query_sql = f"""
+            SELECT p.asin, p.name, p.category, p.brand, p.marketplace,
+                   p.amazon_price, p.rating, p.review_count,
+                   p.opportunity_score, p.opportunity_confidence, p.data_quality_score,
+                   p.score_breakdown, p.traffic_light, p.image_url, p.product_url,
+                   p.normalized_title, p.source_count, p.observation_count,
+                   p.last_observed_at, p.scoring_version, p.created_at, p.updated_at
+            FROM products p
+            WHERE {where_sql}
+            ORDER BY {order_sql}
+            LIMIT %s OFFSET %s
+        """
+        products = db._exec(query_sql, tuple(params + [per_page, offset]), "all") or []
+
+        # Enrich products with intelligence data
+        enriched = []
+        for p in products:
+            product_dict = dict(p) if not isinstance(p, dict) else p
+            # Parse score_breakdown if it's a string
+            if isinstance(product_dict.get("score_breakdown"), str):
+                try:
+                    product_dict["score_breakdown"] = json.loads(product_dict["score_breakdown"])
+                except:
+                    product_dict["score_breakdown"] = {}
+            # Add recommendation
+            from online_backend.services.scoring_engine import get_recommendation
+            rec_label, rec_color = get_recommendation(product_dict.get("opportunity_score", 0))
+            product_dict["recommendation"] = rec_label
+            product_dict["recommendation_color"] = rec_color
+            # Add freshness
+            if product_dict.get("last_observed_at"):
+                from datetime import datetime
+                try:
+                    obs_time = product_dict["last_observed_at"]
+                    if isinstance(obs_time, str):
+                        obs_time = datetime.fromisoformat(obs_time)
+                    hours_ago = (datetime.utcnow() - obs_time).total_seconds() / 3600
+                    product_dict["data_freshness_hours"] = round(hours_ago, 1)
+                except:
+                    product_dict["data_freshness_hours"] = None
+            enriched.append(product_dict)
+
+        return {
+            "products": enriched,
+            "total": total,
+            "totalUnique": total,
+            "page": page,
+            "pageSize": per_page,
+            "totalPages": (total + per_page - 1) // per_page if per_page > 0 else 0,
+            "dataQuality": {
+                "uniqueProducts": total,
+                "searchQuery": q,
+            }
+        }
+
+    @app.get("/api/research/categories")
+    async def research_categories(user: dict = Depends(get_current_user)):
+        """Get available categories for filtering."""
+        cats = db._exec(
+            "SELECT DISTINCT category, COUNT(*) as count FROM products WHERE category != '' GROUP BY category ORDER BY count DESC",
+            fetch="all"
+        ) or []
+        return {"categories": [dict(c) for c in cats]}
+
+    # ════════════════════════════════════════════════════════
+    # PRODUCT INTELLIGENCE — OBSERVATIONS & HISTORY
+    # ════════════════════════════════════════════════════════
+
+    @app.get("/api/products/{asin}/observations")
+    async def product_observations(asin: str, limit: int = 50, user: dict = Depends(get_current_user)):
+        """Get historical market observations for a product."""
+        history = identity_service.get_product_history(asin, limit)
+        return {"observations": history, "asin": asin}
+
+    @app.get("/api/products/{asin}/sources")
+    async def product_sources(asin: str, user: dict = Depends(get_current_user)):
+        """Get source provenance for a product."""
+        sources = identity_service.get_product_sources(asin)
+        return {"sources": sources, "asin": asin}
+
+    @app.get("/api/products/{asin}/score-history")
+    async def score_history(asin: str, user: dict = Depends(get_current_user)):
+        """Get score history and trend for a product."""
+        history = intelligence_service.score_history_summary(asin)
+        return {"history": history, "asin": asin}
+
+    @app.get("/api/products/{asin}/intelligence")
+    async def product_intelligence(asin: str, user: dict = Depends(get_current_user)):
+        """Get full intelligence package for a product: score, explanation, analysis."""
+        product = db._exec("SELECT * FROM products WHERE asin = %s", (asin,), "one")
+        if not product:
+            raise HTTPException(404, "Product not found")
+
+        product_dict = dict(product) if not isinstance(product, dict) else product
+        if isinstance(product_dict.get("score_breakdown"), str):
+            try:
+                product_dict["score_breakdown"] = json.loads(product_dict["score_breakdown"])
+            except:
+                product_dict["score_breakdown"] = {}
+
+        breakdown = product_dict.get("score_breakdown", {})
+        explanation = intelligence_service.generate_explanation(product_dict, breakdown)
+        components = intelligence_service.get_score_components_display(breakdown)
+        analysis = intelligence_service.get_market_analysis(product_dict, breakdown)
+        history = intelligence_service.score_history_summary(asin)
+        observations = identity_service.get_product_history(asin, 30)
+        sources = identity_service.get_product_sources(asin)
+
+        return {
+            "product": product_dict,
+            "explanation": explanation,
+            "score_components": components,
+            "market_analysis": analysis,
+            "score_history": history,
+            "observations": observations,
+            "sources": sources,
+        }
+
+    @app.post("/api/products/{asin}/recalculate")
+    async def recalculate_score(asin: str, user: dict = Depends(get_current_user)):
+        """Recalculate opportunity score for a product using current scoring version."""
+        result = scoring_engine.recalculate_score(asin)
+        if not result:
+            raise HTTPException(404, "Product not found or scoring failed")
+        return {"result": result.to_dict(), "asin": asin}
+
+    @app.post("/api/research/import")
+    async def import_products(request: Request, user: dict = Depends(get_current_user)):
+        """Import products with identity resolution and dedup."""
+        body = await request.json()
+        raw_products = body.get("products", [])
+        if not raw_products:
+            raise HTTPException(400, "No products provided")
+
+        imported = 0
+        duplicates = 0
+        for raw in raw_products:
+            record = ProductRecord(
+                asin=raw.get("asin", ""),
+                name=raw.get("name", raw.get("title", "")),
+                brand=raw.get("brand", ""),
+                model_number=raw.get("model_number", ""),
+                category=raw.get("category", ""),
+                marketplace=raw.get("marketplace", "US"),
+                price=raw.get("price", raw.get("amazon_price", 0)),
+                rating=raw.get("rating", 0),
+                review_count=raw.get("review_count", raw.get("reviews", 0)),
+                product_url=raw.get("product_url", raw.get("url", "")),
+                image_url=raw.get("image_url", raw.get("image", "")),
+                source_name=raw.get("source", "import"),
+                full_data=raw,
+            )
+            existing = identity_service.resolve_product(record)
+            identity_service.upsert_product(record)
+            if existing:
+                duplicates += 1
+            else:
+                imported += 1
+
+        return {
+            "imported": imported,
+            "duplicates": duplicates,
+            "total": len(raw_products),
+            "message": f"Imported {imported} new products, {duplicates} duplicates merged"
+        }
+
+    # ════════════════════════════════════════════════════════
+    # ADMIN — DATA QUALITY
+    # ════════════════════════════════════════════════════════
+
+    @app.get("/api/admin/data-quality")
+    async def admin_data_quality(admin: dict = Depends(get_admin_user)):
+        """Get data quality dashboard stats."""
+        stats = {}
+        # Total products
+        r = db._exec("SELECT COUNT(*) as total FROM products", fetch="one")
+        stats["totalProducts"] = r["total"] if r else 0
+
+        # Unique products (by ASIN - already unique by constraint)
+        stats["uniqueProducts"] = stats["totalProducts"]
+
+        # Duplicate records consolidated (from merge log)
+        r = db._exec("SELECT COUNT(*) as total FROM product_merge_log", fetch="one")
+        stats["duplicatesConsolidated"] = r["total"] if r else 0
+
+        # Duplicate rate
+        total_raw = stats["totalProducts"] + stats["duplicatesConsolidated"]
+        stats["duplicateRate"] = round(stats["duplicatesConsolidated"] / max(total_raw, 1) * 100, 1)
+
+        # Missing fields
+        r = db._exec("SELECT COUNT(*) as total FROM products WHERE asin IS NULL OR asin = ''", fetch="one")
+        stats["missingAsin"] = r["total"] if r else 0
+        r = db._exec("SELECT COUNT(*) as total FROM products WHERE amazon_price IS NULL OR amazon_price = 0", fetch="one")
+        stats["missingPrice"] = r["total"] if r else 0
+        r = db._exec("SELECT COUNT(*) as total FROM products WHERE rating IS NULL OR rating = 0", fetch="one")
+        stats["missingRating"] = r["total"] if r else 0
+        r = db._exec("SELECT COUNT(*) as total FROM products WHERE category IS NULL OR category = ''", fetch="one")
+        stats["missingCategory"] = r["total"] if r else 0
+
+        # Stale data (not observed in 7 days)
+        r = db._exec(
+            "SELECT COUNT(*) as total FROM products WHERE last_observed_at IS NULL OR last_observed_at < CURRENT_TIMESTAMP - INTERVAL '7 days'",
+            fetch="one"
+        )
+        stats["staleData"] = r["total"] if r else 0
+
+        # Average data quality
+        r = db._exec("SELECT AVG(data_quality_score) as avg FROM products WHERE data_quality_score > 0", fetch="one")
+        stats["avgDataQuality"] = round(r["avg"], 1) if r and r["avg"] else 0
+
+        # Average opportunity score
+        r = db._exec("SELECT AVG(opportunity_score) as avg FROM products WHERE opportunity_score > 0", fetch="one")
+        stats["avgOpportunityScore"] = round(r["avg"], 1) if r and r["avg"] else 0
+
+        # Total observations
+        r = db._exec("SELECT COUNT(*) as total FROM product_observations", fetch="one")
+        stats["totalObservations"] = r["total"] if r else 0
+
+        # Total sources
+        r = db._exec("SELECT COUNT(DISTINCT source_name) as total FROM product_sources", fetch="one")
+        stats["uniqueSources"] = r["total"] if r else 0
+
+        # Pending duplicate reviews
+        r = db._exec("SELECT COUNT(*) as total FROM duplicate_review_queue WHERE status = 'pending'", fetch="one")
+        stats["pendingDuplicateReviews"] = r["total"] if r else 0
+
+        return stats
+
+    @app.get("/api/admin/duplicates")
+    async def admin_duplicates(status: str = "pending", page: int = 1, per_page: int = 20, admin: dict = Depends(get_admin_user)):
+        """Get duplicate review queue."""
+        where = "WHERE status = %s" if status else ""
+        params = [status] if status else []
+        offset = (page - 1) * per_page
+
+        count = db._exec(f"SELECT COUNT(*) as total FROM duplicate_review_queue {where}", tuple(params), "one")
+        total = count["total"] if count else 0
+
+        items = db._exec(
+            f"""SELECT dq.*, 
+                       pa.name as product_a_name, pa.amazon_price as product_a_price,
+                       pb.name as product_b_name, pb.amazon_price as product_b_price
+                FROM duplicate_review_queue dq
+                LEFT JOIN products pa ON dq.product_a_asin = pa.asin
+                LEFT JOIN products pb ON dq.product_b_asin = pb.asin
+                {where}
+                ORDER BY dq.created_at DESC LIMIT %s OFFSET %s""",
+            tuple(params + [per_page, offset]), "all"
+        ) or []
+
+        return {"items": items, "total": total, "page": page, "per_page": per_page}
+
+    @app.post("/api/admin/duplicates/{queue_id}/resolve")
+    async def resolve_duplicate(queue_id: int, request: Request, admin: dict = Depends(get_admin_user)):
+        """Resolve a duplicate review item (merge or keep separate)."""
+        body = await request.json()
+        resolution = body.get("resolution", "keep_separate")
+
+        item = db._exec("SELECT * FROM duplicate_review_queue WHERE id = %s", (queue_id,), "one")
+        if not item:
+            raise HTTPException(404, "Queue item not found")
+
+        if resolution == "merge":
+            success = identity_service.merge_products(
+                item["product_a_asin"], item["product_b_asin"],
+                reason="admin_merge", confidence=item["match_confidence"],
+                matched_fields=item.get("match_reasons", []),
+                merged_by=f"admin_{admin.get('admin_id', 'unknown')}"
+            )
+            if not success:
+                raise HTTPException(500, "Merge failed")
+
+        db._exec(
+            "UPDATE duplicate_review_queue SET status = %s, reviewed_by = %s, reviewed_at = CURRENT_TIMESTAMP, resolution = %s WHERE id = %s",
+            (resolution, admin.get("admin_id"), resolution, queue_id)
+        )
+        return {"status": "resolved", "resolution": resolution}
+
+    @app.post("/api/admin/score-debug")
+    async def score_debug(request: Request, admin: dict = Depends(get_admin_user)):
+        """Debug scoring for a product — shows full calculation breakdown."""
+        body = await request.json()
+        asin = body.get("asin", "")
+        if not asin:
+            raise HTTPException(400, "ASIN required")
+
+        product = db._exec("SELECT * FROM products WHERE asin = %s", (asin,), "one")
+        if not product:
+            raise HTTPException(404, "Product not found")
+
+        product_dict = dict(product) if not isinstance(product, dict) else product
+
+        # Recalculate
+        result = scoring_engine.recalculate_score(asin)
+        if not result:
+            raise HTTPException(500, "Scoring failed")
+
+        return {
+            "asin": asin,
+            "product_name": product_dict.get("name", ""),
+            "current_score": product_dict.get("opportunity_score", 0),
+            "recalculated": result.to_dict(),
+            "previous_breakdown": product_dict.get("score_breakdown", {}),
+            "weights": scoring_engine.weights,
+        }
+
+    @app.post("/api/admin/recalculate-all")
+    async def recalculate_all(admin: dict = Depends(get_admin_user)):
+        """Recalculate scores for all products."""
+        products = db._exec("SELECT asin FROM products", fetch="all") or []
+        updated = 0
+        for p in products:
+            result = scoring_engine.recalculate_score(p["asin"])
+            if result:
+                updated += 1
+        return {"updated": updated, "total": len(products)}
 
     # ════════════════════════════════════════════════════════
     # WEBSOCKET
