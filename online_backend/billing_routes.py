@@ -250,4 +250,7 @@ def setup_billing_admin_routes(app, get_admin_user, require_admin_role):
     @app.post("/api/billing/admin/promo")
     async def admin_manage_promo(request: Request, admin: dict = Depends(require_admin_role("super_admin", "billing"))):
         body = await request.json()
-        return billing.admin_manage_promo_code(body, admin["admin_id"])
+        try:
+            return billing.admin_manage_promo_code(body, admin["admin_id"])
+        except ValueError as e:
+            raise HTTPException(400, str(e))

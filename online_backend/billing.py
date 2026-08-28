@@ -7,7 +7,7 @@ Authoritative source for subscription state.
 import json
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 import stripe
@@ -15,6 +15,13 @@ import psycopg2
 import psycopg2.extras
 
 logger = logging.getLogger(__name__)
+
+
+def _ts_to_dt(ts):
+    """Convert a Unix timestamp to a timezone-aware datetime (UTC)."""
+    if not ts:
+        return None
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
 
 
 class BillingService:
@@ -48,7 +55,7 @@ class BillingService:
                 elif fetch == "all":
                     rows = cur.fetchall(); conn.commit(); return [dict(r) for r in rows]
                 elif fetch == "scalar":
-                    val = cur.fetchone()[0] if cur.rowcount > 0 else None; conn.commit(); return val
+                    row = cur.fetchone(); conn.commit(); return row[0] if row else None
                 else:
                     conn.commit(); return cur.rowcount
         except Exception:
@@ -106,7 +113,7 @@ class BillingService:
         if plan_slug == "free":
             raise ValueError("Free plan does not require checkout")
 
-        customer = self.get_customer(user_id, "", "")
+        customer = self.get_customer(user_id)
         if not customer:
             raise ValueError("Could not create billing customer")
 
@@ -141,6 +148,7 @@ class BillingService:
             )
             if promo and promo.get("stripe_promo_code_id"):
                 checkout_params["discounts"] = [{"promo_code": promo["stripe_promo_code_id"]}]
+                checkout_params.pop("allow_promotion_codes", None)
 
         session = stripe.checkout.Session.create(**checkout_params)
 
@@ -199,13 +207,22 @@ class BillingService:
         if override:
             return {
                 "user_id": user_id,
+                "plan_id": override["plan_id"],
                 "plan_name": override["plan_name"],
                 "plan_slug": override["plan_slug"],
                 "status": "active",
                 "billing_cycle": "monthly",
                 "is_override": True,
                 "override_reason": override["reason"],
-                "override_end": override["end_date"]
+                "override_end": override["end_date"],
+                "ai_credits_used": 0,
+                "research_used": 0,
+                "tracking_used": 0,
+                "supplier_search_used": 0,
+                "listing_gen_used": 0,
+                "export_used": 0,
+                "current_period_end": override["end_date"],
+                "cancel_at_period_end": False
             }
 
         # Default free plan
@@ -303,7 +320,7 @@ class BillingService:
             # Reset usage on new billing period
             if local_sub.get("current_period_end") and stripe_sub.current_period_start:
                 old_end = local_sub["current_period_end"]
-                new_start = datetime.fromtimestamp(stripe_sub.current_period_start)
+                new_start = _ts_to_dt(stripe_sub.current_period_start)
                 if new_start > old_end:
                     # New billing period - reset usage
                     usage = {k: 0 for k in usage}
@@ -319,10 +336,10 @@ class BillingService:
                    updated_at = CURRENT_TIMESTAMP
                    WHERE id = %s""",
                 (plan_id, status, price_id,
-                 datetime.fromtimestamp(stripe_sub.current_period_start) if stripe_sub.current_period_start else None,
-                 datetime.fromtimestamp(stripe_sub.current_period_end) if stripe_sub.current_period_end else None,
+                 _ts_to_dt(stripe_sub.current_period_start) if stripe_sub.current_period_start else None,
+                 _ts_to_dt(stripe_sub.current_period_end) if stripe_sub.current_period_end else None,
                  stripe_sub.cancel_at_period_end,
-                 datetime.fromtimestamp(stripe_sub.canceled_at) if stripe_sub.canceled_at else None,
+                 _ts_to_dt(stripe_sub.canceled_at) if stripe_sub.canceled_at else None,
                  usage["ai_credits_used"], usage["research_used"],
                  usage["tracking_used"], usage["supplier_search_used"],
                  usage["listing_gen_used"], usage["export_used"],
@@ -343,12 +360,12 @@ class BillingService:
                    RETURNING *""",
                 (user_id, user_id, plan_id, stripe_sub_id, price_id,
                  status, "monthly" if "month" in (price_id or "") else "yearly",
-                 datetime.fromtimestamp(stripe_sub.current_period_start) if stripe_sub.current_period_start else None,
-                 datetime.fromtimestamp(stripe_sub.current_period_end) if stripe_sub.current_period_end else None,
+                 _ts_to_dt(stripe_sub.current_period_start) if stripe_sub.current_period_start else None,
+                 _ts_to_dt(stripe_sub.current_period_end) if stripe_sub.current_period_end else None,
                  stripe_sub.cancel_at_period_end,
-                 datetime.fromtimestamp(stripe_sub.canceled_at) if stripe_sub.canceled_at else None,
-                 datetime.fromtimestamp(stripe_sub.trial_start) if stripe_sub.trial_start else None,
-                 datetime.fromtimestamp(stripe_sub.trial_end) if stripe_sub.trial_end else None,
+                 _ts_to_dt(stripe_sub.canceled_at) if stripe_sub.canceled_at else None,
+                 _ts_to_dt(stripe_sub.trial_start) if stripe_sub.trial_start else None,
+                 _ts_to_dt(stripe_sub.trial_end) if stripe_sub.trial_end else None,
                  0, 0, 0, 0, 0, 0),
                 "one"
             )
@@ -636,8 +653,8 @@ class BillingService:
                 amount_due=invoice.get("amount_due", 0),
                 amount_paid=invoice.get("amount_paid", 0),
                 status="paid",
-                period_start=datetime.fromtimestamp(invoice["period_start"]) if invoice.get("period_start") else None,
-                period_end=datetime.fromtimestamp(invoice["period_end"]) if invoice.get("period_end") else None,
+                 period_start=_ts_to_dt(invoice["period_start"]) if invoice.get("period_start") else None,
+                 period_end=_ts_to_dt(invoice["period_end"]) if invoice.get("period_end") else None,
                 subscription_id=sub_local["id"] if sub_local else None
             )
             self.record_payment(
@@ -866,10 +883,12 @@ class BillingService:
         if not plan:
             raise ValueError("Plan not found")
 
+        from datetime import timedelta
+        end_date = datetime.now() + timedelta(days=days)
         self._exec(
             """INSERT INTO billing_overrides (user_id, plan_id, granted_by, reason, end_date)
-               VALUES (%s, %s, %s, %s, NOW() + INTERVAL '%s days')""",
-            (user_id, plan["id"], admin_id, reason, days)
+               VALUES (%s, %s, %s, %s, %s)""",
+            (user_id, plan["id"], admin_id, reason, end_date)
         )
 
         self._log_audit(user_id=user_id, admin_id=admin_id, action="override_granted",
