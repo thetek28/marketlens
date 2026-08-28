@@ -951,9 +951,7 @@
             .app-sidebar { display: none !important; }
             .app-footer { display: none !important; }
 
-            body { padding-bottom: 60px; }
-
-            #main-content { padding: 12px !important; }
+            #main-content { padding: 12px !important; padding-bottom: 72px !important; }
 
             .settings-layout { grid-template-columns: 1fr; gap: 1rem; padding: 0.75rem; }
             .settings-nav {
@@ -1541,6 +1539,15 @@
 
         /* Responsive images */
         img { max-width: 100%; height: auto; }
+
+        /* ==========================================
+           LOGIN PAGE - OVERRIDES
+           ========================================== */
+        .login-page input { min-height: auto !important; padding: 0.875rem 1rem 0.875rem 2.75rem !important; background: rgba(20,20,35,0.8) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 0.75rem !important; font-size: 0.9rem !important; color: white !important; }
+        .login-page input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important; }
+        .login-page button { min-height: auto !important; }
+        .login-page .submit-btn { padding: 0.875rem !important; min-height: auto !important; }
+        .login-page { position: relative; z-index: 1; }
 
         /* Mobile-first responsive container */
         .content-container { width: 100%; max-width: 1600px; margin: 0 auto; padding: 0 clamp(12px, 2vw, 32px); }
