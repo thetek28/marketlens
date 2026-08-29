@@ -670,6 +670,10 @@ Research
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
 Watchlist
 </div>
+<div class="nav-item" data-section="data-quality" onclick="navigate('data-quality')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+Data Quality
+</div>
 <div class="nav-section">Platform</div>
 <div class="nav-item" data-section="features" onclick="navigate('features')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -910,6 +914,64 @@ Settings
 </table>
 </div>
 <div class="pagination" id="watchlist-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- DATA QUALITY -->
+<div id="section-data-quality" class="section">
+<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Data Quality Dashboard</h2>
+
+<div class="stats-grid" id="dq-stats-grid"></div>
+
+<div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap">
+<button onclick="recalculateAllScores()" class="btn btn-primary" id="recalc-all-btn">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+Recalculate All Scores
+</button>
+<button onclick="checkRecalcStatus()" class="btn btn-secondary">Check Status</button>
+</div>
+
+<div id="dq-recalc-status" style="display:none;margin-bottom:24px" class="card">
+<div class="card-header"><h2>Recalculation Progress</h2></div>
+<div class="card-body">
+<div id="dq-recalc-info"></div>
+</div>
+</div>
+
+<div class="card" style="margin-bottom:24px">
+<div class="card-header"><h2>Score Debugger</h2></div>
+<div class="card-body">
+<div style="display:flex;gap:8px;align-items:end;margin-bottom:16px">
+<div style="flex:1">
+<label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">ASIN</label>
+<input type="text" id="dq-debug-asin" placeholder="e.g. B08N5WRWNW" class="input" style="width:100%">
+</div>
+<button onclick="debugScore()" class="btn btn-primary">Debug Score</button>
+</div>
+<div id="dq-debug-result"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header">
+<h2>Duplicate Review Queue</h2>
+<div style="display:flex;gap:6px;align-items:center">
+<select id="dq-dup-status" class="input" style="max-width:140px" onchange="loadDuplicates()">
+<option value="pending">Pending</option>
+<option value="resolved">Resolved</option>
+<option value="">All</option>
+</select>
+</div>
+</div>
+<div class="card-body">
+<div class="table-wrap">
+<table>
+<thead><tr><th>Product A</th><th>Product B</th><th>Confidence</th><th>Reasons</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+<tbody id="dq-dup-tbody"></tbody>
+</table>
+</div>
+<div class="pagination" id="dq-dup-pagination"></div>
 </div>
 </div>
 </div>
@@ -1246,6 +1308,7 @@ else if(section==='subscriptions')loadSubs();
 else if(section==='products')loadProducts();
 else if(section==='research')loadResearch();
 else if(section==='watchlist')loadWatchlist();
+else if(section==='data-quality')loadDataQuality();
 else if(section==='features')loadFeatures();
 else if(section==='health')loadHealth();
 else if(section==='jobs')loadJobs();
@@ -1961,6 +2024,139 @@ if(c&&content)c.innerHTML=content;
 m.classList.add('active');
 }
 function closeModal(id){document.getElementById(id).classList.remove('active')}
+
+// DATA QUALITY FUNCTIONS
+function loadDataQuality(){
+const grid=document.getElementById('dq-stats-grid');
+grid.innerHTML=Array(6).fill('<div class="stat-card"><div class="skeleton" style="height:80px"></div></div>').join('');
+api('/api/admin/data-quality').then(d=>{
+grid.innerHTML=`
+<div class="stat-card"><div class="icon" style="background:rgba(99,102,241,.15);color:var(--accent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="label">Total Products</div><div class="value">${(d.totalProducts||0).toLocaleString()}</div><div class="sub">Unique: ${(d.uniqueProducts||0).toLocaleString()}</div></div>
+<div class="stat-card"><div class="icon" style="background:rgba(34,197,94,.15);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="label">Avg Data Quality</div><div class="value">${(d.avgDataQuality||0).toFixed(1)}</div><div class="sub">Out of 100</div></div>
+<div class="stat-card"><div class="icon" style="background:rgba(168,85,247,.15);color:var(--purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg></div><div class="label">Avg Opportunity</div><div class="value">${(d.avgOpportunityScore||0).toFixed(1)}</div><div class="sub">Out of 100</div></div>
+<div class="stat-card"><div class="icon" style="background:rgba(59,130,246,.15);color:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><div class="label">Observations</div><div class="value">${(d.totalObservations||0).toLocaleString()}</div><div class="sub">${(d.uniqueSources||0)} sources</div></div>
+<div class="stat-card"><div class="icon" style="background:rgba(249,115,22,.15);color:var(--yellow)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="label">Stale Data</div><div class="value">${(d.staleData||0).toLocaleString()}</div><div class="sub">Not observed in 7 days</div></div>
+<div class="stat-card"><div class="icon" style="background:rgba(239,68,68,.15);color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div><div class="label">Pending Reviews</div><div class="value">${(d.pendingDuplicateReviews||0)}</div><div class="sub">${(d.duplicatesConsolidated||0)} merged (${(d.duplicateRate||0)}%)</div></div>
+`;
+}).catch(e=>{grid.innerHTML=`<div class="empty">Failed to load: ${esc(e.message)}</div>`});
+loadDuplicates();
+}
+
+function loadDuplicates(page){
+page=page||1;
+const status=document.getElementById('dq-dup-status')?.value||'pending';
+const tb=document.getElementById('dq-dup-tbody');
+tb.innerHTML='<tr><td colspan="7" class="empty">Loading...</td></tr>';
+api(`/api/admin/duplicates?page=${page}&per_page=15&status=${status}`).then(d=>{
+const items=d.items||d||[];
+if(!items.length){tb.innerHTML='<tr><td colspan="7" class="empty">No duplicates found</td></tr>';return}
+tb.innerHTML=items.map(item=>{
+const conf=item.match_confidence||0;
+const badge=conf>=80?'green':conf>=60?'yellow':'red';
+return `<tr>
+<td><div style="font-weight:600">${esc(item.product_a_name||'N/A')}</div><div style="font-size:11px;color:var(--text-muted)">${esc(item.product_a_asin||'')} &pound;${(item.product_a_price||0).toFixed(2)}</div></td>
+<td><div style="font-weight:600">${esc(item.product_b_name||'N/A')}</div><div style="font-size:11px;color:var(--text-muted)">${esc(item.product_b_asin||'')} &pound;${(item.product_b_price||0).toFixed(2)}</div></td>
+<td><span class="badge badge-${badge}">${conf}%</span></td>
+<td style="font-size:11px;max-width:200px">${esc((item.match_reasons||[]).join(', ')||'')}</td>
+<td><span class="badge badge-${item.status==='resolved'?'green':item.status==='pending'?'yellow':'gray'}">${esc(item.status)}</span></td>
+<td>${fmtDate(item.created_at)}</td>
+<td>${item.status==='pending'?`<button onclick="resolveDuplicate(${item.id},'merge')" class="btn btn-sm btn-primary" style="margin-right:4px">Merge</button><button onclick="resolveDuplicate(${item.id},'keep_separate')" class="btn btn-sm btn-secondary">Keep Separate</button>`:''}</td>
+</tr>`;
+}).join('');
+const pg=d;
+if(pg.total>pg.per_page){
+const totalPages=Math.ceil(pg.total/pg.per_page);
+document.getElementById('dq-dup-pagination').innerHTML=Array.from({length:totalPages},(_,i)=>`<button class="btn btn-sm ${i+1===page?'btn-primary':'btn-secondary'}" onclick="loadDuplicates(${i+1})">${i+1}</button>`).join(' ');
+}
+}).catch(e=>{tb.innerHTML=`<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`});
+}
+
+function resolveDuplicate(id,resolution){
+if(!confirm(`Are you sure you want to ${resolution === 'merge' ? 'MERGE these products (product B will be absorbed into A)' : 'keep these products separate'}?`))return;
+api(`/api/admin/duplicates/${id}/resolve`,{method:'POST',body:JSON.stringify({resolution})}).then(()=>{
+loadDuplicates();
+loadDataQuality();
+}).catch(e=>alert('Error: '+e.message));
+}
+
+function debugScore(){
+const asin=document.getElementById('dq-debug-asin')?.value?.trim();
+if(!asin){alert('Enter an ASIN');return}
+const el=document.getElementById('dq-debug-result');
+el.innerHTML='<div class="empty">Calculating score...</div>';
+api('/api/admin/score-debug',{method:'POST',body:JSON.stringify({asin})}).then(d=>{
+const r=d.recalculated||{};
+const bd=r.score_breakdown||{};
+const labels={demand:'Demand',competition:'Competition',profitability:'Profitability',trend:'Trend',market_gap:'Market Gap',review_opportunity:'Review Opportunity',price_stability:'Price Stability',supplier_potential:'Supplier Potential',risk:'Risk'};
+const weights={demand:0.20,competition:0.20,profitability:0.20,trend:0.10,market_gap:0.10,review_opportunity:0.05,price_stability:0.05,supplier_potential:0.05,risk:0.05};
+const scoreColor=s=>s>=80?'var(--green)':s>=60?'var(--blue)':s>=40?'var(--yellow)':'var(--red)';
+el.innerHTML=`
+<div style="margin-bottom:16px">
+<div style="font-size:12px;color:var(--text2);margin-bottom:4px">Product</div>
+<div style="font-size:14px;font-weight:600">${esc(d.product_name||'N/A')} (${esc(d.asin)})</div>
+<div style="font-size:12px;color:var(--text2);margin-top:4px">Current Score: <span style="font-weight:700;color:${scoreColor(d.current_score||0)}">${(d.current_score||0).toFixed(1)}/100</span></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+<div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:4px">Recalculated Score</div>
+<div style="font-size:32px;font-weight:800;color:${scoreColor(r.score||0)}">${(r.score||0).toFixed(1)}<span style="font-size:14px;color:var(--text3)">/100</span></div>
+<div style="font-size:11px;color:var(--text3);margin-top:2px">Confidence: ${esc(r.confidence||'low')} | DQ: ${(r.data_quality||0).toFixed(1)}/100</div>
+</div>
+<div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:4px">Version: ${esc(r.version||'N/A')}</div>
+<div style="font-size:11px;color:var(--text3)">Recommendation: ${esc(r.recommendation||'N/A')}</div>
+</div>
+</div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.3px">Score Breakdown</div>
+${Object.entries(labels).map(([k,label])=>{
+const val=bd[k]||0;
+const w=weights[k]||0;
+const weighted=(val*w).toFixed(1);
+return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+<div style="width:120px;font-size:12px;color:var(--text2)">${label}</div>
+<div style="flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden">
+<div style="height:100%;width:${val}%;background:${scoreColor(val)};border-radius:4px;transition:width .3s"></div>
+</div>
+<div style="width:40px;text-align:right;font-size:12px;font-weight:600;color:${scoreColor(val)}">${val.toFixed(0)}</div>
+<div style="width:36px;text-align:right;font-size:10px;color:var(--text3)">×${(w*100).toFixed(0)}%</div>
+<div style="width:36px;text-align:right;font-size:11px;color:var(--accent);font-weight:600">${weighted}</div>
+</div>`;
+}).join('')}
+`;
+}).catch(e=>{el.innerHTML=`<div class="empty" style="color:var(--red)">Error: ${esc(e.message)}</div>`});
+}
+
+function recalculateAllScores(){
+if(!confirm('Recalculate opportunity scores for ALL products? This runs as a background task and may take a few minutes.'))return;
+const btn=document.getElementById('recalc-all-btn');
+btn.textContent='Starting...';btn.disabled=true;
+api('/api/admin/recalculate-all',{method:'POST'}).then(d=>{
+btn.textContent='Recalculate All Scores';
+btn.disabled=false;
+document.getElementById('dq-recalc-status').style.display='block';
+checkRecalcStatus();
+}).catch(e=>{btn.textContent='Recalculate All Scores';btn.disabled=false;alert('Error: '+e.message)});
+}
+
+function checkRecalcStatus(){
+api('/api/admin/recalculate-status').then(d=>{
+const el=document.getElementById('dq-recalc-info');
+document.getElementById('dq-recalc-status').style.display='block';
+const pct=d.total>0?((d.updated/d.total)*100).toFixed(1):0;
+const running=d.running||false;
+el.innerHTML=`
+<div style="display:flex;justify-content:space-between;margin-bottom:8px">
+<span style="font-size:12px;color:var(--text2)">${running?'Recalculating...':'Complete'}</span>
+<span style="font-size:12px;font-weight:600">${d.updated||0} / ${d.total||0} (${pct}%)</span>
+</div>
+<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;margin-bottom:8px">
+<div style="height:100%;width:${pct}%;background:${running?'var(--accent)':'var(--green)'};border-radius:4px;transition:width .3s"></div>
+</div>
+<div style="font-size:11px;color:var(--text3)">Errors: ${d.errors||0}</div>
+`;
+if(running)setTimeout(checkRecalcStatus,2000);
+}).catch(()=>{});
+}
 
 // BILLING FUNCTIONS
 function loadAdminBillingPlans(){
