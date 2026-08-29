@@ -977,18 +977,25 @@ def create_app() -> FastAPI:
             import json as _json
             import hashlib
             import math
+            import psycopg2 as _psycopg2
             try:
-                products = db._exec("SELECT asin, amazon_price, rating, review_count, supplier_price, category FROM public.products ORDER BY id", fetch="all") or []
-                _recalc_state["total"] = len(products)
+                # Use a single connection for the entire batch
+                conn = _psycopg2.connect(db_url, sslmode="require")
+                cur = conn.cursor()
+                cur.execute("SELECT asin, amazon_price, rating, review_count, supplier_price, category FROM public.products ORDER BY id")
+                rows = cur.fetchall()
+                _recalc_state["total"] = len(rows)
+                cur.close()
 
-                for i, p in enumerate(products):
+                batch_updates = []
+                for i, row in enumerate(rows):
                     try:
-                        price = p.get("amazon_price")
-                        rating = p.get("rating")
-                        reviews = p.get("review_count")
-                        supplier = p.get("supplier_price")
-                        cat = p.get("category", "")
-                        asin = p["asin"]
+                        asin = row[0]
+                        price = row[1]
+                        rating = row[2]
+                        reviews = row[3]
+                        supplier = row[4]
+                        cat = row[5] or ""
 
                         if reviews and reviews >= 10:
                             lr = math.log10(max(reviews/500, 0.01))
@@ -1038,13 +1045,29 @@ def create_app() -> FastAPI:
                         fp = hashlib.sha256(f"{price}:{reviews}:{rating}:{supplier}".encode()).hexdigest()[:16]
                         tl = "GREEN" if sc>=90 else ("BLUE" if sc>=70 else ("YELLOW" if sc>=50 else "RED"))
 
-                        db._exec(
-                            "UPDATE public.products SET opportunity_score=%s, opportunity_confidence=%s, data_quality_score=%s, scoring_version=%s, score_breakdown=%s, score_fingerprint=%s, traffic_light=%s, updated_at=CURRENT_TIMESTAMP WHERE asin=%s",
-                            (sc, conf, dq, "v2.4", bd, fp, tl, asin)
-                        )
+                        batch_updates.append((sc, conf, dq, "v2.4", bd, fp, tl, asin))
                         _recalc_state["updated"] += 1
                     except Exception as e:
                         _recalc_state["errors"] += 1
+
+                    # Commit in batches of 500
+                    if len(batch_updates) >= 500:
+                        cur = conn.cursor()
+                        cur.executemany("UPDATE public.products SET opportunity_score=%s, opportunity_confidence=%s, data_quality_score=%s, scoring_version=%s, score_breakdown=%s, score_fingerprint=%s, traffic_light=%s, updated_at=CURRENT_TIMESTAMP WHERE asin=%s", batch_updates)
+                        conn.commit()
+                        cur.close()
+                        batch_updates = []
+                        logger.info("Recalc progress: %d/%d", _recalc_state["updated"], _recalc_state["total"])
+
+                # Final commit
+                if batch_updates:
+                    cur = conn.cursor()
+                    cur.executemany("UPDATE public.products SET opportunity_score=%s, opportunity_confidence=%s, data_quality_score=%s, scoring_version=%s, score_breakdown=%s, score_fingerprint=%s, traffic_light=%s, updated_at=CURRENT_TIMESTAMP WHERE asin=%s", batch_updates)
+                    conn.commit()
+                    cur.close()
+
+                conn.close()
+                logger.info("Recalc complete: %d scored, %d errors", _recalc_state["updated"], _recalc_state["errors"])
             except Exception as e:
                 logger.error("Recalc worker error: %s", e)
             finally:
