@@ -969,14 +969,102 @@ def create_app() -> FastAPI:
 
     @app.post("/api/admin/recalculate-all")
     async def recalculate_all(admin: dict = Depends(get_admin_user)):
-        """Recalculate scores for all products."""
-        products = db._exec("SELECT asin FROM products", fetch="all") or []
-        updated = 0
-        for p in products:
-            result = scoring_engine.recalculate_score(p["asin"])
-            if result:
-                updated += 1
-        return {"updated": updated, "total": len(products)}
+        """Recalculate scores for all products as a background task."""
+        import threading
+        _recalc_state = {"running": True, "updated": 0, "total": 0, "errors": 0}
+
+        def _worker():
+            import json as _json
+            import hashlib
+            import math
+            try:
+                products = db._exec("SELECT asin, amazon_price, rating, review_count, supplier_price, category FROM public.products ORDER BY id", fetch="all") or []
+                _recalc_state["total"] = len(products)
+
+                for i, p in enumerate(products):
+                    try:
+                        price = p.get("amazon_price")
+                        rating = p.get("rating")
+                        reviews = p.get("review_count")
+                        supplier = p.get("supplier_price")
+                        cat = p.get("category", "")
+                        asin = p["asin"]
+
+                        if reviews and reviews >= 10:
+                            lr = math.log10(max(reviews/500, 0.01))
+                            d = max(0, min(100, (lr+2)/5*100))
+                        elif reviews and reviews > 0: d = 15
+                        else: d = 50
+
+                        if reviews and reviews > 50000: c = 20
+                        elif reviews and reviews > 20000: c = 35
+                        elif reviews and reviews > 5000: c = 50
+                        elif reviews and reviews > 1000: c = 65
+                        elif reviews and reviews > 100: c = 75
+                        else: c = 85
+
+                        if price and price > 0 and supplier:
+                            ref = price*0.15; fba = 3+price*0.05
+                            margin = (price-supplier-ref-fba)/price*100
+                            pr = 95 if margin>=40 else (85 if margin>=30 else (70 if margin>=20 else (55 if margin>=15 else (40 if margin>=10 else (25 if margin>=5 else (15 if margin>0 else 5))))))
+                        elif price and price > 0: pr = 40
+                        else: pr = 50
+
+                        t = 50
+                        mg = 70 if rating and rating < 4.0 else (55 if rating and rating < 4.3 else 40)
+                        ro = 75 if rating and rating < 4.0 else (60 if rating and rating < 4.3 else 45)
+                        ps = 70
+
+                        if price and price > 0 and supplier:
+                            ratio = supplier/price
+                            sp = 90 if ratio<=0.15 else (75 if ratio<=0.25 else (60 if ratio<=0.35 else (40 if ratio<=0.50 else 20)))
+                        else: sp = 40
+
+                        risk = 30
+                        if reviews and reviews < 10: risk += 30
+                        elif reviews and reviews < 50: risk += 15
+                        if rating and rating < 3.5: risk += 30
+                        elif rating and rating < 4.0: risk += 10
+                        r = max(0, min(100, 100-risk))
+
+                        sc = round(d*0.20 + c*0.20 + pr*0.20 + t*0.10 + mg*0.10 + ro*0.05 + ps*0.05 + sp*0.05 + r*0.05, 1)
+                        sc = max(0, min(100, sc))
+
+                        fields = [bool(price and price>0), bool(rating and rating>0), bool(reviews and reviews>0), bool(cat), bool(supplier)]
+                        dq = round(sum(fields)/len(fields)*100, 1)
+                        avail = sum(fields)
+                        conf = "high" if avail>=4 else ("medium" if avail>=3 else "low")
+                        bd = _json.dumps({"demand":round(d,1),"competition":round(c,1),"profitability":round(pr,1),"trend":t,"market_gap":round(mg,1),"review_opportunity":round(ro,1),"price_stability":ps,"supplier_potential":round(sp,1),"risk":round(r,1)})
+                        fp = hashlib.sha256(f"{price}:{reviews}:{rating}:{supplier}".encode()).hexdigest()[:16]
+                        tl = "GREEN" if sc>=90 else ("BLUE" if sc>=70 else ("YELLOW" if sc>=50 else "RED"))
+
+                        db._exec(
+                            "UPDATE public.products SET opportunity_score=%s, opportunity_confidence=%s, data_quality_score=%s, scoring_version=%s, score_breakdown=%s, score_fingerprint=%s, traffic_light=%s, updated_at=CURRENT_TIMESTAMP WHERE asin=%s",
+                            (sc, conf, dq, "v2.4", bd, fp, tl, asin)
+                        )
+                        _recalc_state["updated"] += 1
+                    except Exception as e:
+                        _recalc_state["errors"] += 1
+            except Exception as e:
+                logger.error("Recalc worker error: %s", e)
+            finally:
+                _recalc_state["running"] = False
+
+        threading.Thread(target=_worker, daemon=True).start()
+        return {"status": "started", "message": "Score recalculation running in background"}
+
+    @app.get("/api/admin/recalculate-status")
+    async def recalculate_status(admin: dict = Depends(get_admin_user)):
+        """Check recalculation progress."""
+        try:
+            updated = db._exec("SELECT COUNT(*) as cnt FROM public.products WHERE opportunity_score > 0", fetch="one")
+            total = db._exec("SELECT COUNT(*) as cnt FROM public.products", fetch="one")
+            return {
+                "scored": updated["cnt"] if updated else 0,
+                "total": total["cnt"] if total else 0,
+            }
+        except Exception as e:
+            return {"error": str(e)}
 
     # ════════════════════════════════════════════════════════
     # WEBSOCKET
