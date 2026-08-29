@@ -2231,12 +2231,12 @@ let trackingDrawerOpen = false;
 let trackingDrawerProduct = null;
 
 let researchPresets = {
-    hot: { min_ai: 0.8, min_margin: 30, traffic_light: '', label: '🔥 Hot Products' },
-    margin: { min_ai: 0, min_margin: 40, traffic_light: '', label: '💰 High Margin' },
-    trending: { min_ai: 0, min_margin: 0, traffic_light: 'GREEN', label: '📈 Trending' },
-    lowcomp: { min_ai: 0.5, min_margin: 25, traffic_light: 'GREEN', label: '🟢 Low Competition' },
-    best: { min_ai: 0.7, min_margin: 30, traffic_light: '', label: '⭐ Best Sellers' },
-    aipicks: { min_ai: 0.85, min_margin: 35, traffic_light: '', label: '🤖 AI Picks' }
+    hot: { min_opportunity: 80, min_margin: 30, traffic_light: '', label: '🔥 Hot Products' },
+    margin: { min_opportunity: 60, min_margin: 40, traffic_light: '', label: '💰 High Margin' },
+    trending: { min_opportunity: 50, min_margin: 0, traffic_light: 'GREEN', label: '📈 Trending' },
+    lowcomp: { min_opportunity: 60, min_margin: 25, traffic_light: 'GREEN', label: '🟢 Low Competition' },
+    best: { min_opportunity: 70, min_margin: 30, traffic_light: '', label: '⭐ Best Sellers' },
+    aipicks: { min_opportunity: 85, min_margin: 35, traffic_light: '', label: '🤖 AI Picks' }
 };
 let researchDrawerOpen = false;
 let researchDrawerProduct = null;
@@ -2859,17 +2859,21 @@ function researchProductRow(p, idx) {
     const sparkData = p.revenue_history || p.sales_history || [p.amazon_price * 0.8, p.amazon_price * 0.9, p.amazon_price, p.amazon_price * 1.05, p.amazon_price * 0.95, p.amazon_price * 1.1];
     const gated = p.is_gated || p.gated;
     const edgeClass = tl === 'GREEN' ? 'research-edge-green' : tl === 'YELLOW' ? 'research-edge-yellow' : tl === 'BLUE' ? 'research-edge-blue' : 'research-edge-red';
-    const ai = Math.round((p.ai_score || 0) * 100);
+    const opp = Math.round(p.opportunity_score || p.ai_score * 100 || 0);
+    const confidence = p.opportunity_confidence || 'low';
+    const dataQuality = Math.round(p.data_quality_score || 0);
     const profit = (p.amazon_price || 0) - (p.estimated_supplier_cost || 0);
-    const oppStatus = ai >= 70 && margin >= 30 ? '🟢 Strong Opportunity' : ai >= 50 && margin >= 20 ? '🟡 Moderate' : '🔴 Weak';
-    const oppColor = ai >= 70 && margin >= 30 ? 'text-green-400' : ai >= 50 && margin >= 20 ? 'text-yellow-400' : 'text-red-400';
+    const oppLabel = opp >= 90 ? 'Exceptional' : opp >= 80 ? 'Strong' : opp >= 70 ? 'Promising' : opp >= 60 ? 'Moderate' : opp >= 40 ? 'Weak' : 'Concern';
+    const oppColor = opp >= 80 ? 'text-green-400' : opp >= 60 ? 'text-blue-400' : opp >= 40 ? 'text-yellow-400' : 'text-red-400';
+    const confBadge = confidence === 'high' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : confidence === 'medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30';
     const pJson = JSON.stringify(p).replace(/'/g,"&#39;");
+    const imgUrl = p.image_url ? encodeURI(p.image_url) : '';
     return `<div class="${gated?'opacity-50':''}" style="animation-delay:${idx*30}ms">
         <!-- Desktop Product Row -->
         <div class="research-product ${edgeClass} p-4 cursor-pointer fade-in hidden md:block" onclick='showResearchDrawer(${pJson})'>
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 bg-dark-700 rounded-lg flex items-center justify-center shrink-0 overflow-hidden border border-dark-600 relative">
-                    ${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<svg class=\\'w-6 h-6 text-gray-600\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\\'/></svg>'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
+                    ${imgUrl ? `<img src="${imgUrl}" alt="" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<svg class=\\'w-6 h-6 text-gray-600\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\\'/></svg>'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
                     ${p.is_amazons_choice ? '<span class="absolute -top-0.5 -right-0.5 px-1 py-0.5 rounded text-[7px] font-bold bg-orange-500 text-white leading-none">AC</span>' : ''}
                 </div>
                 <div class="flex-1 min-w-0">
@@ -2879,14 +2883,16 @@ function researchProductRow(p, idx) {
                         <span class="text-gray-600">|</span>
                         <span class="text-[11px] text-gray-400">${esc(p.category||'')}</span>
                         <span class="text-gray-600">|</span>
-                        <span class="text-[11px] text-gray-400">${esc(p.brand_name||'')}</span>
+                        <span class="text-[11px] text-gray-400">${esc(p.brand||p.brand_name||'')}</span>
                         <span class="text-[11px] text-yellow-400 flex items-center gap-0.5"><svg class="w-3 h-3 fill-yellow-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${(p.rating||0).toFixed(1)}</span>
                         <span class="text-[11px] text-gray-400">(${(p.review_count||0).toLocaleString()})</span>
+                        <span class="research-badge ${confBadge} text-[9px]">${confidence.toUpperCase()}</span>
+                        <span class="text-[9px] text-gray-500">DQ: ${dataQuality}/100</span>
                     </div>
                     <div class="flex items-center gap-2 mt-1.5 flex-wrap">
                         ${p.is_amazons_choice ? '<span class="research-badge bg-orange-500/20 text-orange-400 border border-orange-500/30">AMAZON\'S CHOICE</span>' : ''}
                         ${p.is_best_seller ? '<span class="research-badge bg-red-500/20 text-red-400 border border-red-500/30">BEST SELLER</span>' : ''}
-                        ${ai >= 80 ? '<span class="research-badge bg-purple-500/20 text-purple-400 border border-purple-500/30">🔥 HOT</span>' : ''}
+                        ${opp >= 80 ? '<span class="research-badge bg-purple-500/20 text-purple-400 border border-purple-500/30">🔥 HOT</span>' : ''}
                         ${tl === 'GREEN' ? '<span class="research-badge bg-green-500/20 text-green-400 border border-green-500/30">📈 TRENDING</span>' : ''}
                         <span class="research-badge ${tlBadge}">${tl}</span>
                     </div>
@@ -2902,18 +2908,16 @@ function researchProductRow(p, idx) {
                         <div class="research-metric-value ${marginClass}">${margin.toFixed(1)}%</div>
                         <div class="text-[9px] ${marginClass}">${marginLabel}</div>
                     </div>
-                    <div class="flex flex-col items-center min-w-[44px]">
-                        <div class="text-[9px] text-gray-500 mb-0.5">AI</div>
-                        ${aiScoreCircle(p.ai_score)}
+                    <div class="flex flex-col items-center min-w-[50px]">
+                        <div class="text-[9px] text-gray-500 mb-0.5">OPPORTUNITY</div>
+                        <div class="text-xl font-bold ${oppColor}">${opp}</div>
+                        <div class="text-[9px] ${oppColor}">${oppLabel}</div>
                     </div>
                     <div class="research-metric min-w-[55px]">
                         <div class="research-metric-label flex items-center gap-1 justify-end"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>Reviews</div>
                         <div class="research-metric-value text-white">${(p.review_count||0).toLocaleString()}</div>
                     </div>
                     <div class="flex items-center shrink-0">${miniSparkline(sparkData, tl === 'GREEN' ? '#22c55e' : tl === 'YELLOW' ? '#f59e0b' : '#ef4444')}</div>
-                    <div class="flex items-center shrink-0">
-                        <span class="text-[10px] font-semibold ${oppColor}">${oppStatus}</span>
-                    </div>
                     <div class="flex gap-1 shrink-0">
                         <button onclick="event.stopPropagation();showResearchDrawer(${pJson})" title="View Details" class="research-action hover:text-blue-400 hover:border-blue-500/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
                         <a href="https://www.amazon.co.uk/dp/${esc(p.asin)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="View on Amazon" class="research-action hover:text-orange-400 hover:border-orange-500/20"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
@@ -2927,7 +2931,7 @@ function researchProductRow(p, idx) {
         <div class="research-product-mobile ${edgeClass} cursor-pointer fade-in md:hidden" onclick='showResearchDrawer(${pJson})' style="animation-delay:${idx*30}ms">
             <div class="product-mobile-top">
                 <div class="product-mobile-img">
-                    ${p.image_url ? `<img src="${esc(p.image_url)}" alt="" onerror="this.style.display='none'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
+                    ${imgUrl ? `<img src="${imgUrl}" alt="" onerror="this.style.display='none'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
                 </div>
                 <div class="product-mobile-info">
                     <div class="product-mobile-name">${esc(p.name || p.asin)}</div>
@@ -2937,10 +2941,11 @@ function researchProductRow(p, idx) {
                         <span>${esc(p.category||'')}</span>
                         <span class="text-yellow-400">★ ${(p.rating||0).toFixed(1)}</span>
                         <span>(${(p.review_count||0).toLocaleString()})</span>
+                        <span class="research-badge ${confBadge} text-[8px]">${confidence.toUpperCase()}</span>
                     </div>
                     <div class="product-mobile-score">
-                        ${aiScoreCircle(p.ai_score)}
-                        <span class="text-[10px] font-semibold ${oppColor}">${oppStatus}</span>
+                        <div class="text-lg font-bold ${oppColor}">${opp}</div>
+                        <span class="text-[10px] font-semibold ${oppColor}">${oppLabel}</span>
                     </div>
                 </div>
             </div>
@@ -2956,6 +2961,10 @@ function researchProductRow(p, idx) {
                 <div class="product-mobile-metric">
                     <div class="product-mobile-metric-label">Reviews</div>
                     <div class="product-mobile-metric-value text-white">${(p.review_count||0).toLocaleString()}</div>
+                </div>
+                <div class="product-mobile-metric">
+                    <div class="product-mobile-metric-label">DQ</div>
+                    <div class="product-mobile-metric-value text-blue-400">${dataQuality}</div>
                 </div>
             </div>
             <div class="product-mobile-actions">
@@ -3067,8 +3076,8 @@ async function renderResearch() {
                     <input id="f-brand" type="text" placeholder="Brand name..." class="w-full text-xs">
                 </div>
                 <div class="research-filter-group">
-                    <div class="research-filter-label">Min AI Score</div>
-                    <input id="f-min-ai" type="number" value="0" step="0.1" class="w-full text-xs">
+                    <div class="research-filter-label">Min Opportunity</div>
+                    <input id="f-min-opportunity" type="number" value="0" step="5" min="0" max="100" class="w-full text-xs">
                 </div>
                 <div class="research-filter-group">
                     <div class="research-filter-label">Traffic Light</div>
@@ -3076,7 +3085,7 @@ async function renderResearch() {
                 </div>
                 <div class="research-filter-group">
                     <div class="research-filter-label">Sort By</div>
-                    <select id="f-sort" class="w-full text-xs"><option value="ai_score">AI Score</option><option value="estimated_margin_pct">Margin</option><option value="review_count">Reviews</option><option value="amazon_price">Price</option><option value="consistency_score">Consistency</option></select>
+                    <select id="f-sort" class="w-full text-xs"><option value="opportunity">Opportunity Score</option><option value="demand">Demand</option><option value="reviews">Reviews</option><option value="price_low">Price: Low to High</option><option value="price_high">Price: High to Low</option><option value="rating">Rating</option><option value="newest">Newest Data</option></select>
                 </div>
             </div>
 
@@ -3123,10 +3132,12 @@ async function renderResearch() {
                     <button onclick="setViewMode('grid')" id="view-grid" class="px-2.5 py-1.5 rounded-md text-xs transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg></button>
                 </div>
                 <select id="f-sort-display" onchange="$('f-sort').value=this.value;searchProducts()" class="w-32 text-xs">
-                    <option value="ai_score">Sort: AI Score</option>
-                    <option value="estimated_margin_pct">Sort: Margin</option>
-                    <option value="review_count">Sort: Reviews</option>
-                    <option value="amazon_price">Sort: Price</option>
+                    <option value="opportunity">Sort: Opportunity</option>
+                    <option value="demand">Sort: Demand</option>
+                    <option value="reviews">Sort: Reviews</option>
+                    <option value="price_low">Sort: Price Low</option>
+                    <option value="price_high">Sort: Price High</option>
+                    <option value="rating">Sort: Rating</option>
                 </select>
                 <select id="f-per-page" onchange="currentPage=1;searchProducts()" class="w-24 text-xs">
                     <option value="10">10</option>
@@ -3240,11 +3251,13 @@ async function searchProducts() {
     researchLoading = true;
     const resultsEl = $('research-results');
     if (resultsEl) resultsEl.innerHTML = renderResearchSkeletons(5);
-    let url = `/api/products?page=${currentPage}&per_page=${$('f-per-page')?.value || 25}`;
+    let url = `/api/research/search?page=${currentPage}&per_page=${$('f-per-page')?.value || 25}`;
     const add = (k,v) => { if (v) url += `&${k}=${encodeURIComponent(v)}`; };
     add('category', $('f-cat')?.value); add('min_price', $('f-min-price')?.value); add('max_price', $('f-max-price')?.value);
-    add('min_reviews', $('f-min-rev')?.value); add('min_rating', $('f-min-rating')?.value); add('min_margin', $('f-min-margin')?.value);
-    add('min_ai', $('f-min-ai')?.value); add('traffic_light', $('f-tl')?.value); add('sort', $('f-sort')?.value); add('search', $('f-search')?.value);
+    add('min_reviews', $('f-min-rev')?.value); add('min_rating', $('f-min-rating')?.value);
+    add('min_opportunity', $('f-min-opportunity')?.value); add('q', $('f-search')?.value);
+    const sortVal = $('f-sort')?.value || 'opportunity';
+    add('sort', sortVal);
     const data = await api(url);
     researchLoading = false;
     if (!data) {
@@ -3252,7 +3265,7 @@ async function searchProducts() {
         return;
     }
     const perPage = parseInt($('f-per-page')?.value || 25);
-    $('results-count').textContent = `${data.total} products found`;
+    $('results-count').textContent = `${data.totalUnique || data.total || 0} unique products found`;
     const insightEl = $('research-insight-panel');
     if (insightEl) insightEl.innerHTML = renderResearchInsight(data.products);
     if (data.products.length === 0) {
@@ -3268,7 +3281,7 @@ async function searchProducts() {
             const edgeClass = tl === 'GREEN' ? 'research-edge-green' : tl === 'YELLOW' ? 'research-edge-yellow' : 'research-edge-red';
             return `<div class="research-product ${edgeClass} p-4 cursor-pointer fade-in" onclick='showResearchDrawer(${JSON.stringify(p).replace(/'/g,"&#39;")})' style="animation-delay:${i*30}ms">
                 <div class="flex items-center justify-between mb-3">
-                    <div class="w-12 h-12 bg-dark-700 rounded-lg flex items-center justify-center border border-dark-600 overflow-hidden">${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain rounded-lg" onerror="this.style.display='none'"/>` : ''}</div>
+                    <div class="w-12 h-12 bg-dark-700 rounded-lg flex items-center justify-center border border-dark-600 overflow-hidden">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" alt="" class="w-full h-full object-contain rounded-lg" onerror="this.style.display='none'"/>` : ''}</div>
                     <div class="flex gap-1.5">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${tlBadge} text-white">${tl}</span>
                         ${p.is_amazons_choice ? '<span class="research-badge bg-orange-500/20 text-orange-400 border border-orange-500/30">AC</span>' : ''}
@@ -3291,20 +3304,21 @@ async function searchProducts() {
         }).join('')}</div>`;
     }
     const start = (data.page - 1) * perPage + 1;
-    const end = Math.min(data.page * perPage, data.total);
-    $('research-showing').textContent = data.total > 0 ? `Showing ${start} to ${end} of ${data.total} results` : '';
-    $('footer-status').textContent = `Products: ${data.total} | Page ${data.page}/${data.pages}`;
+    const end = Math.min(data.page * perPage, data.totalUnique || data.total || 0);
+    const totalPages = data.totalPages || data.pages || 1;
+    $('research-showing').textContent = (data.totalUnique || data.total || 0) > 0 ? `Showing ${start} to ${end} of ${data.totalUnique || data.total || 0} results` : '';
+    $('footer-status').textContent = `Products: ${data.totalUnique || data.total || 0} | Page ${data.page}/${totalPages}`;
     let pag = '<button onclick="currentPage=Math.max(1,currentPage-1);searchProducts()" class="w-8 h-8 rounded-lg text-xs bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white transition flex items-center justify-center" '+(data.page<=1?'disabled':'')+'><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>';
     const maxShow = 5;
     let startP = Math.max(1, data.page - 2);
-    let endP = Math.min(data.pages, startP + maxShow - 1);
+    let endP = Math.min(totalPages, startP + maxShow - 1);
     if (endP - startP < maxShow - 1) startP = Math.max(1, endP - maxShow + 1);
     if (startP > 1) pag += `<button onclick="currentPage=1;searchProducts()" class="w-8 h-8 rounded-lg text-xs bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white transition">1</button>`;
     if (startP > 2) pag += '<span class="text-gray-600 px-1">...</span>';
     for (let i = startP; i <= endP; i++) pag += `<button onclick="currentPage=${i};searchProducts()" class="w-8 h-8 rounded-lg text-xs ${i===data.page?'bg-accent text-white':'bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white'} transition">${i}</button>`;
-    if (endP < data.pages - 1) pag += '<span class="text-gray-600 px-1">...</span>';
-    if (endP < data.pages) pag += `<button onclick="currentPage=${data.pages};searchProducts()" class="w-8 h-8 rounded-lg text-xs bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white transition">${data.pages}</button>`;
-    pag += '<button onclick="currentPage=Math.min('+data.pages+',currentPage+1);searchProducts()" class="w-8 h-8 rounded-lg text-xs bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white transition flex items-center justify-center" '+(data.page>=data.pages?'disabled':'')+'><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>';
+    if (endP < totalPages - 1) pag += '<span class="text-gray-600 px-1">...</span>';
+    if (endP < totalPages) pag += `<button onclick="currentPage=${totalPages};searchProducts()" class="w-8 h-8 rounded-lg text-xs bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white transition">${totalPages}</button>`;
+    pag += '<button onclick="currentPage=Math.min('+totalPages+',currentPage+1);searchProducts()" class="w-8 h-8 rounded-lg text-xs bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white transition flex items-center justify-center" '+(data.page>=totalPages?'disabled':'')+'><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>';
     $('research-pages').innerHTML = pag;
 }
 async function asinLookup() {
@@ -3320,7 +3334,7 @@ function applyResearchPreset(key) {
     if (!preset) return;
     document.querySelectorAll('.research-preset').forEach(el => el.classList.remove('active'));
     event.currentTarget.classList.add('active');
-    if (preset.min_ai) $('f-min-ai').value = preset.min_ai;
+    if (preset.min_opportunity !== undefined) $('f-min-opportunity').value = preset.min_opportunity;
     if (preset.min_margin) $('f-min-margin').value = preset.min_margin;
     if (preset.traffic_light) $('f-tl').value = preset.traffic_light;
     searchProducts();
@@ -3356,12 +3370,14 @@ function closeResearchDrawer() {
 function renderResearchDrawer(p) {
     const tl = p.traffic_light || 'RED';
     const margin = (p.estimated_margin_pct || 0);
-    const ai = Math.round((p.ai_score || 0) * 100);
     const profit = (p.amazon_price || 0) - (p.estimated_supplier_cost || 0);
     const supplierCost = (p.estimated_supplier_cost || 0);
-    const oppScore = Math.round((ai * 0.6 + (margin >= 30 ? 40 : margin >= 20 ? 25 : 10) * 0.4));
-    const oppLabel = oppScore >= 70 ? 'Strong Opportunity' : oppScore >= 50 ? 'Moderate' : 'Weak';
-    const oppColor = oppScore >= 70 ? 'text-green-400' : oppScore >= 50 ? 'text-yellow-400' : 'text-red-400';
+    const opp = Math.round(p.opportunity_score || 0);
+    const confidence = p.opportunity_confidence || 'low';
+    const dataQuality = Math.round(p.data_quality_score || 0);
+    const oppLabel = opp >= 90 ? 'Exceptional' : opp >= 80 ? 'Strong' : opp >= 70 ? 'Promising' : opp >= 60 ? 'Moderate' : opp >= 40 ? 'Weak' : 'Concern';
+    const oppColor = opp >= 80 ? 'text-green-400' : opp >= 60 ? 'text-blue-400' : opp >= 40 ? 'text-yellow-400' : 'text-red-400';
+    const confBadge = confidence === 'high' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : confidence === 'medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30';
     const sparkData = p.revenue_history || p.sales_history || [p.amazon_price * 0.8, p.amazon_price * 0.9, p.amazon_price, p.amazon_price * 1.05, p.amazon_price * 0.95, p.amazon_price * 1.1];
     return `
     <div class="p-5">
@@ -3373,7 +3389,7 @@ function renderResearchDrawer(p) {
         </div>
         <div class="flex items-center gap-4 mb-5">
             <div class="w-20 h-20 bg-dark-700 rounded-xl flex items-center justify-center border border-dark-600 overflow-hidden">
-                ${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
+                ${p.image_url ? `<img src="${encodeURI(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="font-semibold text-white truncate">${esc(p.name || p.asin)}</div>
@@ -3382,21 +3398,23 @@ function renderResearchDrawer(p) {
                     ${p.is_amazons_choice ? '<span class="research-badge bg-orange-500/20 text-orange-400 border border-orange-500/30">AMAZON\'S CHOICE</span>' : ''}
                     ${p.is_best_seller ? '<span class="research-badge bg-red-500/20 text-red-400 border border-red-500/30">BEST SELLER</span>' : ''}
                     <span class="research-badge ${({GREEN:'bg-green-500',YELLOW:'bg-yellow-500',RED:'bg-red-500'}[tl]||'bg-red-500')} text-white">${tl}</span>
+                    <span class="research-badge ${confBadge}">${confidence.toUpperCase()}</span>
                 </div>
             </div>
         </div>
         <div class="grid grid-cols-2 gap-3 mb-5">
             <div class="bg-dark-700 rounded-lg p-3 text-center border border-dark-600">
-                <div class="text-[10px] text-gray-400 mb-1">Price</div>
-                <div class="text-lg font-bold text-white">${gbp(p.amazon_price)}</div>
+                <div class="text-[10px] text-gray-400 mb-1">Opportunity</div>
+                <div class="text-lg font-bold ${oppColor}">${opp}/100</div>
+                <div class="text-[9px] ${oppColor}">${oppLabel}</div>
             </div>
             <div class="bg-dark-700 rounded-lg p-3 text-center border border-dark-600">
                 <div class="text-[10px] text-gray-400 mb-1">Margin</div>
                 <div class="text-lg font-bold ${margin>=40?'text-green-400':margin>=25?'text-yellow-400':'text-red-400'}">${margin.toFixed(1)}%</div>
             </div>
             <div class="bg-dark-700 rounded-lg p-3 text-center border border-dark-600">
-                <div class="text-[10px] text-gray-400 mb-1">AI Score</div>
-                <div class="text-lg font-bold text-blue-400">${ai}/100</div>
+                <div class="text-[10px] text-gray-400 mb-1">Data Quality</div>
+                <div class="text-lg font-bold text-blue-400">${dataQuality}/100</div>
             </div>
             <div class="bg-dark-700 rounded-lg p-3 text-center border border-dark-600">
                 <div class="text-[10px] text-gray-400 mb-1">Profit</div>
@@ -3425,21 +3443,19 @@ function renderResearchDrawer(p) {
                     <div class="flex justify-between"><span class="text-gray-400">Traffic</span><span class="${tlText(tl)} font-semibold">${tl}</span></div>
                     <div class="flex justify-between"><span class="text-gray-400">Reviews</span><span class="text-white">${(p.review_count||0).toLocaleString()}</span></div>
                     <div class="flex justify-between"><span class="text-gray-400">Rating</span><span class="text-yellow-400">★ ${(p.rating||0).toFixed(1)}</span></div>
-                    <div class="flex justify-between"><span class="text-gray-400">Brand</span><span class="text-white">${esc(p.brand_name||'N/A')}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Brand</span><span class="text-white">${esc(p.brand||p.brand_name||'N/A')}</span></div>
                 </div>
             </div>
             <div class="bg-dark-700 rounded-lg p-3 border border-dark-600">
-                <div class="text-[10px] text-gray-400 mb-2 font-semibold uppercase tracking-wider">AI Analysis</div>
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs text-gray-400">Opportunity Score</span>
-                    <span class="text-sm font-bold ${oppColor}">${oppScore}/100 - ${oppLabel}</span>
-                </div>
+                <div class="text-[10px] text-gray-400 mb-2 font-semibold uppercase tracking-wider">Score Analysis</div>
                 <div class="w-full h-1.5 bg-dark-600 rounded-full overflow-hidden mb-2">
-                    <div class="h-full rounded-full ${oppScore>=70?'bg-green-500':oppScore>=50?'bg-yellow-500':'bg-red-500'}" style="width:${oppScore}%"></div>
+                    <div class="h-full rounded-full ${opp>=70?'bg-green-500':opp>=50?'bg-yellow-500':'bg-red-500'}" style="width:${opp}%"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-[10px]">
-                    <div class="flex justify-between"><span class="text-gray-400">AI Score</span><span class="text-blue-400">${ai}/100</span></div>
-                    <div class="flex justify-between"><span class="text-gray-400">Margin</span><span class="${margin>=30?'text-green-400':'text-yellow-400'}">${margin.toFixed(1)}%</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Opportunity</span><span class="${oppColor}">${opp}/100</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Data Quality</span><span class="text-blue-400">${dataQuality}/100</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Confidence</span><span class="${confBadge.split(' ')[1]}">${confidence}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Version</span><span class="text-gray-500">${esc(p.scoring_version || '2.4')}</span></div>
                 </div>
             </div>
         </div>
@@ -3836,7 +3852,7 @@ function renderDashboardTopProducts(products) {
         const tlBadge = {GREEN:'bg-green-500/20 text-green-400',YELLOW:'bg-yellow-500/20 text-yellow-400',RED:'bg-red-500/20 text-red-400'}[tl] || 'bg-red-500/20 text-red-400';
         return `<tr class="dash-product cursor-pointer" onclick='showProductDetail(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
             <td class="text-gray-500 font-medium">${i+1}</td>
-            <td class="w-10"><div class="w-8 h-8 bg-dark-700 rounded flex items-center justify-center border border-dark-600 overflow-hidden">${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div></td>
+            <td class="w-10"><div class="w-8 h-8 bg-dark-700 rounded flex items-center justify-center border border-dark-600 overflow-hidden">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div></td>
             <td><div class="font-medium text-xs text-white truncate max-w-[180px]">${esc(p.name||p.asin)}</div><div class="text-[9px] text-gray-500">${esc(p.asin)}</div></td>
             <td class="text-[10px] text-gray-400">${esc(p.category||'')}</td>
             <td class="text-[10px]"><span class="text-yellow-400">★</span> ${(p.rating||0).toFixed(1)}</td>
@@ -4227,7 +4243,7 @@ function renderIdeasContent(allIdeas, highOpp, growing, lowComp, avgScore, statu
                             ${sortedIdeas.slice(0,5).map((p,i) => {
                                 const sc = Math.round((p.ai_score||0)*100);
                                 return `<div class="flex items-center gap-3 p-2 rounded-lg bg-dark-800/60 border border-dark-600 hover:border-purple-500/20 transition-all cursor-pointer" onclick="openIdeaDrawer('${esc(p.asin)}',${i})">
-                                    <div class="w-10 h-10 rounded-lg bg-dark-700 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">${p.image_url ? `<img src="${esc(p.image_url)}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
+                                    <div class="w-10 h-10 rounded-lg bg-dark-700 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-xs font-semibold text-white truncate">${esc(p.name||p.asin).substring(0,30)}</div>
                                         <div class="text-[10px] text-gray-400">${esc(p.category||'Mixed')}</div>
@@ -4469,7 +4485,7 @@ function openIdeaDrawer(asin) {
             <!-- OVERVIEW -->
             <div class="ideas-card">
                 <div class="flex items-start gap-4">
-                    <div class="w-20 h-20 rounded-xl bg-dark-700 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">${p.image_url ? `<img src="${esc(p.image_url)}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
+                    <div class="w-20 h-20 rounded-xl bg-dark-700 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
                     <div class="flex-1 min-w-0">
                         <h3 class="text-base font-bold text-white mb-1">${esc(p.name||p.asin)}</h3>
                         <div class="text-xs text-gray-400">${esc(p.asin)} • ${esc(p.category||'Mixed')} • ★ ${(p.rating||0).toFixed(1)} (${(p.review_count||0).toLocaleString()} reviews)</div>
@@ -5563,7 +5579,7 @@ function openHistDrawer(asin) {
             <!-- PRODUCT OVERVIEW -->
             <div class="hist-card">
                 <div class="flex items-start gap-4">
-                    <div class="w-20 h-20 rounded-xl bg-dark-700 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">${p.image_url ? `<img src="${esc(p.image_url)}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
+                    <div class="w-20 h-20 rounded-xl bg-dark-700 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
                     <div class="flex-1 min-w-0">
                         <h3 class="text-base font-bold text-white mb-1">${esc(p.name||p.asin)}</h3>
                         <div class="text-xs text-gray-400">${esc(p.asin)} • ${esc(p.category||'Mixed')} • ★ ${(p.rating||0).toFixed(1)} (${(p.review_count||0).toLocaleString()} reviews)</div>
@@ -5802,7 +5818,7 @@ function renderWatchlistProductCard(product, index) {
     return `<div class="watchlist-card border-l-2 ${edgeColor} flex gap-4 relative group" data-asin="${esc(p.asin)}">
         <div class="flex items-start gap-3 flex-1 min-w-0">
             <input type="checkbox" ${sel?'checked':''} onchange="toggleWatchlistSelect('${esc(p.asin)}')" class="mt-1 accent-blue-500 w-4 h-4 shrink-0 cursor-pointer">
-            <div class="w-14 h-14 bg-dark-700 rounded-lg flex items-center justify-center border border-dark-600 shrink-0 overflow-hidden">${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
+            <div class="w-14 h-14 bg-dark-700 rounded-lg flex items-center justify-center border border-dark-600 shrink-0 overflow-hidden">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
                     ${p.is_amazons_choice ? '<span class="watchlist-chip bg-amber-500/20 text-amber-400 border-amber-500/30">🏆 Choice</span>' : ''}
@@ -5860,7 +5876,7 @@ function renderWatchlistProductGrid(product, index) {
     const sel = watchlistSelected.has(p.asin);
     return `<div class="watchlist-card flex flex-col relative group" data-asin="${esc(p.asin)}">
         <input type="checkbox" ${sel?'checked':''} onchange="toggleWatchlistSelect('${esc(p.asin)}')" class="absolute top-3 left-3 accent-blue-500 w-4 h-4 z-10 cursor-pointer">
-        <div class="w-full h-32 bg-dark-700 rounded-lg flex items-center justify-center border border-dark-600 mb-3 overflow-hidden">${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
+        <div class="w-full h-32 bg-dark-700 rounded-lg flex items-center justify-center border border-dark-600 mb-3 overflow-hidden">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
         <div class="font-medium text-xs text-white truncate cursor-pointer hover:text-accent-light px-1">${esc(p.name||p.asin)}</div>
         <div class="text-[10px] text-gray-400 px-1 mt-0.5">${esc(p.asin)} · ${esc(p.category||'')}</div>
         <div class="flex items-center justify-between mt-2 px-1">
@@ -5902,7 +5918,7 @@ function renderWatchlistDrawer(product) {
     const tl = p.traffic_light||'RED';
     return `<div class="p-5 space-y-5">
         <div class="flex items-start gap-4">
-            <div class="w-20 h-20 bg-dark-700 rounded-xl flex items-center justify-center border border-dark-600 shrink-0 overflow-hidden">${p.image_url ? `<img src="${esc(p.image_url)}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
+            <div class="w-20 h-20 bg-dark-700 rounded-xl flex items-center justify-center border border-dark-600 shrink-0 overflow-hidden">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" alt="" class="w-full h-full object-contain" onerror="this.style.display='none'"/>` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
             <div class="flex-1 min-w-0">
                 <h3 class="font-bold text-white text-sm leading-tight">${esc(p.name||'Product')}</h3>
                 <div class="text-[11px] text-gray-400 mt-1">${esc(p.asin)} · ${esc(p.category||'')}</div>
@@ -6699,7 +6715,7 @@ function openAnaDrawer(asin) {
             </div>
             <div class="ana-card">
                 <div class="flex items-start gap-4">
-                    <div class="w-20 h-20 rounded-xl bg-dark-700 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">${p.image_url ? `<img src="${esc(p.image_url)}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
+                    <div class="w-20 h-20 rounded-xl bg-dark-700 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : `<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`}</div>
                     <div class="flex-1 min-w-0">
                         <h3 class="text-base font-bold text-white mb-1">${esc(p.name||p.asin)}</h3>
                         <div class="text-xs text-gray-400">${esc(p.asin)} • ${esc(p.category||'Mixed')} • ★ ${(p.rating||0).toFixed(1)} (${(p.review_count||0).toLocaleString()} reviews)</div>
