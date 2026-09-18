@@ -811,11 +811,23 @@ def create_app() -> FastAPI:
         body = await request.json()
         query = body.get("query", "").strip()
         page = body.get("page", 1)
+        sort = body.get("sort", "")
         if not query:
             raise HTTPException(400, "Search query required")
 
+        # Map frontend sort to Amazon sort
+        amazon_sort_map = {
+            "reviews": "review-count-rank",
+            "price_low": "price-asc-rank",
+            "price_high": "price-desc-rank",
+            "rating": "review-rank",
+            "opportunity": "",
+            "demand": "",
+        }
+        amazon_sort = amazon_sort_map.get(sort, "")
+
         try:
-            results = amazon_scrape(query, page=page)
+            results = amazon_scrape(query, page=page, sort=amazon_sort)
         except ValueError as e:
             raise HTTPException(400, str(e))
 

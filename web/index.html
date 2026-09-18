@@ -2244,7 +2244,7 @@ let researchLoading = false;
 let researchExpandedFilters = false;
 let compareMode = false;
 let compareProducts = [];
-let researchSource = 'db'; // 'db' or 'amazon'
+let researchSource = 'amazon'; // 'db' or 'amazon'
 
 const $ = id => document.getElementById(id);
 const esc = s => { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; };
@@ -2990,7 +2990,7 @@ async function renderResearch() {
         <div class="research-mobile-header">
             <div class="research-mobile-search" style="position:relative">
                 <svg class="search-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input id="f-search-m" placeholder="Search products, ASINs, keywords..." onkeyup="if(event.key==='Enter'){document.getElementById('f-search').value=this.value;researchSource==='amazon'?searchAmazon():searchProducts()}">
+                <input id="f-search-m" placeholder="Search Amazon for products..." onkeyup="if(event.key==='Enter'){document.getElementById('f-search').value=this.value;researchSource==='amazon'?searchAmazon():searchProducts()}">
                 <button onclick="document.getElementById('f-search').value=document.getElementById('f-search-m').value;researchSource==='amazon'?searchAmazon():searchProducts()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:0.5rem;padding:8px 14px;font-size:0.75rem;font-weight:600;cursor:pointer">Search</button>
             </div>
             <div class="research-mobile-controls">
@@ -3034,15 +3034,15 @@ async function renderResearch() {
                     <label class="text-[10px] text-gray-400 block mb-1.5 font-semibold">Search Products</label>
                     <div class="relative">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input id="f-search" placeholder="Search by product name, ASIN, brand..." class="w-full pl-10 pr-10" onkeyup="if(event.key==='Enter'){researchSource==='amazon'?searchAmazon():searchProducts()}">
-                        <button onclick="$('f-search').value='';searchProducts()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                        <input id="f-search" placeholder="Search Amazon for any product..." class="w-full pl-10 pr-10" onkeyup="if(event.key==='Enter'){researchSource==='amazon'?searchAmazon():searchProducts()}">
+                        <button onclick="$('f-search').value='';researchSource==='amazon'?searchAmazon():searchProducts()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                     </div>
                 </div>
                 <div style="min-width:130px">
                     <label class="text-[10px] text-gray-400 block mb-1.5 font-semibold">Data Source</label>
                     <div class="flex rounded-lg overflow-hidden border border-dark-600">
-                        <button id="src-db" onclick="researchSource='db';this.classList.add('bg-accent','text-white');this.classList.remove('bg-dark-700','text-gray-400');$('src-amazon').classList.remove('bg-accent','text-white');$('src-amazon').classList.add('bg-dark-700','text-gray-400')" class="flex-1 py-1.5 text-[10px] font-bold bg-accent text-white transition">DB</button>
-                        <button id="src-amazon" onclick="researchSource='amazon';this.classList.add('bg-accent','text-white');this.classList.remove('bg-dark-700','text-gray-400');$('src-db').classList.remove('bg-accent','text-white');$('src-db').classList.add('bg-dark-700','text-gray-400');searchAmazon()" class="flex-1 py-1.5 text-[10px] font-bold bg-dark-700 text-gray-400 hover:text-white transition flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>Amazon</button>
+                        <button id="src-db" onclick="switchSource('db')" class="flex-1 py-1.5 text-[10px] font-bold bg-dark-700 text-gray-400 hover:text-white transition">DB</button>
+                        <button id="src-amazon" onclick="switchSource('amazon')" class="flex-1 py-1.5 text-[10px] font-bold bg-accent text-white transition flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>Amazon</button>
                     </div>
                 </div>
                 <div class="min-w-0" style="min-width:140px">
@@ -3112,9 +3112,9 @@ async function renderResearch() {
 
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <div class="flex gap-2 flex-wrap">
-                    <button onclick="searchProducts()" class="px-5 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-accent to-blue-600 text-white hover:from-accent-dark hover:to-blue-700 transition shadow-lg shadow-accent/20 flex items-center gap-1.5">
+                    <button onclick="researchSource==='amazon'?searchAmazon():searchProducts()" class="px-5 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-accent to-blue-600 text-white hover:from-accent-dark hover:to-blue-700 transition shadow-lg shadow-accent/20 flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        SEARCH
+                        SEARCH AMAZON
                     </button>
                     <button onclick="renderResearch()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -3142,10 +3142,9 @@ async function renderResearch() {
                     <button onclick="setViewMode('list')" id="view-list" class="px-2.5 py-1.5 rounded-md text-xs transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg></button>
                     <button onclick="setViewMode('grid')" id="view-grid" class="px-2.5 py-1.5 rounded-md text-xs transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg></button>
                 </div>
-                <select id="f-sort-display" onchange="$('f-sort').value=this.value;searchProducts()" class="w-32 text-xs">
+                <select id="f-sort-display" onchange="$('f-sort').value=this.value;researchSource==='amazon'?searchAmazon():searchProducts()" class="w-32 text-xs">
                     <option value="opportunity">Sort: Opportunity</option>
-                    <option value="demand">Sort: Demand</option>
-                    <option value="reviews">Sort: Reviews</option>
+                    <option value="reviews">Sort: Most Reviewed</option>
                     <option value="price_low">Sort: Price Low</option>
                     <option value="price_high">Sort: Price High</option>
                     <option value="rating">Sort: Rating</option>
@@ -3154,7 +3153,7 @@ async function renderResearch() {
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
                     Compare
                 </button>
-                <select id="f-per-page" onchange="currentPage=1;searchProducts()" class="w-24 text-xs">
+                <select id="f-per-page" onchange="currentPage=1;researchSource==='amazon'?searchAmazon():searchProducts()" class="w-24 text-xs">
                     <option value="10">10</option>
                     <option value="25" selected>25</option>
                     <option value="50">50</option>
@@ -3271,7 +3270,11 @@ async function renderResearch() {
             </div>
         </div>`;
     $('view-list').classList.add('bg-dark-600', 'text-white');
-    searchProducts();
+    if (researchSource === 'amazon') {
+        searchAmazon('best sellers uk');
+    } else {
+        searchProducts();
+    }
     api('/api/research/market-insights').then(d => {
         const el = $('market-insights-panel');
         if (el) el.innerHTML = renderMarketInsights(d);
@@ -3282,7 +3285,7 @@ function setViewMode(mode) {
     viewMode = mode;
     $('view-list').className = mode === 'list' ? 'px-2.5 py-1.5 rounded-md text-xs transition bg-dark-600 text-white' : 'px-2.5 py-1.5 rounded-md text-xs transition text-gray-400 hover:text-white';
     $('view-grid').className = mode === 'grid' ? 'px-2.5 py-1.5 rounded-md text-xs transition bg-dark-600 text-white' : 'px-2.5 py-1.5 rounded-md text-xs transition text-gray-400 hover:text-white';
-    searchProducts();
+    if (researchSource === 'amazon') searchAmazon(); else searchProducts();
 }
 async function searchProducts() {
     researchLoading = true;
@@ -3366,11 +3369,33 @@ async function asinLookup() {
     if (data) { toast(`Found: ${data.name}`, 'success'); searchProducts(); }
 }
 
-async function searchAmazon() {
+function switchSource(src) {
+    researchSource = src;
+    const dbBtn = $('src-db');
+    const amzBtn = $('src-amazon');
+    const searchInput = $('f-search');
+    const searchInputM = $('f-search-m');
+    if (src === 'db') {
+        dbBtn.className = 'flex-1 py-1.5 text-[10px] font-bold bg-accent text-white transition';
+        amzBtn.className = 'flex-1 py-1.5 text-[10px] font-bold bg-dark-700 text-gray-400 hover:text-white transition flex items-center justify-center gap-1';
+        if (searchInput) searchInput.placeholder = 'Search by product name, ASIN, brand...';
+        if (searchInputM) searchInputM.placeholder = 'Search products, ASINs, keywords...';
+        searchProducts();
+    } else {
+        amzBtn.className = 'flex-1 py-1.5 text-[10px] font-bold bg-accent text-white transition flex items-center justify-center gap-1';
+        dbBtn.className = 'flex-1 py-1.5 text-[10px] font-bold bg-dark-700 text-gray-400 hover:text-white transition';
+        if (searchInput) searchInput.placeholder = 'Search Amazon for any product...';
+        if (searchInputM) searchInputM.placeholder = 'Search Amazon for products...';
+        searchAmazon();
+    }
+}
+
+async function searchAmazon(defaultQuery) {
     researchLoading = true;
     researchSource = 'amazon';
-    const query = $('f-search')?.value?.trim();
-    if (!query) { toast('Enter a search term to search Amazon', 'warning'); return; }
+    const query = defaultQuery || $('f-search')?.value?.trim();
+    if (!query) { toast('Enter a search term to search Amazon', 'warning'); researchLoading = false; return; }
+    if (defaultQuery) { currentPage = 1; $('f-search').value = defaultQuery; }
     const resultsEl = $('research-results');
     if (resultsEl) resultsEl.innerHTML = renderResearchSkeletons(8);
     const statusEl = $('research-showing');
@@ -3380,7 +3405,7 @@ async function searchAmazon() {
         const data = await fetch('/api/research/amazon-search', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('ml_token') || '') },
-            body: JSON.stringify({ query, page: currentPage })
+            body: JSON.stringify({ query, page: currentPage, sort: $('f-sort-display')?.value || '' })
         }).then(r => r.json());
         if (data.detail) { toast('Search failed: ' + data.detail, 'error'); if (resultsEl) resultsEl.innerHTML = renderResearchError(data.detail); return; }
         researchLoading = false;
@@ -3426,9 +3451,13 @@ async function searchAmazon() {
         }
         const start = 0;
         const end = totalProducts.length;
+        const totalPages = Math.ceil((data.total || totalProducts.length) / 10) || 1;
         $('research-showing').textContent = `Showing ${totalProducts.length} live Amazon results for "${query}"`;
-        $('footer-status').textContent = `Amazon: ${totalProducts.length} results | Page ${data.page}`;
-        $('research-pages').innerHTML = '';
+        $('footer-status').textContent = `Amazon: ${data.total || totalProducts.length} results | Page ${currentPage}/${totalPages}`;
+        let pag = '<button onclick="currentPage=Math.max(1,currentPage-1);searchAmazon()" class="w-8 h-8 rounded-lg text-xs bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white transition flex items-center justify-center" '+(currentPage<=1?'disabled':'')+'><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>';
+        for (let i = 1; i <= Math.min(totalPages, 5); i++) pag += `<button onclick="currentPage=${i};searchAmazon()" class="w-8 h-8 rounded-lg text-xs ${i===currentPage?'bg-accent text-white':'bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white'} transition">${i}</button>`;
+        pag += '<button onclick="currentPage=Math.min('+totalPages+',currentPage+1);searchAmazon()" class="w-8 h-8 rounded-lg text-xs bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white transition flex items-center justify-center" '+(currentPage>=totalPages?'disabled':'')+'><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>';
+        $('research-pages').innerHTML = pag;
     } catch(e) {
         researchLoading = false;
         if (resultsEl) resultsEl.innerHTML = renderResearchError('Amazon search failed: ' + e.message);
@@ -3437,14 +3466,19 @@ async function searchAmazon() {
 }
 
 function applyResearchPreset(key) {
-    const preset = researchPresets[key];
-    if (!preset) return;
     document.querySelectorAll('.research-preset').forEach(el => el.classList.remove('active'));
     event.currentTarget.classList.add('active');
-    if (preset.min_opportunity !== undefined) $('f-min-opportunity').value = preset.min_opportunity;
-    if (preset.min_margin) $('f-min-margin').value = preset.min_margin;
-    if (preset.traffic_light) $('f-tl').value = preset.traffic_light;
-    searchProducts();
+    const amazonPresets = { hot: 'best sellers uk', margin: 'high profit margin products', trending: 'trending products 2025', lowcomp: 'new products low reviews', best: 'amazon choice uk', aipicks: 'popular gadgets under 50' };
+    if (researchSource === 'amazon') {
+        searchAmazon(amazonPresets[key] || 'best sellers uk');
+    } else {
+        const preset = researchPresets[key];
+        if (!preset) return;
+        if (preset.min_opportunity !== undefined) $('f-min-opportunity').value = preset.min_opportunity;
+        if (preset.min_margin) $('f-min-margin').value = preset.min_margin;
+        if (preset.traffic_light) $('f-tl').value = preset.traffic_light;
+        searchProducts();
+    }
 }
 
 function toggleResearchFilters() {
