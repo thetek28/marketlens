@@ -2981,6 +2981,8 @@ function researchProductRow(p, idx) {
 }
 
 async function renderResearch() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
+    try {
     const status = await api('/api/status');
     const cats = (status?.categories || []).map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
     const now = new Date();
@@ -3279,6 +3281,7 @@ async function renderResearch() {
         const el = $('market-insights-panel');
         if (el) el.innerHTML = renderMarketInsights(d);
     }).catch(() => {});
+    } catch(e) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">Failed to load research. <button onclick="renderResearch()" class="text-accent ml-2">Retry</button></div>`; }
 }
 let viewMode = 'list';
 function setViewMode(mode) {
@@ -4002,6 +4005,7 @@ function researchActionExclude() { if (researchActionProduct) { excludeProduct(r
    ══════════════════════════════════════════════════════════════ */
 async function renderDashboard() {
     $('main-content').innerHTML = renderDashboardSkeletons();
+    try {
     const [top20, allData, status, chartData] = await Promise.all([
         api('/api/products/top20'),
         api('/api/products/all'),
@@ -4111,6 +4115,7 @@ async function renderDashboard() {
                 ${renderDashboardAlerts(products)}
             </div>
         </div>`;
+    } catch(e) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">Failed to load dashboard. <button onclick="renderDashboard()" class="text-accent ml-2">Retry</button></div>`; }
 }
 
 function renderDashboardKPIs(products, status) {
@@ -6494,6 +6499,7 @@ async function refreshWatchlist() {
 async function renderWatchlist() {
     $('main-content').innerHTML = `<div class="mb-6 flex items-center justify-between flex-wrap gap-3"><div><h1 class="text-2xl font-bold text-white">Watchlist</h1><p class="text-sm text-gray-400 mt-1">Products worth monitoring closely</p></div><div class="flex items-center gap-2 flex-wrap"><button onclick="refreshWatchlist()" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh</button><button onclick="exportWatchlist('csv')" class="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition border border-dark-600 flex items-center gap-1.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Export</button><button onclick="showAddWatchlistModal()" class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-accent text-white hover:bg-accent-dark transition flex items-center gap-1.5">+ Add</button></div></div>
         ${renderWatchlistSkeletons()}`;
+    try {
 
     if (!watchlistData.length) {
         const [allData, topData, backendWl] = await Promise.all([api('/api/products/all'), api('/api/products/top20'), api('/api/watchlist').catch(() => null)]);
@@ -6549,6 +6555,7 @@ async function renderWatchlist() {
         ${totalPages > 1 ? `<div class="flex items-center justify-between mt-5 pt-4 border-t border-dark-600/50"><div class="text-xs text-gray-500">Showing ${startIdx+1}-${Math.min(startIdx+watchlistPerPage, filtered.length)} of ${filtered.length} products</div><div class="flex items-center gap-1.5"><button onclick="changeWatchlistPage(${Math.max(1,watchlistPage-1)})" ${watchlistPage<=1?'disabled':''} class="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-400 hover:text-white hover:bg-dark-600 transition border border-dark-600 disabled:opacity-30 disabled:cursor-not-allowed">← Prev</button>${Array.from({length: Math.min(7, totalPages)}, (_,i) => { let pg; if (totalPages <= 7) pg = i+1; else if (watchlistPage <= 4) pg = i+1; else if (watchlistPage >= totalPages-3) pg = totalPages-6+i; else pg = watchlistPage-3+i; return `<button onclick="changeWatchlistPage(${pg})" class="w-8 h-8 rounded-lg text-[11px] font-medium ${pg===watchlistPage?'bg-accent text-white':'bg-dark-700 text-gray-400 hover:text-white hover:bg-dark-600'} transition border border-dark-600">${pg}</button>`; }).join('')}<button onclick="changeWatchlistPage(${Math.min(totalPages,watchlistPage+1)})" ${watchlistPage>=totalPages?'disabled':''} class="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-dark-700 text-gray-400 hover:text-white hover:bg-dark-600 transition border border-dark-600 disabled:opacity-30 disabled:cursor-not-allowed">Next →</button></div></div>` : ''}
         <div id="watchlist-drawer-backdrop" class="watchlist-drawer-backdrop" style="display:none" onclick="closeWatchlistDrawer()"></div>
         <div id="watchlist-drawer" class="watchlist-drawer"></div>`;
+    } catch(e) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">Failed to load watchlist. <button onclick="renderWatchlist()" class="text-accent ml-2">Retry</button></div>`; }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -8448,7 +8455,9 @@ function renderHelp() {
    TAB: PRODUCTS (Top 20)
    ══════════════════════════════════════════════════════════════ */
 async function renderProducts() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
     const data = await api('/api/products/top20');
+    if (!data?.products) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">No products found</div>`; return; }
     $('main-content').innerHTML = `
         <div class="flex items-center justify-between mb-3">
             <h2 class="text-lg font-semibold">Top 20 Products</h2>
@@ -8465,8 +8474,10 @@ async function renderProducts() {
    TAB: KEYWORDS
    ══════════════════════════════════════════════════════════════ */
 async function renderKeywords() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
     const data = await api('/api/products/top20');
-    const opts = data.products.map(p => `<option value="${esc(p.asin)}">${esc(p.name)} (${esc(p.asin)})</option>`).join('');
+    const products = data?.products || [];
+    const opts = products.map(p => `<option value="${esc(p.asin)}">${esc(p.name)} (${esc(p.asin)})</option>`).join('');
     $('main-content').innerHTML = `
         <h2 class="text-lg font-semibold mb-3">SEO Keywords & Product Solutions</h2>
         <div class="bg-dark-800 rounded-xl p-4 border border-dark-600 mb-4 flex gap-3 items-end">
@@ -8514,8 +8525,10 @@ function copyAllKeywords() {
    TAB: LISTING
    ══════════════════════════════════════════════════════════════ */
 async function renderListing() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
     const data = await api('/api/products/top20');
-    const opts = data.products.map(p => `<option value="${esc(p.asin)}">${esc(p.name)} (${esc(p.asin)})</option>`).join('');
+    const products = data?.products || [];
+    const opts = products.map(p => `<option value="${esc(p.asin)}">${esc(p.name)} (${esc(p.asin)})</option>`).join('');
     $('main-content').innerHTML = `
         <h2 class="text-lg font-semibold mb-3">Amazon Listing Builder</h2>
         <div class="bg-dark-800 rounded-xl p-4 border border-dark-600 mb-4 flex gap-3 items-end">
@@ -9264,8 +9277,10 @@ function closeProdMenu() { $('prod-action-menu').classList.add('hidden'); docume
    TAB: PROFITS
    ══════════════════════════════════════════════════════════════ */
 async function renderProfits() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
     const data = await api('/api/products/top20');
-    const opts = data.products.map(p => `<option value="${esc(p.asin)}" data-price="${p.amazon_price}" data-cost="${p.estimated_supplier_cost||0}">${esc(p.name)} (${esc(p.asin)})</option>`).join('');
+    const products = data?.products || [];
+    const opts = products.map(p => `<option value="${esc(p.asin)}" data-price="${p.amazon_price}" data-cost="${p.estimated_supplier_cost||0}">${esc(p.name)} (${esc(p.asin)})</option>`).join('');
     $('main-content').innerHTML = `
         <h2 class="text-lg font-semibold mb-3">FBA Profit Calculator</h2>
         <div class="bg-dark-800 rounded-xl p-4 border border-dark-600 mb-4">
@@ -9335,8 +9350,9 @@ async function calcAllProfits() {
    TAB: SUPPLIERS
    ══════════════════════════════════════════════════════════════ */
 async function renderSuppliers() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
     const data = await api('/api/suppliers');
-    allSuppliers = data.suppliers || [];
+    allSuppliers = data?.suppliers || [];
     $('main-content').innerHTML = `
         <div class="flex items-center justify-between mb-3">
             <h2 class="text-lg font-semibold">Supplier Database</h2>
@@ -9406,7 +9422,7 @@ async function exportSuppliersCSV() { window.location.href = '/api/suppliers/exp
 async function importCSV(input) {
     if (!input.files[0]) return;
     const fd = new FormData(); fd.append('file', input.files[0]);
-    const r = await fetch('/api/suppliers/import', {method:'POST', body:fd});
+    const r = await fetch('/api/suppliers/import', {method:'POST', headers:{'Authorization': 'Bearer ' + (authToken || '')}, body:fd});
     const d = await r.json(); toast(`Imported ${d.imported} suppliers`, 'success'); renderSuppliers();
 }
 
@@ -9414,8 +9430,9 @@ async function importCSV(input) {
    TAB: PORTFOLIO
    ══════════════════════════════════════════════════════════════ */
 async function renderPortfolio() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
     const data = await api('/api/portfolio');
-    if (!data) return;
+    if (!data) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">No portfolio data</div>`; return; }
     const s = data.summary;
     const maxYear = Math.max(...data.yearly_forecast.map(y => y.total), 1);
     $('main-content').innerHTML = `
@@ -9472,11 +9489,12 @@ async function renderTools() {
 }
 async function renderCompare() {
     const data = await api('/api/products/top20');
+    const products = data?.products || [];
     $('tools-content').innerHTML = `
         <div class="bg-dark-800 rounded-xl p-4 border border-dark-600 mb-4">
             <div class="flex gap-2 items-end mb-3">
                 <div class="flex-1"><label class="text-[10px] text-gray-400 block mb-1">Select products to compare (pick 2+)</label>
-                    <div class="space-y-1 max-h-48 overflow-y-auto">${data.products.map(p => `<label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer hover:text-white"><input type="checkbox" value="${esc(p.asin)}" class="compare-cb"> ${esc(p.name)} (${esc(p.asin)})</label>`).join('')}</div>
+                    <div class="space-y-1 max-h-48 overflow-y-auto">${products.map(p => `<label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer hover:text-white"><input type="checkbox" value="${esc(p.asin)}" class="compare-cb"> ${esc(p.name)} (${esc(p.asin)})</label>`).join('')}</div>
                 </div>
                 <button onclick="runCompare()" class="btn btn-accent text-xs">COMPARE</button>
                 <button onclick="document.querySelectorAll('.compare-cb').forEach(cb=>cb.checked=true)" class="btn btn-ghost text-xs">All</button>
@@ -9639,8 +9657,9 @@ async function genReport() {
    TAB: CHARTS
    ══════════════════════════════════════════════════════════════ */
 async function renderCharts() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
     const data = await api('/api/charts/data');
-    if (!data) return;
+    if (!data) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">No chart data</div>`; return; }
     const total = data.total || 1;
     $('main-content').innerHTML = `
         <div class="flex items-center justify-between mb-3">
@@ -9692,8 +9711,9 @@ async function runCompetitors() {
    TAB: EXCLUDED PRODUCTS
    ══════════════════════════════════════════════════════════════ */
 async function renderExcluded() {
+    $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
     const data = await api('/api/products/excluded');
-    if (!data) return;
+    if (!data) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">No excluded products</div>`; return; }
     const products = data.products || [];
     $('main-content').innerHTML = `
         <div class="flex items-center justify-between mb-4">
@@ -9876,7 +9896,7 @@ let billingSub = null;
 
 async function renderBilling() {
     $('main-content').innerHTML = `<div class="space-y-6"><h1 class="text-2xl font-bold text-white">Billing & Subscription</h1><p class="text-sm text-gray-400">Manage your plan, payments, and invoices</p><div class="grid grid-cols-1 md:grid-cols-3 gap-4">${Array(3).fill('<div class="bg-dark-800 rounded-xl p-5 border border-dark-600 skeleton" style="height:120px"></div>').join('')}</div></div>`;
-
+    try {
     const [plansRes, subRes] = await Promise.all([
         api('/api/billing/plans').catch(() => null),
         api('/api/billing/subscription').catch(() => null)
@@ -10052,6 +10072,7 @@ async function renderBilling() {
 
     html += '</div>';
     $('main-content').innerHTML = html;
+    } catch(e) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">Failed to load billing. <button onclick="renderBilling()" class="text-accent ml-2">Retry</button></div>`; }
 }
 
 async function startCheckout(planSlug) {
