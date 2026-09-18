@@ -2244,6 +2244,7 @@ let researchLoading = false;
 let researchExpandedFilters = false;
 let compareMode = false;
 let compareProducts = [];
+let researchSource = 'db'; // 'db' or 'amazon'
 
 const $ = id => document.getElementById(id);
 const esc = s => { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; };
@@ -2989,8 +2990,8 @@ async function renderResearch() {
         <div class="research-mobile-header">
             <div class="research-mobile-search" style="position:relative">
                 <svg class="search-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input id="f-search-m" placeholder="Search products, ASINs, keywords..." onkeyup="if(event.key==='Enter'){document.getElementById('f-search').value=this.value;searchProducts()}">
-                <button onclick="document.getElementById('f-search').value=document.getElementById('f-search-m').value;searchProducts()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:0.5rem;padding:8px 14px;font-size:0.75rem;font-weight:600;cursor:pointer">Search</button>
+                <input id="f-search-m" placeholder="Search products, ASINs, keywords..." onkeyup="if(event.key==='Enter'){document.getElementById('f-search').value=this.value;researchSource==='amazon'?searchAmazon():searchProducts()}">
+                <button onclick="document.getElementById('f-search').value=document.getElementById('f-search-m').value;researchSource==='amazon'?searchAmazon():searchProducts()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:0.5rem;padding:8px 14px;font-size:0.75rem;font-weight:600;cursor:pointer">Search</button>
             </div>
             <div class="research-mobile-controls">
                 <button onclick="openResearchFilterDrawer()" class="research-mobile-btn">
@@ -3033,8 +3034,15 @@ async function renderResearch() {
                     <label class="text-[10px] text-gray-400 block mb-1.5 font-semibold">Search Products</label>
                     <div class="relative">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input id="f-search" placeholder="Search by product name, ASIN, brand..." class="w-full pl-10 pr-10" onkeyup="searchProducts()">
+                        <input id="f-search" placeholder="Search by product name, ASIN, brand..." class="w-full pl-10 pr-10" onkeyup="if(event.key==='Enter'){researchSource==='amazon'?searchAmazon():searchProducts()}">
                         <button onclick="$('f-search').value='';searchProducts()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                    </div>
+                </div>
+                <div style="min-width:130px">
+                    <label class="text-[10px] text-gray-400 block mb-1.5 font-semibold">Data Source</label>
+                    <div class="flex rounded-lg overflow-hidden border border-dark-600">
+                        <button id="src-db" onclick="researchSource='db';this.classList.add('bg-accent','text-white');this.classList.remove('bg-dark-700','text-gray-400');$('src-amazon').classList.remove('bg-accent','text-white');$('src-amazon').classList.add('bg-dark-700','text-gray-400')" class="flex-1 py-1.5 text-[10px] font-bold bg-accent text-white transition">DB</button>
+                        <button id="src-amazon" onclick="researchSource='amazon';this.classList.add('bg-accent','text-white');this.classList.remove('bg-dark-700','text-gray-400');$('src-db').classList.remove('bg-accent','text-white');$('src-db').classList.add('bg-dark-700','text-gray-400');searchAmazon()" class="flex-1 py-1.5 text-[10px] font-bold bg-dark-700 text-gray-400 hover:text-white transition flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>Amazon</button>
                     </div>
                 </div>
                 <div class="min-w-0" style="min-width:140px">
@@ -3356,6 +3364,76 @@ async function asinLookup() {
     toast('Looking up...', 'info');
     const data = await api('/api/asin-lookup', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({asin})});
     if (data) { toast(`Found: ${data.name}`, 'success'); searchProducts(); }
+}
+
+async function searchAmazon() {
+    researchLoading = true;
+    researchSource = 'amazon';
+    const query = $('f-search')?.value?.trim();
+    if (!query) { toast('Enter a search term to search Amazon', 'warning'); return; }
+    const resultsEl = $('research-results');
+    if (resultsEl) resultsEl.innerHTML = renderResearchSkeletons(8);
+    const statusEl = $('research-showing');
+    if (statusEl) statusEl.textContent = 'Searching Amazon...';
+    toast('Searching Amazon via Keepa...', 'info');
+    try {
+        const data = await fetch('/api/research/amazon-search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('ml_token') || '') },
+            body: JSON.stringify({ query, page: currentPage })
+        }).then(r => r.json());
+        if (data.detail) { toast('Search failed: ' + data.detail, 'error'); if (resultsEl) resultsEl.innerHTML = renderResearchError(data.detail); return; }
+        researchLoading = false;
+        const perPage = 10;
+        const totalProducts = data.products || [];
+        $('results-count').textContent = `${data.total || totalProducts.length} Amazon products found`;
+        const insightEl = $('research-insight-panel');
+        if (insightEl) insightEl.innerHTML = renderResearchInsight(totalProducts);
+        if (totalProducts.length === 0) {
+            if (resultsEl) resultsEl.innerHTML = renderResearchEmpty();
+        } else if (viewMode === 'list') {
+            if (resultsEl) resultsEl.innerHTML = `<div class="space-y-2">${totalProducts.map((p,i) => researchProductRow(p, i)).join('')}</div>`;
+        } else {
+            if (resultsEl) resultsEl.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${totalProducts.map((p,i) => {
+                const tl = p.traffic_light || 'RED';
+                const tlBadge = {GREEN:'bg-green-500',YELLOW:'bg-yellow-500',RED:'bg-red-500'}[tl] || 'bg-red-500';
+                const margin = (p.estimated_margin_pct || 0);
+                const ai = Math.round((p.opportunity_score || 0));
+                const edgeClass = tl === 'GREEN' ? 'research-edge-green' : tl === 'YELLOW' ? 'research-edge-yellow' : 'research-edge-red';
+                return `<div class="research-product ${edgeClass} p-4 cursor-pointer fade-in" onclick='showResearchDrawer(${JSON.stringify(p).replace(/'/g,"&#39;")})' style="animation-delay:${i*30}ms">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-dark-700 rounded-lg flex items-center justify-center border border-dark-600 overflow-hidden">${p.image_url ? `<img src="${encodeURI(p.image_url||'')}" alt="" class="w-full h-full object-contain rounded-lg" onerror="this.style.display='none'"/>` : ''}</div>
+                        <div class="flex gap-1.5">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${tlBadge} text-white">${tl}</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500 text-white">LIVE</span>
+                        </div>
+                    </div>
+                    <div class="font-semibold text-sm text-white truncate mb-1">${esc(p.name || p.asin)}</div>
+                    <div class="text-[11px] text-gray-400 mb-3">${esc(p.asin)} | ${esc(p.category||'')} | ★${(p.rating||0).toFixed(1)} (${(p.review_count||0).toLocaleString()})</div>
+                    <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                        <div class="research-metric"><div class="research-metric-label">Price</div><div class="research-metric-value text-white">&pound;${(p.amazon_price||0).toFixed(2)}</div></div>
+                        <div class="research-metric"><div class="research-metric-label">Margin</div><div class="research-metric-value ${margin>=40?'text-green-400':margin>=25?'text-yellow-400':'text-red-400'}">${margin.toFixed(1)}%</div></div>
+                        <div class="research-metric"><div class="research-metric-label">Opp Score</div><div class="research-metric-value text-blue-400">${ai}</div></div>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-dark-600/50">
+                        <div class="flex gap-1"><a href="${esc(p.product_url || 'https://www.amazon.co.uk/dp/'+p.asin)}" target="_blank" onclick="event.stopPropagation()" class="research-action hover:text-orange-400 hover:border-orange-500/20"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+                        <button onclick="event.stopPropagation();openListGen('${esc(p.asin)}','research')" class="research-action hover:text-amber-400 hover:border-amber-500/20" title="Generate Listing"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></button>
+                        <button onclick="event.stopPropagation();excludeProduct('${esc(p.asin)}','${esc(p.name||p.asin)}')" class="research-action hover:text-green-400 hover:border-green-500/20"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></button></div>
+                        <div class="flex items-center gap-1">${miniSparkline(p.revenue_history || [p.amazon_price*0.8,p.amazon_price*0.9,p.amazon_price,p.amazon_price*1.05,p.amazon_price*0.95], tl==='GREEN'?'#22c55e':tl==='YELLOW'?'#f59e0b':'#ef4444')}</div>
+                    </div>
+                </div>`;
+            }).join('')}</div>`;
+        }
+        const start = 0;
+        const end = totalProducts.length;
+        $('research-showing').textContent = `Showing ${totalProducts.length} live Amazon results for "${query}"`;
+        $('footer-status').textContent = `Amazon: ${totalProducts.length} results | Page ${data.page}`;
+        $('research-pages').innerHTML = '';
+    } catch(e) {
+        researchLoading = false;
+        if (resultsEl) resultsEl.innerHTML = renderResearchError('Amazon search failed: ' + e.message);
+        toast('Amazon search failed', 'error');
+    }
 }
 
 function applyResearchPreset(key) {

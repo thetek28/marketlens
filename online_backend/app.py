@@ -802,6 +802,108 @@ def create_app() -> FastAPI:
             logger.error(f"market_insights error: {e}")
             return {"overall": {}, "categories": [], "top_opportunities": [], "distribution": {}}
 
+    @app.post("/api/research/amazon-search")
+    async def amazon_search(request: Request, user: dict = Depends(get_current_user)):
+        """Search Amazon via Keepa API and auto-import results."""
+        from online_backend.services.keepa_service import search_products as keepa_search
+        from online_backend.services.scoring_engine import OpportunityScoringEngine
+
+        body = await request.json()
+        query = body.get("query", "").strip()
+        page = body.get("page", 1)
+        if not query:
+            raise HTTPException(400, "Search query required")
+
+        try:
+            results = keepa_search(query, page=page)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+
+        # Score and import each product
+        scored_products = []
+        scoring = OpportunityScoringEngine()
+        for p in results["products"]:
+            if not p.get("asin"):
+                continue
+            # Check if already exists
+            existing = db._exec("SELECT id FROM products WHERE asin = %s", (p["asin"],), "one")
+            if not existing:
+                # Calculate opportunity score
+                score_result = None
+                try:
+                    from online_backend.services.scoring_engine import ScoreInputs
+                    inputs = ScoreInputs(
+                        price=p.get("amazon_price"),
+                        rating=p.get("rating"),
+                        review_count=p.get("review_count"),
+                        supplier_cost=p.get("estimated_supplier_cost"),
+                        category=p.get("category", ""),
+                        marketplace="UK",
+                    )
+                    score_result = scoring.calculate_score(inputs)
+                except:
+                    pass
+
+                opp_score = score_result.opportunity_score if score_result else 50
+                confidence = score_result.confidence if score_result else "low"
+                dq = score_result.data_quality_score if score_result else 50
+                bd = score_result.breakdown.to_dict() if score_result else {}
+                tl = "GREEN" if opp_score >= 90 else ("BLUE" if opp_score >= 70 else ("YELLOW" if opp_score >= 50 else "RED"))
+
+                # Insert product
+                try:
+                    db._exec("""
+                        INSERT INTO products (asin, name, brand, category, marketplace,
+                            amazon_price, rating, review_count, image_url, product_url,
+                            opportunity_score, opportunity_confidence, data_quality_score,
+                            score_breakdown, traffic_light, scoring_version,
+                            estimated_margin_pct, supplier_price, created_at, updated_at)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW(),NOW())
+                        ON CONFLICT (asin) DO UPDATE SET
+                            amazon_price = EXCLUDED.amazon_price,
+                            rating = EXCLUDED.rating,
+                            review_count = EXCLUDED.review_count,
+                            image_url = EXCLUDED.image_url,
+                            updated_at = NOW()
+                    """, (
+                        p["asin"], p["name"], p.get("brand", ""), p.get("category", ""),
+                        "UK", p.get("amazon_price", 0), p.get("rating", 0),
+                        p.get("review_count", 0), p.get("image_url", ""),
+                        p.get("product_url", ""),
+                        opp_score, confidence, dq,
+                        json.dumps(bd), tl, "v2.4",
+                        p.get("estimated_margin_pct", 0), p.get("estimated_supplier_cost", 0),
+                    ))
+                except Exception as e:
+                    logger.error(f"Failed to import {p['asin']}: {e}")
+
+                p["opportunity_score"] = opp_score
+                p["opportunity_confidence"] = confidence
+                p["data_quality_score"] = dq
+                p["score_breakdown"] = bd
+                p["traffic_light"] = tl
+                p["scoring_version"] = "v2.4"
+            else:
+                # Fetch existing product data
+                existing_p = db._exec(
+                    "SELECT * FROM products WHERE asin = %s", (p["asin"],), "one"
+                )
+                if existing_p:
+                    p = dict(existing_p)
+                    if isinstance(p.get("score_breakdown"), str):
+                        try: p["score_breakdown"] = json.loads(p["score_breakdown"])
+                        except: p["score_breakdown"] = {}
+
+            scored_products.append(p)
+
+        return {
+            "products": scored_products,
+            "total": results.get("total_results", len(scored_products)),
+            "page": page,
+            "query": query,
+            "source": "keepa",
+        }
+
     # ════════════════════════════════════════════════════════
     # PRODUCT INTELLIGENCE — OBSERVATIONS & HISTORY
     # ════════════════════════════════════════════════════════
