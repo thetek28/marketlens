@@ -680,7 +680,10 @@ def create_app() -> FastAPI:
         seen_titles = set()
         unique_products = []
         for p in all_products:
-            title_key = p.get("normalized_title") or p.get("asin") or p.get("name", "")
+            # Dedup by normalized_title first, then by name (lowercased/trimmed)
+            title_key = (p.get("normalized_title") or "").strip().lower()
+            if not title_key:
+                title_key = (p.get("name") or p.get("asin") or "").strip().lower()
             if title_key not in seen_titles:
                 seen_titles.add(title_key)
                 unique_products.append(p)
