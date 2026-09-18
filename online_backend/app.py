@@ -641,7 +641,6 @@ def create_app() -> FastAPI:
             params.append(min_opportunity)
 
         where_sql = " AND ".join(where_clauses)
-        where_sql_p2 = where_sql.replace("p.", "p2.")
 
         sort_map = {
             "opportunity": "p.opportunity_score DESC NULLS LAST",
@@ -655,19 +654,13 @@ def create_app() -> FastAPI:
         }
         order_sql = sort_map.get(sort, "p.opportunity_score DESC NULLS LAST")
 
-        # Count total unique products (deduped by normalized_title)
-        count_sql = f"""
-            SELECT COUNT(*) as total FROM (
-                SELECT COALESCE(p2.normalized_title, p2.asin) as dedup_key
-                FROM products p2 WHERE {where_sql_p2}
-                GROUP BY COALESCE(p2.normalized_title, p2.asin)
-            ) sub
-        """
+        # Fetch all matching products, dedup in Python by normalized_title
+        count_sql = f"SELECT COUNT(*) as total FROM products p WHERE {where_sql}"
         total_result = db._exec(count_sql, tuple(params), "one")
-        total = total_result["total"] if total_result else 0
+        raw_total = total_result["total"] if total_result else 0
 
-        # Fetch page with dedup: pick best product per normalized_title
-        offset = (page - 1) * per_page
+        # Fetch a larger batch for dedup, then slice for pagination
+        fetch_limit = per_page * 5
         query_sql = f"""
             SELECT p.asin, p.name, p.category, p.brand, p.marketplace,
                    p.amazon_price, p.rating, p.review_count,
@@ -677,16 +670,25 @@ def create_app() -> FastAPI:
                    p.last_observed_at, p.scoring_version, p.created_at, p.updated_at,
                    p.estimated_margin_pct, p.estimated_supplier_cost, p.supplier_price
             FROM products p
-            INNER JOIN (
-                SELECT MIN(id) as best_id
-                FROM products p2
-                WHERE {where_sql_p2}
-                GROUP BY COALESCE(p2.normalized_title, p2.asin)
-            ) dedup ON p.id = dedup.best_id
+            WHERE {where_sql}
             ORDER BY {order_sql}
-            LIMIT %s OFFSET %s
+            LIMIT %s
         """
-        products = db._exec(query_sql, tuple(params + params + [per_page, offset]), "all") or []
+        all_products = db._exec(query_sql, tuple(params + [fetch_limit]), "all") or []
+
+        # Dedup: keep first occurrence per normalized_title (preserves sort order)
+        seen_titles = set()
+        unique_products = []
+        for p in all_products:
+            title_key = p.get("normalized_title") or p.get("asin") or p.get("name", "")
+            if title_key not in seen_titles:
+                seen_titles.add(title_key)
+                unique_products.append(p)
+        total = len(unique_products)
+
+        # Paginate the deduped results
+        offset = (page - 1) * per_page
+        products = unique_products[offset:offset + per_page]
 
         # Enrich products with intelligence data
         enriched = []
@@ -741,59 +743,58 @@ def create_app() -> FastAPI:
     @app.get("/api/research/market-insights")
     async def market_insights(user: dict = Depends(get_current_user)):
         """Get market-level insights: category stats, top opportunities, distribution."""
-        # Overall stats
-        overall = db._exec("""
-            SELECT 
-                COUNT(*) as total,
-                ROUND(AVG(opportunity_score),1) as avg_opportunity,
-                ROUND(AVG(data_quality_score),1) as avg_quality,
-                ROUND(AVG(amazon_price),2) as avg_price,
-                ROUND(AVG(estimated_margin_pct),1) as avg_margin,
-                ROUND(AVG(rating),1) as avg_rating,
-                SUM(CASE WHEN traffic_light='GREEN' THEN 1 ELSE 0 END) as green_count,
-                SUM(CASE WHEN traffic_light='YELLOW' THEN 1 ELSE 0 END) as yellow_count,
-                SUM(CASE WHEN traffic_light='RED' THEN 1 ELSE 0 END) as red_count
-            FROM products WHERE opportunity_score > 0
-        """, fetch="one")
+        try:
+            # Overall stats
+            overall = db._exec("""
+                SELECT 
+                    COUNT(*) as total,
+                    ROUND(COALESCE(AVG(opportunity_score),0),1) as avg_opportunity,
+                    ROUND(COALESCE(AVG(data_quality_score),0),1) as avg_quality,
+                    ROUND(COALESCE(AVG(amazon_price),0),2) as avg_price,
+                    ROUND(COALESCE(AVG(rating),0),1) as avg_rating
+                FROM products WHERE opportunity_score > 0
+            """, fetch="one") or {}
 
-        # Top categories by opportunity
-        categories = db._exec("""
-            SELECT category, COUNT(*) as count,
-                   ROUND(AVG(opportunity_score),1) as avg_opportunity,
-                   ROUND(AVG(estimated_margin_pct),1) as avg_margin,
-                   ROUND(AVG(amazon_price),2) as avg_price
-            FROM products WHERE category != '' AND opportunity_score > 0
-            GROUP BY category
-            ORDER BY avg_opportunity DESC
-            LIMIT 10
-        """, fetch="all") or []
+            # Top categories by opportunity
+            categories = db._exec("""
+                SELECT category, COUNT(*) as count,
+                       ROUND(COALESCE(AVG(opportunity_score),0),1) as avg_opportunity,
+                       ROUND(COALESCE(AVG(amazon_price),0),2) as avg_price
+                FROM products WHERE category != '' AND opportunity_score > 0
+                GROUP BY category
+                ORDER BY avg_opportunity DESC
+                LIMIT 10
+            """, fetch="all") or []
 
-        # Top 5 opportunities
-        top_opp = db._exec("""
-            SELECT asin, name, opportunity_score, amazon_price, estimated_margin_pct,
-                   review_count, rating, traffic_light, image_url, category, brand
-            FROM products WHERE opportunity_score > 0
-            ORDER BY opportunity_score DESC LIMIT 5
-        """, fetch="all") or []
+            # Top 5 opportunities
+            top_opp = db._exec("""
+                SELECT asin, name, opportunity_score, amazon_price,
+                       review_count, rating, traffic_light, image_url, category, brand
+                FROM products WHERE opportunity_score > 0
+                ORDER BY opportunity_score DESC LIMIT 5
+            """, fetch="all") or []
 
-        # Score distribution
-        dist = db._exec("""
-            SELECT 
-                SUM(CASE WHEN opportunity_score >= 90 THEN 1 ELSE 0 END) as exceptional,
-                SUM(CASE WHEN opportunity_score >= 80 AND opportunity_score < 90 THEN 1 ELSE 0 END) as strong,
-                SUM(CASE WHEN opportunity_score >= 70 AND opportunity_score < 80 THEN 1 ELSE 0 END) as promising,
-                SUM(CASE WHEN opportunity_score >= 60 AND opportunity_score < 70 THEN 1 ELSE 0 END) as moderate,
-                SUM(CASE WHEN opportunity_score >= 40 AND opportunity_score < 60 THEN 1 ELSE 0 END) as weak,
-                SUM(CASE WHEN opportunity_score < 40 THEN 1 ELSE 0 END) as concern
-            FROM products WHERE opportunity_score > 0
-        """, fetch="one")
+            # Score distribution
+            dist = db._exec("""
+                SELECT 
+                    SUM(CASE WHEN opportunity_score >= 90 THEN 1 ELSE 0 END) as exceptional,
+                    SUM(CASE WHEN opportunity_score >= 80 AND opportunity_score < 90 THEN 1 ELSE 0 END) as strong,
+                    SUM(CASE WHEN opportunity_score >= 70 AND opportunity_score < 80 THEN 1 ELSE 0 END) as promising,
+                    SUM(CASE WHEN opportunity_score >= 60 AND opportunity_score < 70 THEN 1 ELSE 0 END) as moderate,
+                    SUM(CASE WHEN opportunity_score >= 40 AND opportunity_score < 60 THEN 1 ELSE 0 END) as weak,
+                    SUM(CASE WHEN opportunity_score < 40 THEN 1 ELSE 0 END) as concern
+                FROM products WHERE opportunity_score > 0
+            """, fetch="one") or {}
 
-        return {
-            "overall": dict(overall) if overall else {},
-            "categories": [dict(c) for c in categories],
-            "top_opportunities": [dict(p) for p in top_opp],
-            "distribution": dict(dist) if dist else {},
-        }
+            return {
+                "overall": overall,
+                "categories": categories,
+                "top_opportunities": top_opp,
+                "distribution": dist,
+            }
+        except Exception as e:
+            logger.error(f"market_insights error: {e}")
+            return {"overall": {}, "categories": [], "top_opportunities": [], "distribution": {}}
 
     # ════════════════════════════════════════════════════════
     # PRODUCT INTELLIGENCE — OBSERVATIONS & HISTORY
