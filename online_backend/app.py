@@ -654,12 +654,18 @@ def create_app() -> FastAPI:
         }
         order_sql = sort_map.get(sort, "p.opportunity_score DESC NULLS LAST")
 
-        # Count total unique products
-        count_sql = f"SELECT COUNT(*) as total FROM products p WHERE {where_sql}"
+        # Count total unique products (deduped by normalized_title)
+        count_sql = f"""
+            SELECT COUNT(*) as total FROM (
+                SELECT COALESCE(p.normalized_title, p.asin) as dedup_key
+                FROM products p WHERE {where_sql}
+                GROUP BY COALESCE(p.normalized_title, p.asin)
+            ) sub
+        """
         total_result = db._exec(count_sql, tuple(params), "one")
         total = total_result["total"] if total_result else 0
 
-        # Fetch page
+        # Fetch page with dedup: pick best product per normalized_title
         offset = (page - 1) * per_page
         query_sql = f"""
             SELECT p.asin, p.name, p.category, p.brand, p.marketplace,
@@ -667,13 +673,19 @@ def create_app() -> FastAPI:
                    p.opportunity_score, p.opportunity_confidence, p.data_quality_score,
                    p.score_breakdown, p.traffic_light, p.image_url, p.product_url,
                    p.normalized_title, p.source_count, p.observation_count,
-                   p.last_observed_at, p.scoring_version, p.created_at, p.updated_at
+                   p.last_observed_at, p.scoring_version, p.created_at, p.updated_at,
+                   p.estimated_margin_pct, p.estimated_supplier_cost, p.supplier_price
             FROM products p
-            WHERE {where_sql}
+            INNER JOIN (
+                SELECT MIN(id) as best_id
+                FROM products p2
+                WHERE {where_sql}
+                GROUP BY COALESCE(p2.normalized_title, p2.asin)
+            ) dedup ON p.id = dedup.best_id
             ORDER BY {order_sql}
             LIMIT %s OFFSET %s
         """
-        products = db._exec(query_sql, tuple(params + [per_page, offset]), "all") or []
+        products = db._exec(query_sql, tuple(params + params + [per_page, offset]), "all") or []
 
         # Enrich products with intelligence data
         enriched = []
