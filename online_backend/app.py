@@ -843,7 +843,7 @@ def create_app() -> FastAPI:
     @app.post("/api/research/amazon-search")
     async def amazon_search(request: Request, user: dict = Depends(get_current_user)):
         """Search Amazon.co.uk via web scraper and auto-import results."""
-        from online_backend.services.keepa_service import search_products as amazon_scrape
+        from online_backend.services.keepa_service import search_products as amazon_scrape, search_products_google
         from online_backend.services.scoring_engine import OpportunityScoringEngine
 
         body = await request.json()
@@ -864,10 +864,16 @@ def create_app() -> FastAPI:
         }
         amazon_sort = amazon_sort_map.get(sort, "")
 
+        # Try Amazon first, fallback to Google Shopping
+        results = None
         try:
             results = amazon_scrape(query, page=page, sort=amazon_sort)
         except ValueError as e:
-            raise HTTPException(400, str(e))
+            logger.warning(f"Amazon blocked, trying Google Shopping fallback: {e}")
+            try:
+                results = search_products_google(query, page=page)
+            except ValueError as e2:
+                raise HTTPException(400, f"Both Amazon and Google Shopping failed: {str(e2)}")
 
         # Score and import each product
         scored_products = []
