@@ -1,189 +1,213 @@
-"""Keepa API integration for Amazon product search.
+"""Amazon UK Product Scraper - Direct web scraping (no API key needed).
 
-Uses Keepa's search endpoint to discover real Amazon products.
-Requires KEEPA_API_KEY environment variable.
+Scrapes Amazon.co.uk search results for real product data.
+Uses rotating user agents and request delays to avoid blocks.
 """
-import os
 import logging
+import re
 import time
+import random
 import requests
+from bs4 import BeautifulSoup
+from urllib.parse import quote_plus
 
 logger = logging.getLogger(__name__)
 
-KEEPA_API_KEY = os.environ.get("KEEPA_API_KEY", "")
-KEEPA_BASE = "https://api.keepa.com"
-DOMAIN_UK = 3
-DOMAIN_US = 1
-DOMAIN_DE = 3
+HEADERS_POOL = [
+    {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+    },
+    {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    },
+    {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    },
+]
 
-# Keepa price history tokens: -1=unavailable, 0=removed
-PRICE_UNAVAILABLE = -1
 
+def search_products(query: str, page: int = 1, sort: str = "review-count-rank") -> dict:
+    """Search Amazon.co.uk and scrape product results.
 
-def search_products(query: str, domain: int = DOMAIN_UK, category: str = "",
-                    page: int = 1, sort: str = "REVIEW_COUNT") -> dict:
-    """Search Amazon via Keepa API.
-
-    Returns dict with:
-        - products: list of product dicts
-        - total_results: estimated total
-        - page: current page
+    Sort options:
+        - review-count-rank (most reviewed, default)
+        - price-asc-rank (price low to high)
+        - price-desc-rank (price high to low)
+        - exact-aware-popularity-rank (best sellers)
+        - popularity-rank (featured)
     """
-    if not KEEPA_API_KEY:
-        raise ValueError("KEEPA_API_KEY not configured. Sign up at keepa.com (free tier: 1 req/min), get your API key, and add KEEPA_API_KEY to your Render environment variables.")
+    headers = random.choice(HEADERS_POOL).copy()
 
-    params = {
-        "key": KEEPA_API_KEY,
-        "type": "keyword",
-        "query": query,
-        "domain": domain,
-        "page": page,
-        "sort": sort,  # REVIEW_COUNT, PRICE, RATING, SALES_ESTIMATE
-    }
-    if category:
-        params["category"] = category
+    url = f"https://www.amazon.co.uk/s?k={quote_plus(query)}&page={page}"
+    if sort:
+        url += f"&s={sort}"
 
     try:
-        resp = requests.get(f"{KEEPA_BASE}/search", params=params, timeout=30)
-        if resp.status_code == 429:
-            raise ValueError("Keepa rate limit hit. Try again in 60 seconds.")
+        resp = requests.get(url, headers=headers, timeout=20)
+        if resp.status_code == 503:
+            raise ValueError("Amazon blocked the request. Try again in a moment.")
+        if resp.status_code == 404:
+            return {"products": [], "total_results": 0, "page": page}
         resp.raise_for_status()
-        data = resp.json()
     except requests.RequestException as e:
-        logger.error(f"Keepa API error: {e}")
-        raise ValueError(f"Keepa API request failed: {str(e)}")
+        logger.error(f"Amazon scrape error: {e}")
+        raise ValueError(f"Failed to fetch from Amazon: {str(e)}")
 
-    products = []
-    for item in data.get("products", []):
-        # Parse current price (keepa stores prices in cents, x100)
-        price_history = item.get("csv", [])
-        current_price = _get_current_price(price_history)
-        rating = item.get("rating") or 0
-        review_count = item.get("reviewCount") or 0
-        monthly_sales = item.get("monthlySold") or 0
+    soup = BeautifulSoup(resp.text, "html.parser")
+    products = _parse_search_results(soup)
 
-        # Estimate margin (rough: assume 25% Amazon fee + £3 FBA)
-        if current_price > 0:
-            amazon_fee = current_price * 0.25
-            fba_fee = 3 + current_price * 0.05
-            estimated_cost = current_price * 0.20  # rough estimate
-            margin = (current_price - estimated_cost - amazon_fee - fba_fee) / current_price * 100
-        else:
-            margin = 0
-
-        image_url = item.get("img") or ""
-
-        products.append({
-            "asin": item.get("asin", ""),
-            "name": item.get("title", ""),
-            "brand": item.get("brand", ""),
-            "category": _category_name(item.get("category", 0)),
-            "amazon_price": round(current_price, 2) if current_price > 0 else 0,
-            "rating": round(rating / 100, 1) if rating > 0 else 0,
-            "review_count": review_count,
-            "image_url": image_url,
-            "product_url": f"https://www.amazon.co.uk/dp/{item.get('asin', '')}",
-            "marketplace": "UK",
-            "monthly_sales_estimate": monthly_sales,
-            "estimated_margin_pct": round(margin, 1),
-            "estimated_supplier_cost": round(current_price * 0.20, 2) if current_price > 0 else 0,
-        })
+    # Estimate total results from header
+    total = 0
+    results_header = soup.select_one('[data-component-type="s-result-info-bar"] .a-section')
+    if results_header:
+        text = results_header.get_text()
+        match = re.search(r"([\d,]+)\s+results?", text)
+        if match:
+            total = int(match.group(1).replace(",", ""))
 
     return {
         "products": products,
-        "total_results": data.get("totalResults", len(products)),
+        "total_results": total or len(products),
         "page": page,
+        "query": query,
     }
 
 
-def get_product_details(asin: str, domain: int = DOMAIN_UK) -> dict:
-    """Get full product details from Keepa by ASIN."""
-    if not KEEPA_API_KEY:
-        raise ValueError("KEEPA_API_KEY not configured. Sign up at keepa.com (free tier: 1 req/min), get your API key, and add KEEPA_API_KEY to your Render environment variables.")
+def _parse_search_results(soup: BeautifulSoup) -> list:
+    """Parse Amazon search results page into structured product data."""
+    products = []
+    items = soup.select('[data-asin]:not([data-asin=""])')
 
-    params = {
-        "key": KEEPA_API_KEY,
-        "domain": domain,
-        "asin": asin,
-        "stats": "1",  # current stats
-        "history": "0",  # no full history
+    for item in items:
+        try:
+            asin = item.get("data-asin", "").strip()
+            if not asin or len(asin) < 5:
+                continue
+
+            # Title
+            title_el = item.select_one("h2 a span, h2 span")
+            name = title_el.get_text(strip=True) if title_el else ""
+            if not name:
+                continue
+
+            # URL
+            link_el = item.select_one("h2 a")
+            product_url = ""
+            if link_el and link_el.get("href"):
+                href = link_el["href"]
+                if href.startswith("/"):
+                    product_url = f"https://www.amazon.co.uk{href}"
+                else:
+                    product_url = href
+
+            # Price
+            price = 0.0
+            price_whole = item.select_one(".a-price-whole")
+            price_fraction = item.select_one(".a-price-fraction")
+            if price_whole:
+                price_text = price_whole.get_text(strip=True).replace(",", "").replace(".", "")
+                fraction_text = price_fraction.get_text(strip=True) if price_fraction else "00"
+                try:
+                    price = float(f"{price_text}.{fraction_text}")
+                except (ValueError, TypeError):
+                    pass
+
+            # Rating
+            rating = 0.0
+            rating_el = item.select_one('[aria-label*="out of"]')
+            if rating_el:
+                rating_match = re.search(r"([\d.]+)\s+out of", rating_el.get("aria-label", ""))
+                if rating_match:
+                    rating = float(rating_match.group(1))
+
+            # Review count
+            reviews = 0
+            review_el = item.select_one('[aria-label*="stars"] + span, .a-size-base.s-underline-text')
+            if review_el:
+                rev_text = review_el.get_text(strip=True).replace(",", "").replace(".", "")
+                rev_match = re.search(r"([\d]+)", rev_text)
+                if rev_match:
+                    reviews = int(rev_match.group(1))
+
+            # Image
+            img_el = item.select_one("img.s-image")
+            image_url = img_el.get("src", "") if img_el else ""
+
+            # Brand
+            brand = ""
+            brand_el = item.select_one(".a-size-base-plus.a-color-base, .a-row.a-size-base > span")
+            if brand_el:
+                brand = brand_el.get_text(strip=True)
+
+            # Amazon's Choice / Best Seller badges
+            is_amazons_choice = bool(item.select_one('[aria-label*="Amazon\'s Choice"], .a-badge-text'))
+            is_best_seller = bool(item.select_one('[aria-label*="Best Seller"], .a-badge-text'))
+
+            # Category (from breadcrumb or result type)
+            category = _guess_category(name, brand)
+
+            # Margin estimate
+            if price > 0:
+                amazon_fee = price * 0.25
+                fba_fee = 3 + price * 0.05
+                estimated_cost = price * 0.20
+                margin = (price - estimated_cost - amazon_fee - fba_fee) / price * 100
+            else:
+                margin = 0
+
+            products.append({
+                "asin": asin,
+                "name": name,
+                "brand": brand,
+                "category": category,
+                "amazon_price": round(price, 2),
+                "rating": rating,
+                "review_count": reviews,
+                "image_url": image_url,
+                "product_url": product_url,
+                "marketplace": "UK",
+                "is_amazons_choice": is_amazons_choice,
+                "is_best_seller": is_best_seller,
+                "estimated_margin_pct": round(margin, 1),
+                "estimated_supplier_cost": round(price * 0.20, 2) if price > 0 else 0,
+            })
+        except Exception as e:
+            logger.debug(f"Failed to parse item: {e}")
+            continue
+
+    return products
+
+
+def _guess_category(name: str, brand: str) -> str:
+    """Guess product category from name keywords."""
+    name_lower = name.lower()
+    keywords = {
+        "Electronics": ["bluetooth", "wireless", "headphone", "earbuds", "speaker", "charger", "cable", "usb", "led", "smart", "wifi", "camera", "drone", "keyboard", "mouse", "monitor", "laptop", "tablet", "phone"],
+        "Kitchen": ["kettle", "toaster", "blender", "coffee", "mug", "pan", "pot", "knife", "cutting", "baking", "air fryer", "food", "cooking", "dish"],
+        "Home & Garden": ["lamp", "light", "curtain", "rug", "pillow", "plant", "garden", "outdoor", "door", "window", "bed", "bath", "towel"],
+        "Sports & Outdoors": ["yoga", "gym", "fitness", "running", "cycling", "camping", "hiking", "football", "basketball", "swimming", "sport"],
+        "Beauty": ["makeup", "skincare", "cream", "serum", "shampoo", "brush", "beauty", "cosmetic", "face", "hair"],
+        "Toys & Games": ["toy", "game", "puzzle", "lego", "doll", "action figure", "board game", "kids", "children"],
+        "Pet Supplies": ["dog", "cat", "pet", "bird", "fish", "hamster", "pet food", "collar", "leash"],
+        "Baby Products": ["baby", "infant", "stroller", "cot", "nappy", "bottle", "pacifier"],
+        "Fashion": ["shirt", "dress", "jacket", "shoes", "socks", "hat", "bag", "watch", "jewellery", "ring", "necklace"],
+        "Automotive": ["car", "motorcycle", "tyre", "tool", "dashboard", "seat cover", "windscreen"],
+        "Health": ["vitamin", "supplement", "health", "medical", "first aid", "thermometer", "scale", "massager"],
     }
-
-    try:
-        resp = requests.get(f"{KEEPA_BASE}/product", params=params, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
-    except requests.RequestException as e:
-        raise ValueError(f"Keepa API request failed: {str(e)}")
-
-    products = data.get("products", [])
-    if not products:
-        raise ValueError(f"Product {asin} not found on Keepa")
-
-    item = products[0]
-    price_history = item.get("csv", [])
-    current_price = _get_current_price(price_history)
-    rating = item.get("rating") or 0
-    review_count = item.get("reviewCount") or 0
-
-    if current_price > 0:
-        amazon_fee = current_price * 0.25
-        fba_fee = 3 + current_price * 0.05
-        estimated_cost = current_price * 0.20
-        margin = (current_price - estimated_cost - amazon_fee - fba_fee) / current_price * 100
-    else:
-        margin = 0
-
-    return {
-        "asin": item.get("asin", ""),
-        "name": item.get("title", ""),
-        "brand": item.get("brand", ""),
-        "category": _category_name(item.get("category", 0)),
-        "amazon_price": round(current_price, 2) if current_price > 0 else 0,
-        "rating": round(rating / 100, 1) if rating > 0 else 0,
-        "review_count": review_count,
-        "image_url": item.get("img", ""),
-        "product_url": f"https://www.amazon.co.uk/dp/{item.get('asin', '')}",
-        "marketplace": "UK",
-        "estimated_margin_pct": round(margin, 1),
-        "estimated_supplier_cost": round(current_price * 0.20, 2) if current_price > 0 else 0,
-    }
-
-
-def _get_current_price(price_history: list) -> float:
-    """Extract current price from Keepa CSV price history."""
-    if not price_history:
-        return 0.0
-    # Keepa CSV: prices are in cents * 100, -1 = unavailable
-    for entry in reversed(price_history):
-        if entry > 0:
-            return entry / 100.0
-    return 0.0
-
-
-# Keepa category ID to name mapping (common UK categories)
-_KEEPA_CATEGORIES = {
-    1: "Books", 2: "DVD", 3: "Music", 4: "Tools & DIY",
-    5: "Toys & Games", 6: "Electronics", 7: "Video Games",
-    8: "Software", 9: "Sports & Outdoors", 10: "Health & Beauty",
-    11: "Garden & Outdoors", 12: "Grocery", 13: "Industrial & Scientific",
-    14: "Jewellery", 15: "Kitchen", 16: "Lamps & Lighting",
-    17: "Luggage & Bags", 18: "Mobile Phones & Accessories",
-    19: "Fashion", 20: "Pet Supplies", 21: "Shoes",
-    22: "Stationery & Office Supplies", 23: "Toys & Games",
-    24: "Baby Products", 25: "Apparel", 26: "Automotive",
-    27: "Baby", 28: "Home & Kitchen", 29: "Sports & Outdoors",
-    30: "Baby", 31: "Beauty", 32: "Wireless",
-    33: "Computers & Accessories", 34: "Home & Kitchen",
-    35: "Patio, Lawn & Garden", 36: "Arts, Crafts & Sewing",
-    37: "Automotive", 38: "Industrial & Scientific",
-    39: "Office Products", 40: "Patio, Lawn & Garden",
-    41: "Pet Supplies", 42: "Sports & Outdoors",
-    43: "Tools & Home Improvement", 44: "Toys & Games",
-    45: "Video Games", 46: "Baby Products",
-}
-
-
-def _category_name(cat_id: int) -> str:
-    """Convert Keepa category ID to name."""
-    return _KEEPA_CATEGORIES.get(cat_id, "General")
+    for cat, words in keywords.items():
+        if any(w in name_lower for w in words):
+            return cat
+    return "General"

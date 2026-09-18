@@ -3375,7 +3375,7 @@ async function searchAmazon() {
     if (resultsEl) resultsEl.innerHTML = renderResearchSkeletons(8);
     const statusEl = $('research-showing');
     if (statusEl) statusEl.textContent = 'Searching Amazon...';
-    toast('Searching Amazon via Keepa...', 'info');
+    toast('Searching Amazon...', 'info');
     try {
         const data = await fetch('/api/research/amazon-search', {
             method: 'POST',

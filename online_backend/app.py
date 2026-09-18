@@ -804,8 +804,8 @@ def create_app() -> FastAPI:
 
     @app.post("/api/research/amazon-search")
     async def amazon_search(request: Request, user: dict = Depends(get_current_user)):
-        """Search Amazon via Keepa API and auto-import results."""
-        from online_backend.services.keepa_service import search_products as keepa_search
+        """Search Amazon.co.uk via web scraper and auto-import results."""
+        from online_backend.services.keepa_service import search_products as amazon_scrape
         from online_backend.services.scoring_engine import OpportunityScoringEngine
 
         body = await request.json()
@@ -815,7 +815,7 @@ def create_app() -> FastAPI:
             raise HTTPException(400, "Search query required")
 
         try:
-            results = keepa_search(query, page=page)
+            results = amazon_scrape(query, page=page)
         except ValueError as e:
             raise HTTPException(400, str(e))
 
