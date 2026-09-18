@@ -3402,11 +3402,11 @@ async function searchAmazon(defaultQuery) {
     if (statusEl) statusEl.textContent = 'Searching Amazon...';
     toast('Searching Amazon...', 'info');
     try {
-        const data = await fetch('/api/research/amazon-search', {
+        const data = await api('/api/research/amazon-search', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('ml_token') || '') },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query, page: currentPage, sort: $('f-sort-display')?.value || '' })
-        }).then(r => r.json());
+        });
         if (data.detail) { toast('Search failed: ' + data.detail, 'error'); if (resultsEl) resultsEl.innerHTML = renderResearchError(data.detail); return; }
         researchLoading = false;
         const perPage = 10;
