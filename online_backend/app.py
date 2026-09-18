@@ -641,6 +641,7 @@ def create_app() -> FastAPI:
             params.append(min_opportunity)
 
         where_sql = " AND ".join(where_clauses)
+        where_sql_p2 = where_sql.replace("p.", "p2.")
 
         sort_map = {
             "opportunity": "p.opportunity_score DESC NULLS LAST",
@@ -657,9 +658,9 @@ def create_app() -> FastAPI:
         # Count total unique products (deduped by normalized_title)
         count_sql = f"""
             SELECT COUNT(*) as total FROM (
-                SELECT COALESCE(p.normalized_title, p.asin) as dedup_key
-                FROM products p WHERE {where_sql}
-                GROUP BY COALESCE(p.normalized_title, p.asin)
+                SELECT COALESCE(p2.normalized_title, p2.asin) as dedup_key
+                FROM products p2 WHERE {where_sql_p2}
+                GROUP BY COALESCE(p2.normalized_title, p2.asin)
             ) sub
         """
         total_result = db._exec(count_sql, tuple(params), "one")
@@ -679,7 +680,7 @@ def create_app() -> FastAPI:
             INNER JOIN (
                 SELECT MIN(id) as best_id
                 FROM products p2
-                WHERE {where_sql}
+                WHERE {where_sql_p2}
                 GROUP BY COALESCE(p2.normalized_title, p2.asin)
             ) dedup ON p.id = dedup.best_id
             ORDER BY {order_sql}
