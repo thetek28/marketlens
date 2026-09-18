@@ -373,6 +373,44 @@ def create_app() -> FastAPI:
         db.delete_supplier(supplier_id)
         return {"message": "Supplier deleted"}
 
+    @app.post("/api/suppliers/search")
+    async def search_suppliers(request: Request, user: dict = Depends(get_current_user)):
+        """Search Alibaba.com for suppliers matching a product query."""
+        from online_backend.services.alibaba_service import search_suppliers as alibaba_search
+        body = await request.json()
+        query = body.get("query", "").strip()
+        page = body.get("page", 1)
+        if not query:
+            raise HTTPException(400, "Search query required")
+        try:
+            results = alibaba_search(query, page=page)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        return results
+
+    @app.post("/api/suppliers/import-alibaba")
+    async def import_alibaba_supplier(request: Request, user: dict = Depends(get_current_user)):
+        """Import an Alibaba supplier into the local database."""
+        body = await request.json()
+        supplier_data = {
+            "name": body.get("name", ""),
+            "company_name": body.get("name", ""),
+            "business_type": body.get("business_type", "Manufacturer"),
+            "location": body.get("location", ""),
+            "country": body.get("location", ""),
+            "website": body.get("url", ""),
+            "contact_email": body.get("contact_email", ""),
+            "contact_phone": body.get("contact_phone", ""),
+            "moq": body.get("moq", ""),
+            "lead_time_days": "",
+            "payment_terms": "",
+            "certifications": "Gold Supplier" if body.get("is_gold_supplier") else "",
+            "rating": body.get("rating", 0),
+            "notes": body.get("notes", ""),
+        }
+        sid = db.add_supplier(supplier_data)
+        return {"id": sid, "message": "Supplier imported"}
+
     # ════════════════════════════════════════════════════════
     # USER SETTINGS
     # ════════════════════════════════════════════════════════
