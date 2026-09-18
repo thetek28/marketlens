@@ -694,6 +694,9 @@ def create_app() -> FastAPI:
         enriched = []
         for p in products:
             product_dict = dict(p) if not isinstance(p, dict) else p
+            # Map supplier_price to estimated_supplier_cost for frontend compatibility
+            if "supplier_price" in product_dict and "estimated_supplier_cost" not in product_dict:
+                product_dict["estimated_supplier_cost"] = product_dict["supplier_price"]
             # Parse score_breakdown if it's a string
             if isinstance(product_dict.get("score_breakdown"), str):
                 try:
