@@ -1995,7 +1995,7 @@
             <div id="timer" class="text-xs text-gray-400 font-mono hidden" title="Elapsed time">00:00:00</div>
             <div id="ws-dot" class="w-2 h-2 rounded-full bg-red-500" title="WebSocket status"></div>
             <div id="status-pill" class="hidden px-2.5 py-1 rounded-full text-[10px] font-medium bg-green-500/20 text-green-400 border border-green-500/30"><span id="status-msg">Running</span></div>
-            <button onclick="startAnalysis()" id="btn-start" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-accent text-white hover:bg-accent-dark transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Starting...</button>
+            <button onclick="startAnalysis()" id="btn-start" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-accent text-white hover:bg-accent-dark transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Run Analysis</button>
             <button onclick="stopAnalysis()" id="btn-stop" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-danger text-white hover:bg-red-600 transition hidden flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg> STOP</button>
             <div class="w-px h-5 bg-dark-600"></div>
             <button onclick="showExportDialog()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-dark-700 text-gray-300 hover:bg-dark-600 hover:text-white transition flex items-center gap-1.5 border border-dark-600"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export</button>
@@ -2825,6 +2825,20 @@ async function stopAnalysis() {
     await api('/api/analysis/stop', {method:'POST'});
     $('btn-start').classList.remove('hidden'); $('btn-stop').classList.add('hidden');
     stopTimer(); toast('Analysis stopped', 'info');
+}
+async function syncAnalysisButton() {
+    try {
+        const s = await api('/api/analysis/status');
+        if (s && s.running) {
+            $('btn-start').classList.add('hidden'); $('btn-stop').classList.remove('hidden');
+            $('status-pill').classList.remove('hidden'); $('status-msg').textContent = 'Running';
+            startTimer();
+        } else {
+            $('btn-start').classList.remove('hidden'); $('btn-stop').classList.add('hidden');
+            $('status-pill').classList.add('hidden');
+            stopTimer();
+        }
+    } catch(e) {}
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -9860,6 +9874,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateSubBadge();
     checkNotifications();
     connectWS();
+    syncAnalysisButton();
     showTab('research', document.querySelector('.nav-btn'));
     setInterval(checkNotifications, 60000);
 });
