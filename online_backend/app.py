@@ -668,7 +668,7 @@ def create_app() -> FastAPI:
                    p.score_breakdown, p.traffic_light, p.image_url, p.product_url,
                    p.normalized_title, p.source_count, p.observation_count,
                    p.last_observed_at, p.scoring_version, p.created_at, p.updated_at,
-                   p.estimated_margin_pct, p.estimated_supplier_cost, p.supplier_price
+                   p.estimated_margin_pct, p.supplier_price
             FROM products p
             WHERE {where_sql}
             ORDER BY {order_sql}
@@ -748,18 +748,18 @@ def create_app() -> FastAPI:
             overall = db._exec("""
                 SELECT 
                     COUNT(*) as total,
-                    ROUND(COALESCE(AVG(opportunity_score),0),1) as avg_opportunity,
-                    ROUND(COALESCE(AVG(data_quality_score),0),1) as avg_quality,
-                    ROUND(COALESCE(AVG(amazon_price),0),2) as avg_price,
-                    ROUND(COALESCE(AVG(rating),0),1) as avg_rating
+                    ROUND(COALESCE(AVG(opportunity_score),0)::numeric,1) as avg_opportunity,
+                    ROUND(COALESCE(AVG(data_quality_score),0)::numeric,1) as avg_quality,
+                    ROUND(COALESCE(AVG(amazon_price),0)::numeric,2) as avg_price,
+                    ROUND(COALESCE(AVG(rating),0)::numeric,1) as avg_rating
                 FROM products WHERE opportunity_score > 0
             """, fetch="one") or {}
 
             # Top categories by opportunity
             categories = db._exec("""
                 SELECT category, COUNT(*) as count,
-                       ROUND(COALESCE(AVG(opportunity_score),0),1) as avg_opportunity,
-                       ROUND(COALESCE(AVG(amazon_price),0),2) as avg_price
+                       ROUND(COALESCE(AVG(opportunity_score),0)::numeric,1) as avg_opportunity,
+                       ROUND(COALESCE(AVG(amazon_price),0)::numeric,2) as avg_price
                 FROM products WHERE category != '' AND opportunity_score > 0
                 GROUP BY category
                 ORDER BY avg_opportunity DESC
