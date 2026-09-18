@@ -3389,7 +3389,8 @@ function switchSource(src) {
         dbBtn.className = 'flex-1 py-1.5 text-[10px] font-bold bg-dark-700 text-gray-400 hover:text-white transition';
         if (searchInput) searchInput.placeholder = 'Search Amazon for any product...';
         if (searchInputM) searchInputM.placeholder = 'Search Amazon for products...';
-        searchAmazon();
+        const q = (searchInput?.value || '').trim();
+        searchAmazon(q || 'wireless earbuds');
     }
 }
 

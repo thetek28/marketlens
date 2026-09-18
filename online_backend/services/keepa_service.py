@@ -166,123 +166,156 @@ def search_products_google(query: str, page: int = 1) -> dict:
     """Fallback: Search Google Shopping for Amazon UK products.
 
     Used when Amazon blocks direct scraping.
+    Includes retry logic with jitter for reliability.
     """
-    headers = random.choice(HEADERS_POOL).copy()
-    headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    import hashlib
+    last_error = None
 
-    url = f"https://www.google.co.uk/search?q=site:amazon.co.uk+{quote_plus(query)}&tbm=shop&hl=en&gl=uk"
-
-    try:
-        resp = requests.get(url, headers=headers, timeout=20)
-        resp.raise_for_status()
-    except requests.RequestException as e:
-        raise ValueError(f"Google Shopping fallback failed: {str(e)}")
-
-    soup = BeautifulSoup(resp.text, "html.parser")
-    products = []
-
-    # Google Shopping results are in various div structures
-    items = soup.select('[data-docid], .sh-dgr__content, .sh-dlr__list-result')
-
-    for item in items:
+    for attempt in range(3):
         try:
-            # Title
-            title_el = item.select_one('h3, [role="heading"], .tAxDx')
-            name = title_el.get_text(strip=True) if title_el else ""
-            if not name:
+            if attempt > 0:
+                time.sleep(1.0 + random.random() * 2.0)
+
+            headers = random.choice(HEADERS_POOL).copy()
+            headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            headers["Sec-Fetch-Dest"] = "document"
+            headers["Sec-Fetch-Mode"] = "navigate"
+            headers["Sec-Fetch-Site"] = "none"
+
+            url = f"https://www.google.co.uk/search?q=site:amazon.co.uk+{quote_plus(query)}&tbm=shop&hl=en&gl=uk"
+            resp = requests.get(url, headers=headers, timeout=15)
+
+            if resp.status_code == 429:
+                last_error = "Google rate limited"
+                continue
+            if resp.status_code == 503:
+                last_error = "Google blocked"
+                continue
+            resp.raise_for_status()
+
+            if "captcha" in resp.text.lower() or "unusual traffic" in resp.text.lower():
+                last_error = "Google CAPTCHA"
                 continue
 
-            # URL - find Amazon link
-            link = ""
-            for a in item.select("a"):
-                href = a.get("href", "")
-                if "amazon.co.uk" in href or "amazon.com" in href:
-                    link = href
-                    break
+            soup = BeautifulSoup(resp.text, "html.parser")
+            products = []
 
-            # Extract ASIN from URL
-            asin = ""
-            asin_match = re.search(r"/dp/([A-Z0-9]{10})", link)
-            if asin_match:
-                asin = asin_match.group(1)
-            if not asin:
-                # Generate a fake ASIN from the title hash
-                import hashlib
-                asin = hashlib.md5(name.encode()).hexdigest()[:10].upper()
+            items = soup.select('[data-docid], .sh-dgr__content, .sh-dlr__list-result, .sh-dgr__gr-auto')
 
-            # Price
-            price = 0.0
-            price_el = item.select_one('.a-price .a-offscreen, [data-a-color="price"] .a-offscreen, .kHxwFf, .T14wmb')
-            if price_el:
-                price_text = price_el.get_text(strip=True)
-                cleaned = re.sub(r"[£$€\s]", "", price_text).replace(",", "")
+            for item in items:
                 try:
-                    price = float(cleaned)
-                except ValueError:
-                    pass
+                    title_el = item.select_one('h3, [role="heading"], .tAxDx, .Xjkr3b')
+                    name = title_el.get_text(strip=True) if title_el else ""
+                    if not name:
+                        continue
 
-            if price <= 0:
-                # Try regex on full text
-                card_text = item.get_text()
-                price_match = re.search(r"£(\d+(?:\.\d{2})?)", card_text)
-                if price_match:
-                    try:
-                        price = float(price_match.group(1))
-                    except ValueError:
-                        pass
+                    link = ""
+                    for a in item.select("a"):
+                        href = a.get("href", "")
+                        if "amazon.co.uk" in href or "amazon.com" in href:
+                            link = href
+                            break
 
-            if price <= 0:
+                    asin = ""
+                    asin_match = re.search(r"/dp/([A-Z0-9]{10})", link)
+                    if asin_match:
+                        asin = asin_match.group(1)
+                    if not asin:
+                        asin = hashlib.md5(name.encode()).hexdigest()[:10].upper()
+
+                    price = 0.0
+                    price_el = item.select_one('[data-sh-or], .aRL3wb, .T14wmb, .kHxwFf, [aria-label*="£"]')
+                    if price_el:
+                        price_text = price_el.get_text(strip=True)
+                        cleaned = re.sub(r"[£$€\s]", "", price_text).replace(",", "")
+                        try:
+                            price = float(cleaned)
+                        except ValueError:
+                            pass
+
+                    if price <= 0:
+                        price_el2 = item.select_one('[data-sh-or] span, .a-offscreen, span[aria-hidden="true"]')
+                        if price_el2:
+                            price_text = price_el2.get_text(strip=True)
+                            cleaned = re.sub(r"[£$€\s]", "", price_text).replace(",", "")
+                            try:
+                                price = float(cleaned)
+                            except ValueError:
+                                pass
+
+                    if price <= 0:
+                        card_text = item.get_text()
+                        price_match = re.search(r"£(\d+(?:\.\d{1,2})?)", card_text)
+                        if price_match:
+                            try:
+                                price = float(price_match.group(1))
+                            except ValueError:
+                                pass
+
+                    if price <= 0:
+                        continue
+
+                    img_el = item.select_one("img")
+                    image_url = ""
+                    if img_el:
+                        image_url = img_el.get("src", "") or img_el.get("data-src", "")
+                        if image_url and not image_url.startswith("http"):
+                            image_url = ""
+
+                    category = _guess_category(name, "")
+
+                    referral_fee = price * 0.15
+                    if price < 10:
+                        fba_fee = 2.50
+                    elif price < 25:
+                        fba_fee = 3.50
+                    elif price < 50:
+                        fba_fee = 4.50
+                    else:
+                        fba_fee = 5.50
+                    supplier_cost = price * 0.20
+                    total_cost = supplier_cost + referral_fee + fba_fee
+                    margin = ((price - total_cost) / price) * 100
+
+                    products.append({
+                        "asin": asin,
+                        "name": name,
+                        "brand": "",
+                        "category": category,
+                        "amazon_price": round(price, 2),
+                        "rating": 0,
+                        "review_count": 0,
+                        "image_url": image_url,
+                        "product_url": link,
+                        "marketplace": "UK",
+                        "is_amazons_choice": False,
+                        "is_best_seller": False,
+                        "is_sponsored": False,
+                        "availability": "",
+                        "estimated_margin_pct": round(max(0, margin), 1),
+                        "estimated_supplier_cost": round(supplier_cost, 2),
+                    })
+                except Exception as e:
+                    logger.debug(f"Failed to parse Google Shopping item: {e}")
+                    continue
+
+            if products:
+                return {
+                    "products": products,
+                    "total_results": len(products),
+                    "page": page,
+                    "query": query,
+                }
+            else:
+                last_error = "No products parsed from Google Shopping"
                 continue
 
-            # Image
-            img_el = item.select_one("img")
-            image_url = img_el.get("src", "") if img_el else ""
-
-            # Category guess
-            category = _guess_category(name, "")
-
-            # Margin estimate
-            referral_fee = price * 0.15
-            if price < 10:
-                fba_fee = 2.50
-            elif price < 25:
-                fba_fee = 3.50
-            elif price < 50:
-                fba_fee = 4.50
-            else:
-                fba_fee = 5.50
-            supplier_cost = price * 0.20
-            total_cost = supplier_cost + referral_fee + fba_fee
-            margin = ((price - total_cost) / price) * 100
-
-            products.append({
-                "asin": asin,
-                "name": name,
-                "brand": "",
-                "category": category,
-                "amazon_price": round(price, 2),
-                "rating": 0,
-                "review_count": 0,
-                "image_url": image_url,
-                "product_url": link,
-                "marketplace": "UK",
-                "is_amazons_choice": False,
-                "is_best_seller": False,
-                "is_sponsored": False,
-                "availability": "",
-                "estimated_margin_pct": round(max(0, margin), 1),
-                "estimated_supplier_cost": round(supplier_cost, 2),
-            })
-        except Exception as e:
-            logger.debug(f"Failed to parse Google Shopping item: {e}")
+        except requests.RequestException as e:
+            last_error = str(e)
+            logger.error(f"Google Shopping attempt {attempt+1} failed: {e}")
             continue
 
-    return {
-        "products": products,
-        "total_results": len(products),
-        "page": page,
-        "query": query,
-    }
+    raise ValueError(f"Google Shopping failed after 3 attempts: {last_error}")
 
 
 def _extract_total_results(soup: BeautifulSoup) -> int:

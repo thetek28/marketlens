@@ -40,8 +40,9 @@ HEADERS_POOL = [
 
 
 def search_suppliers(query: str, page: int = 1) -> dict:
-    """Search Alibaba.com for suppliers matching a query.
+    """Search for suppliers matching a query.
 
+    Tries Alibaba.com first, falls back to Google Shopping for wholesale suppliers.
     Returns dict with:
         - suppliers: list of supplier/product dicts
         - total_results: estimated total
@@ -49,40 +50,128 @@ def search_suppliers(query: str, page: int = 1) -> dict:
     """
     headers = random.choice(HEADERS_POOL).copy()
 
-    # Try the main search URL
     url = f"https://www.alibaba.com/trade/search?SearchText={quote_plus(query)}&page={page}"
 
     try:
-        resp = requests.get(url, headers=headers, timeout=25, allow_redirects=True)
-        if resp.status_code == 503:
-            raise ValueError("Alibaba blocked the request. Try again in a moment.")
-        if resp.status_code == 404:
+        resp = requests.get(url, headers=headers, timeout=20, allow_redirects=True)
+        if resp.status_code in (429, 503):
+            raise ValueError("Alibaba blocked")
+        resp.raise_for_status()
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        if "captcha" in resp.text.lower() or "robot" in resp.text.lower():
+            raise ValueError("Alibaba CAPTCHA")
+
+        suppliers = _parse_search_results(soup, resp.text)
+        if suppliers:
+            total = 0
+            total_el = soup.select_one(".total-count, .search-results-count, [class*='result'] [class*='count']")
+            if total_el:
+                match = re.search(r"([\d,]+)", total_el.get_text())
+                if match:
+                    total = int(match.group(1).replace(",", ""))
+            return {
+                "suppliers": suppliers,
+                "total_results": total or len(suppliers),
+                "page": page,
+                "query": query,
+            }
+    except (requests.RequestException, ValueError) as e:
+        logger.warning(f"Alibaba direct failed: {e}, trying Google fallback")
+
+    return _search_suppliers_google(query, page)
+
+
+def _search_suppliers_google(query: str, page: int = 1) -> dict:
+    """Fallback: Search Google for wholesale/bulk suppliers."""
+    headers = random.choice(HEADERS_POOL).copy()
+    headers["Accept"] = "text/html,application/xhtml+xml"
+
+    supplier_query = f"wholesale {query} supplier bulk"
+    url = f"https://www.google.co.uk/search?q={quote_plus(supplier_query)}&hl=en&gl=uk"
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=15)
+        if resp.status_code == 429:
             return {"suppliers": [], "total_results": 0, "page": page}
         resp.raise_for_status()
     except requests.RequestException as e:
-        logger.error(f"Alibaba scrape error: {e}")
-        raise ValueError(f"Failed to fetch from Alibaba: {str(e)}")
+        logger.error(f"Google supplier search failed: {e}")
+        return {"suppliers": [], "total_results": 0, "page": page}
 
     soup = BeautifulSoup(resp.text, "html.parser")
-    suppliers = _parse_search_results(soup, resp.text)
+    suppliers = []
 
-    # Estimate total
-    total = 0
-    total_el = soup.select_one(".total-count, .search-results-count, [class*='result'] [class*='count']")
-    if total_el:
-        match = re.search(r"([\d,]+)", total_el.get_text())
-        if match:
-            total = int(match.group(1).replace(",", ""))
-    # Try to find total in JSON-LD or script tags
-    if not total:
-        for script in soup.find_all("script", type="application/ld+json"):
-            try:
-                data = json.loads(script.string)
-                if isinstance(data, dict) and "numberOfItems" in data:
-                    total = data["numberOfItems"]
-                    break
-            except:
-                pass
+    for result in soup.select('div[data-sokoban-container], div.g, div[data-hveid]'):
+        try:
+            title_el = result.select_one('h3')
+            name = title_el.get_text(strip=True) if title_el else ""
+            if not name:
+                continue
+
+            link = ""
+            a_el = result.select_one("a")
+            if a_el and a_el.get("href"):
+                link = a_el["href"]
+
+            snippet = ""
+            snippet_el = result.select_one('.VwiC3b, .IsZvec, [data-sncf]')
+            if snippet_el:
+                snippet = snippet_el.get_text(strip=True)
+
+            location = ""
+            is_gold = False
+            has_trade_assurance = False
+            price = ""
+            moq = ""
+
+            lower_name = (name + " " + snippet).lower()
+            if "alibaba" in lower_name:
+                is_gold = True
+            if any(w in lower_name for w in ["wholesale", "bulk", "supplier", "manufacturer", "factory"]):
+                has_trade_assurance = True
+
+            price_match = re.search(r"\$[\d.,]+\s*[-–]\s*\$[\d.,]+", name + " " + snippet)
+            if price_match:
+                price = price_match.group(0)
+
+            moq_match = re.search(r"MOQ[:\s]*([\d,]+)", name + " " + snippet, re.I)
+            if moq_match:
+                moq = moq_match.group(1)
+
+            location_match = re.search(r"(China|India|Vietnam|Taiwan|USA|UK|Germany)", name + " " + snippet, re.I)
+            if location_match:
+                location = location_match.group(1)
+
+            suppliers.append({
+                "name": name[:80],
+                "product_name": query,
+                "url": link,
+                "price_range": price or "Contact for pricing",
+                "moq": moq or "Contact supplier",
+                "location": location or "Various",
+                "years_in_business": "",
+                "is_gold_supplier": is_gold,
+                "has_trade_assurance": has_trade_assurance,
+                "image_url": "",
+                "source": "google",
+                "business_type": "Manufacturer",
+                "rating": 0,
+                "contact_email": "",
+                "contact_phone": "",
+                "notes": f"Found via Google search. {snippet[:120]}",
+            })
+        except Exception as e:
+            logger.debug(f"Failed to parse Google supplier result: {e}")
+            continue
+
+    return {
+        "suppliers": suppliers,
+        "total_results": len(suppliers),
+        "page": page,
+        "query": query,
+    }
 
     return {
         "suppliers": suppliers,
