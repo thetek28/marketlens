@@ -4112,7 +4112,7 @@ async function renderDashboard() {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             <div class="lg:col-span-2 dash-card p-4">
                 <div class="flex items-center justify-between mb-3">
-                    <div><h3 class="text-sm font-semibold text-white">Top 20 Products</h3><p class="text-[10px] text-gray-500">AI-ranked products with the strongest opportunity signals</p></div>
+                    <div><h3 class="text-sm font-semibold text-white">Top 100 Products</h3><p class="text-[10px] text-gray-500">AI-ranked products with the strongest opportunity signals</p></div>
                     <div class="flex items-center gap-1.5">
                         <button onclick="showTab('research',document.querySelector('[onclick*=research]'))" class="text-[10px] px-2.5 py-1 rounded-md bg-dark-700 border border-dark-600 text-gray-400 hover:text-white transition">View All</button>
                         <button onclick="toast('Exporting Excel...','info')" class="text-[10px] px-2.5 py-1 rounded-md bg-dark-700 border border-dark-600 text-gray-400 hover:text-white transition">Excel</button>
@@ -8480,7 +8480,7 @@ function renderHelp() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   TAB: PRODUCTS (Top 20)
+   TAB: PRODUCTS (Top 100)
    ══════════════════════════════════════════════════════════════ */
 async function renderProducts() {
     $('main-content').innerHTML = `<div class="space-y-3">${Array(5).fill('<div class="skeleton rounded-xl h-20"></div>').join('')}</div>`;
@@ -8488,7 +8488,7 @@ async function renderProducts() {
     if (!data?.products) { $('main-content').innerHTML = `<div class="text-center py-20 text-gray-500">No products found</div>`; return; }
     $('main-content').innerHTML = `
         <div class="flex items-center justify-between mb-3">
-            <h2 class="text-lg font-semibold">Top 20 Products</h2>
+            <h2 class="text-lg font-semibold">Top 100 Products</h2>
             <div class="flex gap-2">
                 <button onclick="exportExcel()" class="btn btn-success text-xs">Export Excel</button>
                 <button onclick="exportPDF()" class="btn btn-danger text-xs">Export PDF</button>
@@ -9515,7 +9515,7 @@ async function renderPortfolio() {
     $('main-content').innerHTML = `
         <h2 class="text-lg font-semibold mb-3">5-Year Portfolio Strategy</h2>
         <div class="grid grid-cols-5 gap-2 mb-4">
-            <div class="bg-dark-800 rounded-xl p-3 border border-dark-600 text-center"><div class="text-lg font-bold text-white">${s.total}</div><div class="text-[10px] text-gray-400">Top 20</div></div>
+            <div class="bg-dark-800 rounded-xl p-3 border border-dark-600 text-center"><div class="text-lg font-bold text-white">${s.total}</div><div class="text-[10px] text-gray-400">Top 100</div></div>
             <div class="bg-dark-800 rounded-xl p-3 border border-dark-600 text-center"><div class="text-lg font-bold text-green-400">${s.traffic.GREEN}</div><div class="text-[10px] text-gray-400">Evergreen</div></div>
             <div class="bg-dark-800 rounded-xl p-3 border border-dark-600 text-center"><div class="text-lg font-bold text-yellow-400">${s.traffic.YELLOW}</div><div class="text-[10px] text-gray-400">Seasonal</div></div>
             <div class="bg-dark-800 rounded-xl p-3 border border-dark-600 text-center"><div class="text-lg font-bold text-red-400">${s.traffic.RED}</div><div class="text-[10px] text-gray-400">Volatile</div></div>

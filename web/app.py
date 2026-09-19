@@ -339,7 +339,7 @@ def _get_top20():
         tl_bonus = {"GREEN": 0.15, "YELLOW": 0.05, "RED": -0.1}.get(p.get("traffic_light", "RED"), 0)
         return ai * 0.45 + margin * 0.30 + rating * 0.15 + tl_bonus
     products.sort(key=composite_score, reverse=True)
-    return products[:20]
+    return products[:100]
 
 def _find_product(asin: str):
     for p in state.get_ideas_snapshot():

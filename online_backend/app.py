@@ -229,7 +229,9 @@ def create_app() -> FastAPI:
 
     @app.get("/api/products/top20")
     async def get_products_top20(user: dict = Depends(get_current_user)):
-        return {"products": db.get_all_products_from_db()[:20]}
+        all_p = db.get_all_products_from_db()
+        all_p.sort(key=lambda p: p.get("opportunity_score") or p.get("ai_score") or 0, reverse=True)
+        return {"products": all_p[:100]}
 
     @app.get("/api/products")
     async def get_products(page: int = 1, per_page: int = 20, user: dict = Depends(get_current_user)):
