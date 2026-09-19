@@ -2540,7 +2540,7 @@ async function doLogin(e, mode) {
         });
         const data = await r.json();
         if (!r.ok) {
-            errEl.textContent = data.detail || 'Authentication failed';
+            errEl.textContent = typeof data.detail === 'object' ? JSON.stringify(data.detail) : (data.detail || data.message || 'Authentication failed');
             errEl.classList.remove('hidden');
             return;
         }
