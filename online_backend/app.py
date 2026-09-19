@@ -357,6 +357,13 @@ def create_app() -> FastAPI:
         db.clear_reset_token(user["id"])
         return {"message": "Password reset successfully"}
 
+    @app.post("/api/auth/logout")
+    async def logout():
+        from fastapi.responses import JSONResponse
+        resp = JSONResponse(content={"message": "Logged out"})
+        resp.delete_cookie("mjl_token")
+        return resp
+
     # ════════════════════════════════════════════════════════
     # PRODUCTS (shared global + user ownership)
     # ════════════════════════════════════════════════════════
