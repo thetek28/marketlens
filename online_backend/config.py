@@ -10,7 +10,7 @@ class BackendConfig:
     """Cloud backend configuration."""
 
     # App
-    app_name: str = "MarketLens Cloud"
+    app_name: str = "VineArq Cloud"
     version: str = "3.0.0"
     debug: bool = os.environ.get("DEBUG", "false").lower() == "true"
 

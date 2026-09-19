@@ -1,4 +1,4 @@
-"""MarketLens Admin Backend API.
+"""VineArq Admin Backend API.
 
 Provides administrative endpoints for managing users, subscriptions,
 plans, credits, products, suppliers, data sources, jobs, and system health.
@@ -234,7 +234,7 @@ def log_audit(admin_email: str, action: str, target_type: str = "", target_id: s
 # APP
 # ════════════════════════════════════════════════════════════
 
-app = FastAPI(title="MarketLens Admin", version="1.0.0")
+app = FastAPI(title="VineArq Admin", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

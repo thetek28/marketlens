@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MarketLens - AI Amazon Product Research</title>
+    <title>VineArq - AI Amazon Product Research</title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1970,7 +1970,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <img src="/static/favicon.svg" alt="" class="w-6 h-6">
-            <span class="text-sm font-bold text-white">MarketLens</span>
+            <span class="text-sm font-bold text-white">VineArq</span>
         </div>
         <div class="flex items-center gap-2">
             <button onclick="showNotifications()" class="relative p-2 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition" title="Notifications">
@@ -1988,7 +1988,7 @@
         <div class="flex items-center gap-2.5">
             <img src="/static/favicon.svg" alt="" class="w-7 h-7">
             <div class="flex flex-col">
-                <span class="text-sm font-bold text-white leading-tight">MarketLens</span>
+                <span class="text-sm font-bold text-white leading-tight">VineArq</span>
                 <span class="text-[9px] text-gray-500 font-medium leading-tight hidden sm:inline">AI PRODUCT RESEARCH</span>
             </div>
             <div id="sub-badge" class="hidden px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border"></div>
@@ -2018,7 +2018,7 @@
         <div class="flex items-center justify-between px-4 py-3 border-b border-dark-600">
             <div class="flex items-center gap-2">
                 <img src="/static/favicon.svg" alt="" class="w-6 h-6">
-                <span class="text-sm font-bold text-white">MarketLens</span>
+                <span class="text-sm font-bold text-white">VineArq</span>
             </div>
             <button onclick="toggleMobileDrawer()" class="p-2 rounded-lg hover:bg-dark-600 text-gray-400 hover:text-white transition" aria-label="Close menu">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -2144,7 +2144,7 @@
             <span class="text-gray-600">|</span>
             <span>Cycles: 0</span>
         </div>
-        <div>MarketLens v2.0</div>
+        <div>VineArq v2.0</div>
     </footer>
 
     <!-- Toast Container -->
@@ -2163,7 +2163,7 @@
                     <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white text-sm font-bold">L</div>
                     <div>
                         <h2 class="text-sm font-bold text-white">Amazon Listing Generator</h2>
-                        <p class="text-[10px] text-gray-400">Create optimized listings using MarketLens research & AI</p>
+                        <p class="text-[10px] text-gray-400">Create optimized listings using VineArq research & AI</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -2311,9 +2311,9 @@ function showLogin() {
             <div class="login-card">
                 <div class="logo-container">
                     <div class="logo-glow"></div>
-                    <img src="/static/logo.svg" alt="MarketLens" class="w-24 h-24 logo-float drop-shadow-lg" style="filter: drop-shadow(0 0 20px rgba(249,115,22,0.2));">
+                    <img src="/static/logo.svg" alt="VineArq" class="w-24 h-24 logo-float drop-shadow-lg" style="filter: drop-shadow(0 0 20px rgba(249,115,22,0.2));">
                 </div>
-                <h1 class="login-title">MarketLens</h1>
+                <h1 class="login-title">VineArq</h1>
                 <p class="login-subtitle">AI-Powered Amazon Product Research</p>
 
                 <div class="tab-switcher">
@@ -2420,7 +2420,7 @@ function showLogin() {
                     Secure &amp; Private
                 </div>
                 <div class="login-footer">
-                    MarketLens v2.0
+                    VineArq v2.0
                     <span class="text-gray-600">&middot;</span>
                     <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                     Secure authentication
@@ -6538,11 +6538,11 @@ function exportWatchlist(format) {
         let csv = 'ASIN,Name,Category,Brand,Price,Margin,AI Score,Reviews,Rating,Traffic Light,Demand,Competition\n';
         products.forEach(p => { csv += `"${p.asin}","${(p.name||'').replace(/"/g,'""')}","${p.category||''}","${p.brand||''}",${p.amazon_price||0},${(p.estimated_margin_pct||0).toFixed(1)},${(p.ai_score||0).toFixed(2)},${p.review_count||0},${(p.rating||0).toFixed(1)},${p.traffic_light||'RED'},${p.demand_level||''},${p.competition_level||''}\n`; });
         const blob = new Blob([csv], {type:'text/csv'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `marketlens-watchlist-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `vinearq-watchlist-${new Date().toISOString().slice(0,10)}.csv`; a.click();
         toast('Watchlist exported as CSV', 'success');
     } else {
         const blob = new Blob([JSON.stringify(products, null, 2)], {type:'application/json'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `marketlens-watchlist-${new Date().toISOString().slice(0,10)}.json`; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `vinearq-watchlist-${new Date().toISOString().slice(0,10)}.json`; a.click();
         toast('Watchlist exported as JSON', 'success');
     }
 }
@@ -8130,7 +8130,7 @@ function renderSettingsAppearance() {
     return `
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-white">Appearance</h1>
-        <p class="text-sm text-gray-400 mt-1">Customize the look and feel of MarketLens</p>
+        <p class="text-sm text-gray-400 mt-1">Customize the look and feel of VineArq</p>
     </div>
 
     <div class="settings-card">
@@ -8142,7 +8142,7 @@ function renderSettingsAppearance() {
         </div>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
             ${[
-                {name:'MarketLens Dark',bg:'#0a0a0f',accent:'#3b82f6',active:true},
+                {name:'VineArq Dark',bg:'#0a0a0f',accent:'#3b82f6',active:true},
                 {name:'Midnight',bg:'#0d1117',accent:'#58a6ff',active:false},
                 {name:'Dark Blue',bg:'#0a1628',accent:'#60a5fa',active:false},
                 {name:'Light',bg:'#f8fafc',accent:'#3b82f6',active:false},
@@ -8535,7 +8535,7 @@ function renderHelp() {
     $('main-content').innerHTML = `
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-white">Help</h1>
-            <p class="text-sm text-gray-400 mt-1">How to use MarketLens</p>
+            <p class="text-sm text-gray-400 mt-1">How to use VineArq</p>
         </div>
         <div class="space-y-4">
             <div class="bg-dark-800 rounded-xl p-5 border border-dark-600">
@@ -9822,7 +9822,7 @@ async function renderReport() {
     $('tools-content').innerHTML = `
         <div class="bg-dark-800 rounded-xl p-4 border border-dark-600">
             <div class="grid grid-cols-2 gap-4 mb-4">
-                <div><label class="text-[10px] text-gray-400 block mb-1">Company Name</label><input id="rpt-company" value="MarketLens Analysis"></div>
+                <div><label class="text-[10px] text-gray-400 block mb-1">Company Name</label><input id="rpt-company" value="VineArq Analysis"></div>
                 <div class="flex items-end"><button onclick="genReport()" class="btn btn-accent text-xs">GENERATE REPORT</button></div>
             </div>
             <div class="flex flex-wrap gap-2 mb-4">
@@ -9971,9 +9971,9 @@ function showExportDialog() {
             <button onclick="closeModal();exportJSON()" class="btn btn-ghost w-full text-sm">Export to JSON</button>
         </div>`);
 }
-function exportExcel() { downloadWithAuth('/api/export/excel', 'marketlens_report.xlsx'); }
-function exportPDF() { downloadWithAuth('/api/export/pdf', 'marketlens_report.pdf'); }
-function exportJSON() { downloadWithAuth('/api/export/json', 'marketlens_report.json'); }
+function exportExcel() { downloadWithAuth('/api/export/excel', 'vinearq_report.xlsx'); }
+function exportPDF() { downloadWithAuth('/api/export/pdf', 'vinearq_report.pdf'); }
+function exportJSON() { downloadWithAuth('/api/export/json', 'vinearq_report.json'); }
 async function downloadWithAuth(url, filename) {
     try {
         const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + authToken } });

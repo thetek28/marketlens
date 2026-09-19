@@ -3,14 +3,14 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
-name = "marketlens"
+name = "vinearq"
 version = "1.0.0"
 description = "AI-Powered Amazon Product Research"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Proprietary"}
 authors = [
-    {name = "MarketLens"}
+    {name = "VineArq"}
 ]
 
 [tool.pytest.ini_options]

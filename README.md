@@ -1,4 +1,4 @@
-# MarketLens - AI-Powered Amazon Product Research
+# VineArq - AI-Powered Amazon Product Research
 
 Commercial-grade desktop application for Amazon product research, analysis, and supplier sourcing.
 
@@ -27,11 +27,11 @@ python run_gui.py
 ```
 
 ### From Installer
-Run `MarketLens-Setup.exe` and follow the installation wizard.
+Run `VineArq-Setup.exe` and follow the installation wizard.
 
 ## Usage
 
-1. Launch MarketLens from desktop shortcut or Start Menu
+1. Launch VineArq from desktop shortcut or Start Menu
 2. Click **Start Analysis** to begin product research
 3. Review products in the **Products** tab
 4. Check supplier matches in the **Suppliers** tab
@@ -50,12 +50,12 @@ Run `MarketLens-Setup.exe` and follow the installation wizard.
 ## Building
 
 ```bash
-py -m PyInstaller MarketLens.spec
+py -m PyInstaller VineArq.spec
 ```
 
 ## Cloud Deployment
 
-MarketLens supports both local SQLite and cloud PostgreSQL backends.
+VineArq supports both local SQLite and cloud PostgreSQL backends.
 
 ### Quick Start (Docker)
 
@@ -90,4 +90,4 @@ See `online_db/README.md` and `online_backend/README.md` for detailed configurat
 
 ## License
 
-Proprietary - MarketLens 2026
+Proprietary - VineArq 2026

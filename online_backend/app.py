@@ -115,7 +115,7 @@ def create_app() -> FastAPI:
     db_url = DATABASE_URL or config.database_url
     db = UnifiedDB(db_url)
 
-    app = FastAPI(title="MarketLens Cloud", version="5.0.0")
+    app = FastAPI(title="VineArq Cloud", version="5.0.0")
 
     # Initialize Product Intelligence Services
     identity_service = ProductIdentityService(db)
