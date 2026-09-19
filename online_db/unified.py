@@ -83,6 +83,7 @@ class UnifiedDB:
                     "ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT DEFAULT ''",
                     "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT DEFAULT ''",
                     "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_method TEXT DEFAULT 'email'",
                 ]:
                     try: cur.execute(stmt)
                     except Exception: pass
@@ -163,13 +164,13 @@ class UnifiedDB:
     # ════════════════════════════════════════════════════════════
 
     def get_user_by_id(self, user_id: int) -> Optional[Dict]:
-        return self._exec("SELECT id, username, email, display_name, is_active, is_admin, created_at, last_login FROM users WHERE id = %s", (user_id,), "one")
+        return self._exec("SELECT id, username, email, display_name, is_active, is_admin, auth_method, created_at, last_login FROM users WHERE id = %s", (user_id,), "one")
 
     def get_user_by_username(self, username: str) -> Optional[Dict]:
         return self._exec("SELECT id, username, email, password_hash, display_name, is_active, is_admin FROM users WHERE username = %s", (username,), "one")
 
-    def create_user(self, username: str, password_hash: str, email: str = "") -> Optional[int]:
-        row = self._exec("INSERT INTO users (username, password_hash, email) VALUES (%s, %s, %s) RETURNING id", (username, password_hash, email), "one")
+    def create_user(self, username: str, password_hash: str, email: str = "", auth_method: str = "email") -> Optional[int]:
+        row = self._exec("INSERT INTO users (username, password_hash, email, auth_method) VALUES (%s, %s, %s, %s) RETURNING id", (username, password_hash, email, auth_method), "one")
         return row["id"] if row else None
 
     def get_user_by_google_id(self, google_id: str) -> Optional[Dict]:
@@ -186,7 +187,7 @@ class UnifiedDB:
             username = f"{base}{i}"
             i += 1
         row = self._exec(
-            "INSERT INTO users (username, email, password_hash, google_id, display_name) VALUES (%s, %s, '', %s, %s) RETURNING id",
+            "INSERT INTO users (username, email, password_hash, google_id, display_name, auth_method) VALUES (%s, %s, '', %s, %s, 'google') RETURNING id",
             (username, email, google_id, display_name), "one")
         return row["id"] if row else None
 
@@ -232,7 +233,7 @@ class UnifiedDB:
         offset = (page - 1) * per_page
         params.extend([per_page, offset])
         users = self._exec(f"""
-            SELECT u.id, u.username, u.email, u.display_name, u.is_active, u.is_admin, u.created_at, u.last_login,
+            SELECT u.id, u.username, u.email, u.display_name, u.is_active, u.is_admin, u.auth_method, u.created_at, u.last_login,
                    s.tier, s.ai_credits_used, s.ai_credits_limit, s.research_used, s.research_limit
             FROM users u
             LEFT JOIN subscriptions s ON u.id = s.user_id AND s.is_active = 1

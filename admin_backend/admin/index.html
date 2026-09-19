@@ -802,7 +802,7 @@ Settings
 <div class="card-body">
 <div class="table-wrap">
 <table>
-<thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Tier</th><th>Credits</th><th>Status</th><th>Actions</th></tr></thead>
+<thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Auth</th><th>Tier</th><th>Credits</th><th>Status</th><th>Actions</th></tr></thead>
 <tbody id="users-tbody"></tbody>
 </table>
 </div>
@@ -1459,13 +1459,14 @@ document.getElementById('users-tbody').innerHTML=users.length?users.map(u=>`
 <td>${u.id}</td>
 <td><a href="#" onclick="event.preventDefault();navigate('user-detail',${u.id})">${trunc(u.username||'',20)}</a></td>
 <td>${trunc(u.email||'',25)}</td>
+<td><span class="badge badge-${(u.auth_method==='google'?'blue':'gray')}">${(u.auth_method||'email').toUpperCase()}</span></td>
 <td><span class="badge badge-${({free:'gray',starter:'blue',pro:'purple',enterprise:'yellow'}[u.tier]||'gray')}">${(u.tier||'free').toUpperCase()}</span></td>
 <td class="tabular-nums">${u.ai_credits_used||0}/${u.ai_credits_limit||0}</td>
 <td><span class="${bCls(u.status)}">${u.status||'active'}</span></td>
 <td>
 <button class="btn btn-sm btn-ghost" onclick="navigate('user-detail',${u.id})">View</button>
 </td>
-</tr>`).join(''):'<tr><td colspan="7" class="empty">No users found</td></tr>';
+</tr>`).join(''):'<tr><td colspan="8" class="empty">No users found</td></tr>';
 pag(document.getElementById('users-pagination'),total,usersPage,P,'loadUsers');
 }).catch(()=>{document.getElementById('users-tbody').innerHTML='<tr><td colspan="7" class="empty">Error loading users</td></tr>'});
 }
@@ -1532,6 +1533,7 @@ document.getElementById('ud-tab-overview').innerHTML=`
 <div class="detail-item"><div class="k">Watchlist</div><div class="v">${d.watchlist_count||d.total_watchlist||0}</div></div>
 <div class="detail-item"><div class="k">Joined</div><div class="v">${fmtD(d.created_at||d.joined_at)}</div></div>
 <div class="detail-item"><div class="k">Email</div><div class="v">${d.email||'-'}</div></div>
+<div class="detail-item"><div class="k">Auth Method</div><div class="v"><span class="badge badge-${(d.auth_method==='google'?'blue':'gray')}">${(d.auth_method||'email').toUpperCase()}</span></div></div>
 </div>
 <div style="display:flex;gap:10px;flex-wrap:wrap">
 ${d.status==='active'?`<button class="btn btn-danger" onclick="confirmAction('Suspend this user?','suspend',${d.id})">Suspend User</button>`
