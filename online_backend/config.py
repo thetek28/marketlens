@@ -26,6 +26,7 @@ class BackendConfig:
     jwt_secret: str = os.environ.get("MLENS_JWT_SECRET", "")
     jwt_algorithm: str = "HS256"
     jwt_expiry_hours: int = 24
+    base_url: str = os.environ.get("BASE_URL", "https://vinearq.onrender.com")
 
     # Database
     db_host: str = os.environ.get("DB_HOST", "localhost")
@@ -55,7 +56,7 @@ class BackendConfig:
                 "https://*.netlify.app",
                 "https://*.railway.app",
                 "https://*.onrender.com",
-                "https://marketlens-backend-v72p.onrender.com",
+                self.base_url,
             ]
 
     @property

@@ -283,7 +283,7 @@ def create_app() -> FastAPI:
         try:
             token_resp = _requests.post("https://oauth2.googleapis.com/token", data={
                 "code": code, "client_id": google_client_id, "client_secret": google_client_secret,
-                "redirect_uri": f"https://marketlens-backend-v72p.onrender.com/api/auth/google/callback",
+                "redirect_uri": f"{config.base_url}/api/auth/google/callback",
                 "grant_type": "authorization_code"
             }, timeout=10)
             if token_resp.status_code != 200:
