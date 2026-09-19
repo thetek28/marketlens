@@ -7,7 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>window.GOOGLE_CLIENT_ID = '150823036772-7fndon5fctccsluet7ha339ai37jvi54.apps.googleusercontent.com';</script>
+    <script>window.GOOGLE_CLIENT_ID = '';</script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
     tailwind.config = {
@@ -2574,11 +2574,12 @@ async function doLogin(e, mode) {
     }
 }
 function handleGoogleLogin() {
-    if (typeof google === 'undefined' || !google.accounts) {
-        toast('Google Sign-In not loaded. Check your internet connection.', 'error');
-        return;
-    }
-    google.accounts.id.prompt();
+    const clientId = window.GOOGLE_CLIENT_ID;
+    if (!clientId) { toast('Google Sign-In not configured', 'error'); return; }
+    const redirectUri = encodeURIComponent(window.location.origin + '/api/auth/google/callback');
+    const scope = encodeURIComponent('email profile openid');
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&prompt=select_account`;
+    window.location.href = url;
 }
 async function doForgotPassword() {
     const email = $('reset-email').value.trim();
@@ -9987,6 +9988,13 @@ async function downloadWithAuth(url, filename) {
    INIT
    ══════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleToken = urlParams.get('token');
+    if (googleToken) {
+        localStorage.setItem('mjl_token', googleToken);
+        window.authToken = googleToken;
+        window.history.replaceState({}, '', '/');
+    }
     const ok = await checkAuth();
     if (!ok) {
         setTimeout(initGoogleSignIn, 200);

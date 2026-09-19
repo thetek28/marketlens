@@ -272,6 +272,58 @@ def create_app() -> FastAPI:
         return {"token": token, "user": {"id": user["id"], "username": user["username"]},
                 "subscription": sub or {"tier": "free"}}
 
+    @app.get("/api/auth/google/callback")
+    async def google_callback(code: str = "", state: str = ""):
+        from fastapi.responses import RedirectResponse
+        import requests as _requests
+        if not code:
+            return RedirectResponse(url="/?error=no_code")
+        google_client_id = os.environ.get("GOOGLE_CLIENT_ID", "")
+        google_client_secret = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+        try:
+            token_resp = _requests.post("https://oauth2.googleapis.com/token", data={
+                "code": code, "client_id": google_client_id, "client_secret": google_client_secret,
+                "redirect_uri": f"https://marketlens-backend-v72p.onrender.com/api/auth/google/callback",
+                "grant_type": "authorization_code"
+            }, timeout=10)
+            if token_resp.status_code != 200:
+                return RedirectResponse(url="/?error=token_exchange_failed")
+            access_token = token_resp.json().get("access_token")
+            user_resp = _requests.get("https://www.googleapis.com/oauth2/v2/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"}, timeout=10)
+            if user_resp.status_code != 200:
+                return RedirectResponse(url="/?error=userinfo_failed")
+            info = user_resp.json()
+            google_id = info.get("id", "")
+            email = info.get("email", "")
+            name = info.get("name", email.split("@")[0] if email else "")
+        except Exception as e:
+            logger.error(f"Google callback error: {e}")
+            return RedirectResponse(url="/?error=google_auth_failed")
+
+        existing = db.get_user_by_google_id(google_id)
+        if existing:
+            user = existing
+        else:
+            existing_email = db.get_user_by_email(email)
+            if existing_email:
+                db.update_user(existing_email["id"], google_id=google_id)
+                user = existing_email
+            else:
+                user_id = db.create_google_user(google_id, email, name)
+                if not user_id:
+                    return RedirectResponse(url="/?error=create_user_failed")
+                db.create_subscription(user_id, "free", 30)
+                user = db.get_user_by_id(user_id)
+
+        if not user.get("is_active"):
+            return RedirectResponse(url="/?error=account_suspended")
+
+        token = create_token(user["username"], config.jwt_secret, config.jwt_expiry_hours)
+        redirect = RedirectResponse(url=f"/?token={token}")
+        redirect.set_cookie("mjl_token", token, httponly=True, samesite="lax", max_age=86400)
+        return redirect
+
     # ════════════════════════════════════════════════════════
     # PASSWORD RESET
     # ════════════════════════════════════════════════════════
