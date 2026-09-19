@@ -6,6 +6,8 @@
     <title>MarketLens - AI Amazon Product Research</title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>window.GOOGLE_CLIENT_ID = '';</script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
     tailwind.config = {
@@ -2348,6 +2350,39 @@ function showLogin() {
                     </button>
                 </form>
 
+                <div id="forgot-password-form" class="hidden">
+                    <div class="text-xs text-gray-400 mb-3 text-center">Enter your email to reset your password</div>
+                    <div class="input-field">
+                        <svg class="icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <input type="email" id="reset-email" placeholder="your@email.com" required>
+                    </div>
+                    <button onclick="doForgotPassword()" class="submit-btn w-full mb-2">Send Reset Token</button>
+                    <div id="reset-token-display" class="hidden bg-dark-700 rounded-lg p-3 mb-3 border border-dark-600">
+                        <div class="text-xs text-green-400 mb-2 font-semibold">Reset Token</div>
+                        <div id="reset-token-value" class="text-xs text-gray-300 font-mono break-all mb-2"></div>
+                        <div class="input-field">
+                            <input type="password" id="reset-new-pass" placeholder="New password (min 6 chars)" required minlength="6">
+                        </div>
+                        <button onclick="doResetPassword()" class="submit-btn w-full">Reset Password</button>
+                    </div>
+                    <button onclick="showLoginTab('login')" class="w-full text-center text-xs text-gray-500 hover:text-gray-300 transition mt-2">Back to Sign In</button>
+                </div>
+
+                <div class="flex items-center gap-3 my-4">
+                    <div class="flex-1 h-px bg-dark-600"></div>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-wider">or</span>
+                    <div class="flex-1 h-px bg-dark-600"></div>
+                </div>
+
+                <button onclick="handleGoogleLogin()" id="google-login-btn" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white text-gray-800 text-sm font-medium hover:bg-gray-100 transition border border-gray-300">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    Continue with Google
+                </button>
+
+                <div class="mt-3 text-center">
+                    <button onclick="showLoginTab('forgot')" class="text-[11px] text-gray-500 hover:text-accent transition">Forgot password?</button>
+                </div>
+
                 <form onsubmit="doLogin(event, 'register')" id="register-form" class="hidden">
                     <div class="input-field">
                         <svg class="icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -2467,10 +2502,14 @@ function checkPwStrength() {
 function showLoginTab(tab) {
     $('login-form').classList.toggle('hidden', tab !== 'login');
     $('register-form').classList.toggle('hidden', tab !== 'register');
+    const fpf = $('forgot-password-form');
+    if (fpf) fpf.classList.toggle('hidden', tab !== 'forgot');
+    const gBtn = $('google-login-btn');
+    if (gBtn) gBtn.classList.toggle('hidden', tab === 'forgot');
     $('login-error').classList.add('hidden');
     $('login-success').classList.add('hidden');
-    const active = tab === 'login' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25' : 'text-gray-400 hover:text-gray-200';
-    const inactive = tab === 'login' ? 'text-gray-400 hover:text-gray-200' : 'bg-blue-500 text-white shadow-lg shadow-blue-500/25';
+    const active = 'bg-blue-500 text-white shadow-lg shadow-blue-500/25';
+    const inactive = 'text-gray-400 hover:text-gray-200';
     $('lt-login').className = `flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${tab==='login'?active:inactive}`;
     $('lt-register').className = `flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${tab==='register'?active:inactive}`;
 }
@@ -2533,6 +2572,73 @@ async function doLogin(e, mode) {
         btnText.classList.remove('hidden');
         btnSpinner.classList.add('hidden');
     }
+}
+function handleGoogleLogin() {
+    if (typeof google === 'undefined' || !google.accounts) {
+        toast('Google Sign-In not loaded. Check your internet connection.', 'error');
+        return;
+    }
+    google.accounts.id.prompt();
+}
+async function doForgotPassword() {
+    const email = $('reset-email').value.trim();
+    if (!email) { toast('Enter your email', 'warning'); return; }
+    try {
+        const r = await fetch('/api/auth/forgot-password', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email})
+        });
+        const data = await r.json();
+        if (data.reset_token) {
+            $('reset-token-display').classList.remove('hidden');
+            $('reset-token-value').textContent = data.reset_token;
+            toast('Reset token generated', 'success');
+        } else {
+            toast(data.message || 'If an account exists, a reset token was generated', 'info');
+        }
+    } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+async function doResetPassword() {
+    const token = $('reset-token-value').textContent;
+    const newPass = $('reset-new-pass').value;
+    if (!token || !newPass) { toast('Token and new password required', 'warning'); return; }
+    if (newPass.length < 6) { toast('Password must be at least 6 characters', 'warning'); return; }
+    try {
+        const r = await fetch('/api/auth/reset-password', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token, new_password: newPass})
+        });
+        const data = await r.json();
+        if (r.ok) {
+            toast('Password reset! You can now sign in.', 'success');
+            showLoginTab('login');
+        } else {
+            toast(data.detail || 'Reset failed', 'error');
+        }
+    } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+function onGoogleCredentialResponse(response) {
+    fetch('/api/auth/google', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({credential: response.credential})
+    }).then(r => r.json()).then(data => {
+        if (data.token) {
+            localStorage.setItem('mjl_token', data.token);
+            window.authToken = data.token;
+            location.reload();
+        } else {
+            toast(data.detail || 'Google login failed', 'error');
+        }
+    }).catch(e => toast('Google login error: ' + e.message, 'error'));
+}
+function initGoogleSignIn() {
+    if (typeof google === 'undefined' || !google.accounts) {
+        setTimeout(initGoogleSignIn, 500);
+        return;
+    }
+    const clientId = window.GOOGLE_CLIENT_ID || '';
+    if (!clientId) return;
+    google.accounts.id.initialize({client_id: clientId, callback: onGoogleCredentialResponse});
 }
 function logout() {
     localStorage.removeItem('mjl_token');
@@ -9882,7 +9988,10 @@ async function downloadWithAuth(url, filename) {
    ══════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
     const ok = await checkAuth();
-    if (!ok) return;
+    if (!ok) {
+        setTimeout(initGoogleSignIn, 200);
+        return;
+    }
     updateSubBadge();
     checkNotifications();
     connectWS();

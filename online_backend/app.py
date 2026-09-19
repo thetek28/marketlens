@@ -220,6 +220,92 @@ def create_app() -> FastAPI:
                 "notifications_unread": db.unread_count(user["id"])}
 
     # ════════════════════════════════════════════════════════
+    # GOOGLE OAUTH
+    # ════════════════════════════════════════════════════════
+
+    class GoogleLoginRequest(BaseModel):
+        credential: str  # Google ID token
+
+    @app.post("/api/auth/google")
+    async def google_login(req: GoogleLoginRequest):
+        import requests as _requests
+        try:
+            resp = _requests.get(
+                "https://oauth2.googleapis.com/tokeninfo",
+                params={"id_token": req.credential},
+                timeout=10
+            )
+            if resp.status_code != 200:
+                raise HTTPException(401, "Invalid Google token")
+            info = resp.json()
+            google_id = info.get("sub", "")
+            email = info.get("email", "")
+            name = info.get("name", email.split("@")[0] if email else "")
+            if not google_id or not email:
+                raise HTTPException(400, "Missing Google user info")
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Google token verification failed: {e}")
+            raise HTTPException(401, "Failed to verify Google token")
+
+        existing = db.get_user_by_google_id(google_id)
+        if existing:
+            user = existing
+        else:
+            existing_email = db.get_user_by_email(email)
+            if existing_email:
+                db.update_user(existing_email["id"], google_id=google_id)
+                user = existing_email
+            else:
+                user_id = db.create_google_user(google_id, email, name)
+                if not user_id:
+                    raise HTTPException(500, "Failed to create Google user")
+                db.create_subscription(user_id, "free", 30)
+                user = db.get_user_by_id(user_id)
+
+        if not user.get("is_active"):
+            raise HTTPException(403, "Account suspended")
+
+        token = create_token(user["username"], config.jwt_secret, config.jwt_expiry_hours)
+        sub = db.get_subscription(user["id"])
+        return {"token": token, "user": {"id": user["id"], "username": user["username"]},
+                "subscription": sub or {"tier": "free"}}
+
+    # ════════════════════════════════════════════════════════
+    # PASSWORD RESET
+    # ════════════════════════════════════════════════════════
+
+    class ForgotPasswordRequest(BaseModel):
+        email: str
+
+    class ResetPasswordRequest(BaseModel):
+        token: str
+        new_password: str
+
+    @app.post("/api/auth/forgot-password")
+    async def forgot_password(req: ForgotPasswordRequest):
+        import secrets as _secrets
+        user = db.get_user_by_email(req.email)
+        if not user:
+            return {"message": "If an account with that email exists, a reset link has been generated."}
+        reset_token = _secrets.token_urlsafe(32)
+        db.set_reset_token(user["id"], reset_token)
+        return {"message": "Reset token generated", "reset_token": reset_token}
+
+    @app.post("/api/auth/reset-password")
+    async def reset_password(req: ResetPasswordRequest):
+        user = db.get_user_by_reset_token(req.token)
+        if not user:
+            raise HTTPException(400, "Invalid or expired reset token")
+        if len(req.new_password) < 6:
+            raise HTTPException(400, "Password must be at least 6 characters")
+        pw_hash = bcrypt.hashpw(req.new_password.encode(), bcrypt.gensalt()).decode()
+        db.update_password(user["id"], pw_hash)
+        db.clear_reset_token(user["id"])
+        return {"message": "Password reset successfully"}
+
+    # ════════════════════════════════════════════════════════
     # PRODUCTS (shared global + user ownership)
     # ════════════════════════════════════════════════════════
 
@@ -1576,7 +1662,10 @@ def create_app() -> FastAPI:
     async def serve_frontend():
         try:
             with open(_index_html, "r", encoding="utf-8") as f:
-                return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"})
+                html = f.read()
+            google_client_id = os.environ.get("GOOGLE_CLIENT_ID", "")
+            html = html.replace("window.GOOGLE_CLIENT_ID = ''", f"window.GOOGLE_CLIENT_ID = '{google_client_id}'")
+            return HTMLResponse(content=html, headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"})
         except FileNotFoundError:
             return HTMLResponse(content="<h1>Frontend not found</h1>", status_code=404)
 

@@ -80,6 +80,9 @@ class UnifiedDB:
                     "ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS renewal_date TIMESTAMP",
                     "ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMP",
                     "ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS cancel_reason TEXT",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT DEFAULT ''",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT DEFAULT ''",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP",
                 ]:
                     try: cur.execute(stmt)
                     except Exception: pass
@@ -169,8 +172,42 @@ class UnifiedDB:
         row = self._exec("INSERT INTO users (username, password_hash, email) VALUES (%s, %s, %s) RETURNING id", (username, password_hash, email), "one")
         return row["id"] if row else None
 
+    def get_user_by_google_id(self, google_id: str) -> Optional[Dict]:
+        return self._exec("SELECT id, username, email, password_hash, display_name, is_active, is_admin FROM users WHERE google_id = %s", (google_id,), "one")
+
+    def get_user_by_email(self, email: str) -> Optional[Dict]:
+        return self._exec("SELECT id, username, email, password_hash, display_name, is_active, is_admin FROM users WHERE email = %s AND email != ''", (email,), "one")
+
+    def create_google_user(self, google_id: str, email: str, display_name: str) -> Optional[int]:
+        username = email.split("@")[0]
+        base = username
+        i = 1
+        while self.get_user_by_username(username):
+            username = f"{base}{i}"
+            i += 1
+        row = self._exec(
+            "INSERT INTO users (username, email, password_hash, google_id, display_name) VALUES (%s, %s, '', %s, %s) RETURNING id",
+            (username, email, google_id, display_name), "one")
+        return row["id"] if row else None
+
+    def set_reset_token(self, user_id: int, token: str):
+        from datetime import datetime, timedelta
+        expiry = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+        self._exec("UPDATE users SET reset_token = %s, reset_token_expiry = %s WHERE id = %s", (token, expiry, user_id))
+
+    def get_user_by_reset_token(self, token: str) -> Optional[Dict]:
+        return self._exec(
+            "SELECT id, username, email FROM users WHERE reset_token = %s AND reset_token_expiry > NOW()",
+            (token,), "one")
+
+    def clear_reset_token(self, user_id: int):
+        self._exec("UPDATE users SET reset_token = '', reset_token_expiry = NULL WHERE id = %s", (user_id,))
+
+    def update_password(self, user_id: int, password_hash: str):
+        self._exec("UPDATE users SET password_hash = %s WHERE id = %s", (password_hash, user_id))
+
     def update_user(self, user_id: int, **kwargs):
-        allowed = {"email", "display_name", "is_active", "is_admin"}
+        allowed = {"email", "display_name", "is_active", "is_admin", "google_id"}
         sets, vals = [], []
         for k, v in kwargs.items():
             if k in allowed:
