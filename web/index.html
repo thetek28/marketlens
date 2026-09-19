@@ -4213,7 +4213,7 @@ function renderDashboardAIOpportunity(products) {
 }
 
 function renderDashboardTopProducts(products) {
-    return products.slice(0,20).map((p,i) => {
+    return products.slice(0,100).map((p,i) => {
         const tl = p.traffic_light || 'RED';
         const margin = (p.estimated_margin_pct||0);
         const ai = Math.round((p.ai_score||0) * 100);
