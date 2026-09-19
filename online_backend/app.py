@@ -192,9 +192,19 @@ def create_app() -> FastAPI:
         return {"token": token, "user": {"id": user_id, "username": req.username}, "subscription": {"tier": "free"}}
 
     @app.post("/api/auth/login")
-    async def login(req: LoginRequest):
-        user = db.get_user_by_username(req.username)
-        if not user or not bcrypt.checkpw(req.password.encode(), user["password_hash"].encode()):
+    async def login(request: Request):
+        try:
+            import json as _json
+            body = await request.body()
+            data = _json.loads(body)
+            username = data.get("username", "")
+            password = data.get("password", "")
+        except Exception:
+            raise HTTPException(400, "Invalid request format - send JSON")
+        if not username or not password:
+            raise HTTPException(400, "Username and password required")
+        user = db.get_user_by_username(username)
+        if not user or not bcrypt.checkpw(password.encode(), user["password_hash"].encode()):
             raise HTTPException(401, "Invalid credentials")
         if not user.get("is_active"):
             raise HTTPException(403, "Account suspended")
@@ -207,7 +217,7 @@ def create_app() -> FastAPI:
             conn.commit()
         finally:
             conn.close()
-        token = create_token(req.username, config.jwt_secret, config.jwt_expiry_hours)
+        token = create_token(username, config.jwt_secret, config.jwt_expiry_hours)
         sub = db.get_subscription(user["id"])
         return {"token": token, "user": {"id": user["id"], "username": user["username"]}, "subscription": sub or {"tier": "free"}}
 
@@ -1703,8 +1713,13 @@ def create_app() -> FastAPI:
                 """INSERT INTO admin_users (username, email, password_hash, role, display_name)
                    VALUES (%s, %s, %s, %s, %s)
                    ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, updated_at = CURRENT_TIMESTAMP""",
-                ("admin", "admin@marketlens.com", pw_hash, "super_admin", "Super Admin")
+                ("admin", "admin@vinearq.com", pw_hash, "super_admin", "Super Admin")
             )
+            existing = db.get_user_by_username("admin")
+            if not existing:
+                user_id = db.create_user("admin", pw_hash, "admin@vinearq.com")
+                if user_id:
+                    db.create_subscription(user_id, "free", 3650)
             logger.info("Admin user seeded")
         except Exception as e:
             logger.error("Admin seed failed: %s", e)
