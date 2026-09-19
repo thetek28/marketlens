@@ -2816,10 +2816,23 @@ function handleUpgrade() {
    ANALYSIS CONTROLS
    ══════════════════════════════════════════════════════════════ */
 async function startAnalysis() {
-    await api('/api/analysis/start', {method:'POST'});
     $('btn-start').classList.add('hidden'); $('btn-stop').classList.remove('hidden');
     $('status-pill').classList.remove('hidden'); $('status-msg').textContent = 'Starting...';
-    startTimer(); toast('Analysis started', 'success');
+    startTimer();
+    try {
+        const result = await api('/api/analysis/start', {method:'POST'});
+        if (result && result.detail) {
+            toast('Failed: ' + result.detail, 'error');
+            $('btn-start').classList.remove('hidden'); $('btn-stop').classList.add('hidden');
+            $('status-pill').classList.add('hidden'); stopTimer();
+        } else {
+            toast('Analysis started', 'success');
+        }
+    } catch(e) {
+        toast('Failed to start: ' + e.message, 'error');
+        $('btn-start').classList.remove('hidden'); $('btn-stop').classList.add('hidden');
+        $('status-pill').classList.add('hidden'); stopTimer();
+    }
 }
 async function stopAnalysis() {
     await api('/api/analysis/stop', {method:'POST'});
@@ -9430,7 +9443,6 @@ async function importAlibabaSupplier(supplier) {
     const data = await api('/api/suppliers/import-alibaba', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(supplier) });
     if (data?.id) { toast('Supplier imported!', 'success'); renderSuppliers(); }
     else toast('Failed to import supplier', 'error');
-}
 }
 function supplierCard(s) {
     const ratingColor = (s.rating||0) >= 4.5 ? 'text-green-400' : (s.rating||0) >= 4.0 ? 'text-yellow-400' : 'text-gray-400';
