@@ -653,15 +653,14 @@ class UnifiedDB:
             "ai_score, estimated_margin_pct, traffic_light, priority_tier, "
             "supplier_price, seller_info, full_data, created_at, updated_at, "
             "product_url, image_url, opportunity_score, scoring_version, "
-            "estimated_supplier_cost, marketplace, review_growth_rate, "
-            "competition_score, demand_score, trend_score, created_at "
+            "marketplace "
             "FROM products ORDER BY COALESCE(opportunity_score, ai_score, 0) DESC", fetch="all")
         products = []
         for row in rows:
             try:
                 fd = row.get("full_data") or {}
                 if isinstance(fd, str): fd = json.loads(fd)
-                product = {k: row.get(k, 0) for k in ["asin","name","category","amazon_price","rating","review_count","ai_score","estimated_margin_pct","traffic_light","priority_tier","supplier_price","product_url","image_url","opportunity_score","scoring_version","estimated_supplier_cost","marketplace","review_growth_rate","competition_score","demand_score","trend_score"]}
+                product = {k: row.get(k, 0) for k in ["asin","name","category","amazon_price","rating","review_count","ai_score","estimated_margin_pct","traffic_light","priority_tier","supplier_price","product_url","image_url","opportunity_score","scoring_version","marketplace"]}
                 if fd and isinstance(fd, dict): product.update(fd)
                 products.append(product)
             except Exception:
