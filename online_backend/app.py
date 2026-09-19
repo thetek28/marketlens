@@ -1575,7 +1575,7 @@ def create_app() -> FastAPI:
     async def serve_frontend():
         try:
             with open(_index_html, "r", encoding="utf-8") as f:
-                return HTMLResponse(content=f.read())
+                return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"})
         except FileNotFoundError:
             return HTMLResponse(content="<h1>Frontend not found</h1>", status_code=404)
 
